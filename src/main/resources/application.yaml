@@ -1,0 +1,6 @@
+server:
+  port: 5020
+
+logging:
+  level:
+    ROOT: INFO
