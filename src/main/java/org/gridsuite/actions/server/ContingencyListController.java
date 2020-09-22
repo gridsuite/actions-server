@@ -34,10 +34,6 @@ public class ContingencyListController {
         this.service = service;
     }
 
-    private static String sanitizeParam(String param) {
-        return param != null ? param.replaceAll("[\n|\r|\t]", "_") : null;
-    }
-
     @GetMapping(value = "contingency-lists", produces = MediaType.APPLICATION_JSON_VALUE)
     @ApiOperation(value = "Get all contingency lists", response = List.class)
     @ApiResponses(value = {@ApiResponse(code = 200, message = "All contingency lists")})
@@ -49,13 +45,13 @@ public class ContingencyListController {
     @ApiOperation(value = "Get contingency list by name", response = ContingencyList.class)
     @ApiResponses(value = {@ApiResponse(code = 200, message = "The contingency list")})
     public ResponseEntity<ContingencyList> getContingencyList(@PathVariable("name") String name) {
-        return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(service.getContingencyList(sanitizeParam(name)).orElse(null));
+        return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(service.getContingencyList(name).orElse(null));
     }
 
     @PostMapping(value = "script-contingency-lists/{name}", consumes = MediaType.TEXT_PLAIN_VALUE)
     @ApiOperation(value = "Create a script contingency list", response = ContingencyList.class)
     @ApiResponses(value = {@ApiResponse(code = 200, message = "The contingency list have been created successfully")})
     public void createScriptContingencyList(@PathVariable("name") String name, @RequestBody(required = false) String script) {
-        service.createScriptContingencyList(sanitizeParam(name), script);
+        service.createScriptContingencyList(name, script);
     }
 }

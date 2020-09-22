@@ -35,6 +35,10 @@ public class ContingencyListService {
         return new ScriptContingencyList(entity.getName(), entity.getScript());
     }
 
+    private static String sanitizeParam(String param) {
+        return param != null ? param.replaceAll("[\n|\r|\t]", "_") : null;
+    }
+
     List<ContingencyList> getContingencyLists() {
         return repository.findAll().stream().map(ContingencyListService::fromEntity).collect(Collectors.toList());
     }
@@ -46,7 +50,7 @@ public class ContingencyListService {
 
     void createScriptContingencyList(String name, String script) {
         Objects.requireNonNull(name);
-        LOGGER.info("Create script contingency list '{}'", name);
+        LOGGER.info("Create script contingency list '{}'", sanitizeParam(name));
         repository.insert(new ScriptContingencyListEntity(name, script));
     }
 }
