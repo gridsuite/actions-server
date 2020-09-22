@@ -8,7 +8,6 @@ package org.gridsuite.actions.server;
 
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
-import org.gridsuite.actions.server.contingency.ContingencyListController;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import springfox.documentation.builders.ApiInfoBuilder;

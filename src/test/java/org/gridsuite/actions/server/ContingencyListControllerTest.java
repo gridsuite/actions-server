@@ -4,15 +4,13 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
-package org.gridsuite.actions.server.contingency;
+package org.gridsuite.actions.server;
 
 import com.powsybl.iidm.network.Network;
 import com.powsybl.iidm.network.test.EurostagTutorialExample1Factory;
 import com.powsybl.network.store.client.NetworkStoreService;
 import com.powsybl.network.store.client.PreloadingStrategy;
 import com.powsybl.network.store.iidm.impl.NetworkFactoryImpl;
-import org.gridsuite.actions.server.AbstractEmbeddedCassandraSetup;
-import org.gridsuite.actions.server.ActionsApplication;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;

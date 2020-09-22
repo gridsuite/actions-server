@@ -6,7 +6,6 @@
  */
 package org.gridsuite.actions.server;
 
-import org.gridsuite.actions.server.contingency.ScriptContingencyListRepository;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
