@@ -50,7 +50,9 @@ public class ContingencyListService {
 
     void createScriptContingencyList(String name, String script) {
         Objects.requireNonNull(name);
-        LOGGER.info("Create script contingency list '{}'", sanitizeParam(name));
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("Create script contingency list '{}'", sanitizeParam(name));
+        }
         repository.insert(new ScriptContingencyListEntity(name, script));
     }
 }

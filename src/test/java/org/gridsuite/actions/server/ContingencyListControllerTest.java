@@ -23,7 +23,7 @@ import static com.powsybl.network.store.model.NetworkStoreApi.VERSION;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.http.MediaType.TEXT_PLAIN;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -56,7 +56,7 @@ public class ContingencyListControllerTest extends AbstractEmbeddedCassandraSetu
             "     equipments: 'c1'" +
             "}";
 
-        mvc.perform(post("/" + VERSION + "/script-contingency-lists/foo")
+        mvc.perform(put("/" + VERSION + "/script-contingency-lists/foo")
                 .content(script)
                 .contentType(TEXT_PLAIN))
                 .andExpect(status().isOk());

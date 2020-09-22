@@ -48,7 +48,7 @@ public class ContingencyListController {
         return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(service.getContingencyList(name).orElse(null));
     }
 
-    @PostMapping(value = "script-contingency-lists/{name}", consumes = MediaType.TEXT_PLAIN_VALUE)
+    @PutMapping(value = "script-contingency-lists/{name}", consumes = MediaType.TEXT_PLAIN_VALUE)
     @ApiOperation(value = "Create a script contingency list", response = ContingencyList.class)
     @ApiResponses(value = {@ApiResponse(code = 200, message = "The contingency list have been created successfully")})
     public void createScriptContingencyList(@PathVariable("name") String name, @RequestBody(required = false) String script) {
