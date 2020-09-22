@@ -50,6 +50,19 @@
     </properties>
 
     <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-surefire-plugin</artifactId>
+                    <configuration>
+                        <classpathDependencyExcludes>
+                            <classpathDependencyExclude>com.powsybl:powsybl-config-classic</classpathDependencyExclude>
+                        </classpathDependencyExcludes>
+                    </configuration>
+                </plugin>
+            </plugins>
+        </pluginManagement>
         <plugins>
             <plugin>
                 <groupId>com.google.cloud.tools</groupId>
@@ -95,6 +108,14 @@
         </dependency>
         <dependency>
             <groupId>com.powsybl</groupId>
+            <artifactId>powsybl-contingency-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.powsybl</groupId>
+            <artifactId>powsybl-contingency-dsl</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.powsybl</groupId>
             <artifactId>powsybl-network-store-client</artifactId>
         </dependency>
         <dependency>
@@ -131,6 +152,16 @@
         <dependency>
             <groupId>com.github.nosan</groupId>
             <artifactId>embedded-cassandra-spring-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.powsybl</groupId>
+            <artifactId>powsybl-config-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.powsybl</groupId>
+            <artifactId>powsybl-iidm-test</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>

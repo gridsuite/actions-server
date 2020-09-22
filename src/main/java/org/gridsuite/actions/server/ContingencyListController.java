@@ -6,6 +6,7 @@
  */
 package org.gridsuite.actions.server;
 
+import com.powsybl.contingency.Contingency;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
@@ -17,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.UUID;
 
 /**
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at rte-france.com>
@@ -46,6 +48,14 @@ public class ContingencyListController {
     @ApiResponses(value = {@ApiResponse(code = 200, message = "The contingency list")})
     public ResponseEntity<ContingencyList> getContingencyList(@PathVariable("name") String name) {
         return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(service.getContingencyList(name).orElse(null));
+    }
+
+    @GetMapping(value = "contingency-lists/{name}/export", produces = MediaType.APPLICATION_JSON_VALUE)
+    @ApiOperation(value = "Export a contingency list to PowSyBl JSON format", response = List.class)
+    @ApiResponses(value = {@ApiResponse(code = 200, message = "The contingency list on PowSyBl JSON format")})
+    public ResponseEntity<List<Contingency>> exportContingencyList(@PathVariable("name") String name,
+                                                                   @RequestParam(value = "networkUuid", required = false) UUID networkUuid) {
+        return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(service.exportContingencyList(name, networkUuid).orElse(null));
     }
 
     @PutMapping(value = "script-contingency-lists/{name}", consumes = MediaType.TEXT_PLAIN_VALUE)
