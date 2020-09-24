@@ -43,7 +43,7 @@ public class ContingencyListService {
     }
 
     private static ContingencyList fromEntity(ScriptContingencyListEntity entity) {
-        return new ScriptContingencyList(entity.getName(), entity.getScript());
+        return new ScriptContingencyList(entity.getName(), entity.getScript() != null ? entity.getScript() : "");
     }
 
     private static String sanitizeParam(String param) {

@@ -43,9 +43,13 @@ public class ContingencyListController {
 
     @GetMapping(value = "contingency-lists/{name}", produces = MediaType.APPLICATION_JSON_VALUE)
     @ApiOperation(value = "Get contingency list by name", response = ContingencyList.class)
-    @ApiResponses(value = {@ApiResponse(code = 200, message = "The contingency list")})
+    @ApiResponses(value = {@ApiResponse(code = 200, message = "The contingency list"),
+                           @ApiResponse(code = 404, message = "The contingency list does not exists")})
     public ResponseEntity<ContingencyList> getContingencyList(@PathVariable("name") String name) {
-        return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(service.getContingencyList(name).orElse(null));
+        return service.getContingencyList(name).map(contingencyList -> ResponseEntity.ok()
+                                                                                     .contentType(MediaType.APPLICATION_JSON)
+                                                                                     .body(contingencyList))
+                                               .orElse(ResponseEntity.notFound().build());
     }
 
     @GetMapping(value = "contingency-lists/{name}/export", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -53,7 +57,10 @@ public class ContingencyListController {
     @ApiResponses(value = {@ApiResponse(code = 200, message = "The contingency list on PowSyBl JSON format")})
     public ResponseEntity<List<Contingency>> exportContingencyList(@PathVariable("name") String name,
                                                                    @RequestParam(value = "networkUuid", required = false) UUID networkUuid) {
-        return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(service.exportContingencyList(name, networkUuid).orElse(null));
+        return service.exportContingencyList(name, networkUuid).map(contingencies -> ResponseEntity.ok()
+                                                                                                   .contentType(MediaType.APPLICATION_JSON)
+                                                                                                   .body(contingencies))
+                                                               .orElse(ResponseEntity.notFound().build());
     }
 
     @PutMapping(value = "script-contingency-lists/{name}", consumes = MediaType.TEXT_PLAIN_VALUE)

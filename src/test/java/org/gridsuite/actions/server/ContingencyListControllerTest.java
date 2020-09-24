@@ -83,7 +83,7 @@ public class ContingencyListControllerTest extends AbstractEmbeddedCassandraSetu
 
         mvc.perform(get("/" + VERSION + "/contingency-lists/bar")
                 .contentType(APPLICATION_JSON))
-                .andExpect(status().isOk())
+                .andExpect(status().isNotFound())
                 .andExpect(content().string(""));
 
         mvc.perform(get("/" + VERSION + "/contingency-lists/foo")
@@ -103,5 +103,19 @@ public class ContingencyListControllerTest extends AbstractEmbeddedCassandraSetu
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
                 .andExpect(content().json("[{\"id\":\"NHV1_NHV2_1\",\"elements\":[{\"id\":\"NHV1_NHV2_1\",\"type\":\"BRANCH\"}]}]"));
+    }
+
+    @Test
+    public void emptyScriptTest() throws Exception {
+        mvc.perform(put("/" + VERSION + "/script-contingency-lists/foo")
+                .content("")
+                .contentType(TEXT_PLAIN))
+                .andExpect(status().isOk());
+
+        mvc.perform(get("/" + VERSION + "/contingency-lists/foo/export")
+                .contentType(APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+                .andExpect(content().json("[]"));
     }
 }

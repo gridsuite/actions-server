@@ -23,11 +23,11 @@ import org.springframework.data.cassandra.repository.config.EnableCassandraRepos
 @EnableCassandraRepositories(basePackageClasses = {ScriptContingencyListRepository.class})
 public class CassandraConfig extends AbstractCassandraConfiguration {
 
-    static final String KEYSPACE_MERGE_ORCHESTRATOR = "actions";
+    static final String KEYSPACE_NAME = "actions";
 
     @Override
     protected String getKeyspaceName() {
-        return KEYSPACE_MERGE_ORCHESTRATOR;
+        return KEYSPACE_NAME;
     }
 
     @Bean
