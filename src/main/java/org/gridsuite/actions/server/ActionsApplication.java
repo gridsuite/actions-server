@@ -6,8 +6,11 @@
  */
 package org.gridsuite.actions.server;
 
+import com.fasterxml.jackson.databind.Module;
+import com.powsybl.contingency.json.ContingencyJsonModule;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.annotation.Bean;
 
 /**
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at rte-france.com>
@@ -18,5 +21,10 @@ public class ActionsApplication {
 
     public static void main(String[] args) {
         SpringApplication.run(ActionsApplication.class, args);
+    }
+
+    @Bean
+    public Module module() {
+        return new ContingencyJsonModule();
     }
 }
