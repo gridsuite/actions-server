@@ -1,5 +1,5 @@
 server:
-  port: 5020
+  port: 5021
 
 network-store-server:
   base-uri: http://localhost:8080
