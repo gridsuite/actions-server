@@ -63,7 +63,7 @@ public class ContingencyListService {
         if (contingencyList instanceof ScriptContingencyList) {
             Network network;
             if (networkUuid == null) {
-                // use en empty network, script might not have need to network
+                // use an empty network, script might not have need to network
                 network = new NetworkFactoryImpl().createNetwork("empty", "empty");
             } else {
                 network = networkStoreService.getNetwork(networkUuid, PreloadingStrategy.COLLECTION);
