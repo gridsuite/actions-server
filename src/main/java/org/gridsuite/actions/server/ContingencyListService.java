@@ -16,7 +16,9 @@ import com.powsybl.network.store.iidm.impl.NetworkFactoryImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.ComponentScan;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.Objects;
@@ -26,6 +28,7 @@ import java.util.stream.Collectors;
 
 /**
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at rte-france.com>
+ * @author Franck Lecuyer <franck.lecuyer at rte-france.com>
  */
 @ComponentScan(basePackageClasses = {NetworkStoreService.class})
 @Service
@@ -90,5 +93,14 @@ public class ContingencyListService {
             LOGGER.debug("Create script contingency list '{}'", sanitizeParam(name));
         }
         repository.insert(new ScriptContingencyListEntity(name, script));
+    }
+
+    void deleteContingencyList(String name) {
+        Objects.requireNonNull(name);
+        if (repository.existsByName(name)) {
+            repository.deleteByName(name);
+        } else {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Contingency list " + name + " not found");
+        }
     }
 }
