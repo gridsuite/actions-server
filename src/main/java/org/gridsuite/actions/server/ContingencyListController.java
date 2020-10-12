@@ -73,7 +73,7 @@ public class ContingencyListController {
 
     @DeleteMapping(value = "contingency-lists/{name}")
     @ApiOperation(value = "delete the contingency list")
-    @ApiResponse(code = 200, message = "The contingency list have been deleted")
+    @ApiResponse(code = 200, message = "The contingency list has been deleted")
     public ResponseEntity<Void> deleteContingencyList(@PathVariable("name") String name) {
         service.deleteContingencyList(name);
         return ResponseEntity.ok().build();
