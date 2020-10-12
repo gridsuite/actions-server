@@ -13,9 +13,14 @@ import java.util.Optional;
 
 /**
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at rte-france.com>
+ * @author Franck Lecuyer <franck.lecuyer at rte-france.com>
  */
 @Repository
 public interface ScriptContingencyListRepository extends CassandraRepository<ScriptContingencyListEntity, String> {
 
     Optional<ScriptContingencyListEntity> findByName(String name);
+
+    void deleteByName(String name);
+
+    boolean existsByName(String name);
 }

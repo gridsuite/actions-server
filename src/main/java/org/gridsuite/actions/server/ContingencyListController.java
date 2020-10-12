@@ -21,6 +21,7 @@ import java.util.UUID;
 
 /**
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at rte-france.com>
+ * @author Franck Lecuyer <franck.lecuyer at rte-france.com>
  */
 @RestController
 @RequestMapping(value = "/" + ActionsApi.API_VERSION)
@@ -68,5 +69,13 @@ public class ContingencyListController {
     @ApiResponses(value = {@ApiResponse(code = 200, message = "The contingency list have been created successfully")})
     public void createScriptContingencyList(@PathVariable("name") String name, @RequestBody(required = false) String script) {
         service.createScriptContingencyList(name, script);
+    }
+
+    @DeleteMapping(value = "contingency-lists/{name}")
+    @ApiOperation(value = "delete the contingency list")
+    @ApiResponse(code = 200, message = "The contingency list have been deleted")
+    public ResponseEntity<Void> deleteContingencyList(@PathVariable("name") String name) {
+        service.deleteContingencyList(name);
+        return ResponseEntity.ok().build();
     }
 }
