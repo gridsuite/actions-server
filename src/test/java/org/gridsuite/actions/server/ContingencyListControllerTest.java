@@ -30,6 +30,7 @@ import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.http.MediaType.TEXT_PLAIN;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -106,10 +107,31 @@ public class ContingencyListControllerTest extends AbstractEmbeddedCassandraSetu
                 .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
                 .andExpect(content().json("[{\"id\":\"NHV1_NHV2_1\",\"elements\":[{\"id\":\"NHV1_NHV2_1\",\"type\":\"BRANCH\"}]}]"));
 
-        mvc.perform(delete("/" + VERSION + "/contingency-lists/foo"))
+        mvc.perform(post("/" + VERSION + "/contingency-lists/baz/rename")
+                .content("{\"newContingencyListName\": \"bar\"}")
+                .contentType(APPLICATION_JSON))
+                .andExpect(status().isNotFound());
+
+        mvc.perform(post("/" + VERSION + "/contingency-lists/foo/rename")
+                .content("{\"newContingencyListName\": \"bar\"}")
+                .contentType(APPLICATION_JSON))
                 .andExpect(status().isOk());
 
+        mvc.perform(get("/" + VERSION + "/contingency-lists/foo")
+                .contentType(APPLICATION_JSON))
+                .andExpect(status().isNotFound())
+                .andExpect(content().string(""));
+
+        mvc.perform(get("/" + VERSION + "/contingency-lists/bar")
+                .contentType(APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+                .andExpect(content().json("{\"name\":\"bar\",\"script\":\"contingency('NHV1_NHV2_1') {     equipments 'NHV1_NHV2_1'}\"}"));
+
         mvc.perform(delete("/" + VERSION + "/contingency-lists/bar"))
+                .andExpect(status().isOk());
+
+        mvc.perform(delete("/" + VERSION + "/contingency-lists/foo"))
                 .andExpect(status().isNotFound());
     }
 

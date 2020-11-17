@@ -11,6 +11,8 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
+
+import org.gridsuite.actions.server.dto.RenameContingencyListAttributes;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -77,5 +79,14 @@ public class ContingencyListController {
     public ResponseEntity<Void> deleteContingencyList(@PathVariable("name") String name) {
         service.deleteContingencyList(name);
         return ResponseEntity.ok().build();
+    }
+
+    @PostMapping(value = "contingency-lists/{name}/rename")
+    @ApiOperation(value = "Rename contingency list by name")
+    @ApiResponses(value = { @ApiResponse(code = 200, message = "The contingency list has been renamed"),
+            @ApiResponse(code = 404, message = "The contingency list does not exists") })
+    public void renameContingencyList(@PathVariable("name") String name,
+            @RequestBody RenameContingencyListAttributes renameContingencyListAttributes) {
+        service.renameContingencyList(name, renameContingencyListAttributes.getNewContingencyListName());
     }
 }

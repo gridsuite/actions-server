@@ -103,4 +103,19 @@ public class ContingencyListService {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Contingency list " + name + " not found");
         }
     }
+
+    void renameContingencyList(String name, String newName) {
+        Objects.requireNonNull(name);
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("rename script contingency list '{}' to '{}'", sanitizeParam(name), sanitizeParam(newName));
+        }
+        Optional<ScriptContingencyListEntity> optionalContingencyListEntity = repository.findByName(name);
+        if (optionalContingencyListEntity.isPresent()) {
+            repository.deleteByName(name);
+        } else {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Contingency list " + name + " not found");
+        }
+        ScriptContingencyListEntity oldContingencyListEntity = optionalContingencyListEntity.get();
+        createScriptContingencyList(newName, oldContingencyListEntity.getScript());
+    }
 }
