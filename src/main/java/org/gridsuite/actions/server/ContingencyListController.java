@@ -14,7 +14,7 @@ import io.swagger.annotations.ApiResponses;
 
 import org.gridsuite.actions.server.configs.ActionsApi;
 import org.gridsuite.actions.server.dto.ContingencyList;
-import org.gridsuite.actions.server.dto.GuiContingencyListAttributes;
+import org.gridsuite.actions.server.dto.FilterContingencyListAttributes;
 import org.gridsuite.actions.server.dto.RenameContingencyListAttributes;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.http.MediaType;
@@ -47,11 +47,11 @@ public class ContingencyListController {
         return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(service.getScriptContingencyLists());
     }
 
-    @GetMapping(value = "gui-contingency-lists", produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = "filter-contingency-lists", produces = MediaType.APPLICATION_JSON_VALUE)
     @ApiOperation(value = "Get all script contingency lists", response = List.class)
-    @ApiResponses(value = {@ApiResponse(code = 200, message = "All gui contingency lists")})
-    public ResponseEntity<List<ContingencyList>> getGuiContingencyLists() {
-        return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(service.getGuiContingencyLists());
+    @ApiResponses(value = {@ApiResponse(code = 200, message = "All filter contingency lists")})
+    public ResponseEntity<List<ContingencyList>> getFilterContingencyLists() {
+        return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(service.getFilterContingencyLists());
     }
 
     @GetMapping(value = "script-contingency-lists/{name}", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -65,12 +65,12 @@ public class ContingencyListController {
                                                .orElse(ResponseEntity.notFound().build());
     }
 
-    @GetMapping(value = "gui-contingency-lists/{name}", produces = MediaType.APPLICATION_JSON_VALUE)
-    @ApiOperation(value = "Get gui contingency list by name", response = ContingencyList.class)
-    @ApiResponses(value = {@ApiResponse(code = 200, message = "The gui contingency list"),
-            @ApiResponse(code = 404, message = "The gui contingency list does not exists")})
-    public ResponseEntity<ContingencyList> getGuiContingencyList(@PathVariable("name") String name) {
-        return service.getGuiContingencyList(name).map(contingencyList -> ResponseEntity.ok()
+    @GetMapping(value = "filter-contingency-lists/{name}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @ApiOperation(value = "Get filter contingency list by name", response = ContingencyList.class)
+    @ApiResponses(value = {@ApiResponse(code = 200, message = "The filter contingency list"),
+            @ApiResponse(code = 404, message = "The filter contingency list does not exists")})
+    public ResponseEntity<ContingencyList> getFilterContingencyList(@PathVariable("name") String name) {
+        return service.getFilterContingencyList(name).map(contingencyList -> ResponseEntity.ok()
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(contingencyList))
                 .orElse(ResponseEntity.notFound().build());
@@ -94,11 +94,11 @@ public class ContingencyListController {
         service.createScriptContingencyList(name, script);
     }
 
-    @PutMapping(value = "gui-contingency-lists/{name}", consumes = MediaType.APPLICATION_JSON_VALUE)
-    @ApiOperation(value = "Create a gui contingency list", response = ContingencyList.class)
-    @ApiResponses(value = {@ApiResponse(code = 200, message = "The gui contingency list have been created successfully")})
-    public void createGuiContingencyList(@PathVariable("name") String name, @RequestBody(required = false) GuiContingencyListAttributes guiContingencyListAttributes) {
-        service.createGuiContingencyList(name, guiContingencyListAttributes);
+    @PutMapping(value = "filter-contingency-lists/{name}", consumes = MediaType.APPLICATION_JSON_VALUE)
+    @ApiOperation(value = "Create a filter contingency list", response = ContingencyList.class)
+    @ApiResponses(value = {@ApiResponse(code = 200, message = "The filter contingency list have been created successfully")})
+    public void createFilterContingencyList(@PathVariable("name") String name, @RequestBody(required = false) FilterContingencyListAttributes filterContingencyListAttributes) {
+        service.createFilterContingencyList(name, filterContingencyListAttributes);
     }
 
     @DeleteMapping(value = "script-contingency-lists/{name}")

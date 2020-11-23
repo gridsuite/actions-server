@@ -14,12 +14,12 @@ import com.powsybl.network.store.client.NetworkStoreService;
 import com.powsybl.network.store.client.PreloadingStrategy;
 import com.powsybl.network.store.iidm.impl.NetworkFactoryImpl;
 import org.gridsuite.actions.server.dto.ContingencyList;
-import org.gridsuite.actions.server.dto.GuiContingencyList;
-import org.gridsuite.actions.server.dto.GuiContingencyListAttributes;
-import org.gridsuite.actions.server.entities.GuiContingencyListEntity;
+import org.gridsuite.actions.server.dto.FilterContingencyList;
+import org.gridsuite.actions.server.dto.FilterContingencyListAttributes;
+import org.gridsuite.actions.server.entities.FilterContingencyListEntity;
 import org.gridsuite.actions.server.entities.ScriptContingencyListEntity;
 import org.gridsuite.actions.server.dto.ScriptContingencyList;
-import org.gridsuite.actions.server.repositories.GuiContingencyListRepository;
+import org.gridsuite.actions.server.repositories.FilterContingencyListRepository;
 import org.gridsuite.actions.server.repositories.ScriptContingencyListRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,14 +45,14 @@ public class ContingencyListService {
     private static final Logger LOGGER = LoggerFactory.getLogger(ContingencyListService.class);
 
     private ScriptContingencyListRepository scriptContingencyListRepository;
-    private GuiContingencyListRepository guiContingencyListRepository;
+    private FilterContingencyListRepository filterContingencyListRepository;
 
     private NetworkStoreService networkStoreService;
 
-    public ContingencyListService(ScriptContingencyListRepository scriptContingencyListRepository, GuiContingencyListRepository guiContingencyListRepository,
+    public ContingencyListService(ScriptContingencyListRepository scriptContingencyListRepository, FilterContingencyListRepository filterContingencyListRepository,
                                   NetworkStoreService networkStoreService) {
         this.scriptContingencyListRepository = scriptContingencyListRepository;
-        this.guiContingencyListRepository = guiContingencyListRepository;
+        this.filterContingencyListRepository = filterContingencyListRepository;
         this.networkStoreService = networkStoreService;
     }
 
@@ -60,8 +60,8 @@ public class ContingencyListService {
         return new ScriptContingencyList(entity.getName(), entity.getScript() != null ? entity.getScript() : "");
     }
 
-    private static ContingencyList fromGuiContingencyListEntity(GuiContingencyListEntity entity) {
-        return new GuiContingencyList(entity.getName(), entity.getEquipmentId(), entity.getEquipmentName(),
+    private static ContingencyList fromFilterContingencyListEntity(FilterContingencyListEntity entity) {
+        return new FilterContingencyList(entity.getName(), entity.getEquipmentId(), entity.getEquipmentName(),
                 entity.getEquipmentType(), entity.getNominalVoltage(), entity.getNominalVoltageOperator());
     }
 
@@ -73,8 +73,8 @@ public class ContingencyListService {
         return scriptContingencyListRepository.findAll().stream().map(ContingencyListService::fromScriptContingencyListEntity).collect(Collectors.toList());
     }
 
-    List<ContingencyList> getGuiContingencyLists() {
-        return guiContingencyListRepository.findAll().stream().map(ContingencyListService::fromGuiContingencyListEntity).collect(Collectors.toList());
+    List<ContingencyList> getFilterContingencyLists() {
+        return filterContingencyListRepository.findAll().stream().map(ContingencyListService::fromFilterContingencyListEntity).collect(Collectors.toList());
     }
 
     Optional<ContingencyList> getScriptContingencyList(String name) {
@@ -82,9 +82,9 @@ public class ContingencyListService {
         return scriptContingencyListRepository.findByName(name).map(ContingencyListService::fromScriptContingencyListEntity);
     }
 
-    Optional<ContingencyList> getGuiContingencyList(String name) {
+    Optional<ContingencyList> getFilterContingencyList(String name) {
         Objects.requireNonNull(name);
-        return guiContingencyListRepository.findByName(name).map(ContingencyListService::fromGuiContingencyListEntity);
+        return filterContingencyListRepository.findByName(name).map(ContingencyListService::fromFilterContingencyListEntity);
     }
 
     private List<Contingency> toPowSyBlContingencyList(ContingencyList contingencyList, UUID networkUuid) {
@@ -120,12 +120,12 @@ public class ContingencyListService {
         scriptContingencyListRepository.insert(new ScriptContingencyListEntity(name, script));
     }
 
-    public void createGuiContingencyList(String name, GuiContingencyListAttributes guiContingencyListAttributes) {
+    public void createFilterContingencyList(String name, FilterContingencyListAttributes filterContingencyListAttributes) {
         Objects.requireNonNull(name);
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("Create script contingency list '{}'", sanitizeParam(name));
         }
-        guiContingencyListRepository.insert(new GuiContingencyListEntity(name, guiContingencyListAttributes));
+        filterContingencyListRepository.insert(new FilterContingencyListEntity(name, filterContingencyListAttributes));
     }
 
     void deleteContingencyList(String name) {

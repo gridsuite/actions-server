@@ -4,7 +4,7 @@ CREATE TABLE actions.script_contingency_list (
     PRIMARY KEY (name)
 );
 
-CREATE TABLE actions.gui_contingency_list (
+CREATE TABLE actions.filter_contingency_list (
     name text,
     equipmentId text,
     equipmentName text,

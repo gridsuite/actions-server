@@ -6,39 +6,25 @@
  */
 package org.gridsuite.actions.server.dto;
 
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.util.List;
 
 /**
  * @author Chamseddine benhamed <chamseddine.benhamed at rte-france.com>
  */
+
 @Getter
-@AllArgsConstructor
+@Setter
 @NoArgsConstructor
-@ApiModel("gui contingency list")
-public class GuiContingencyList implements ContingencyList {
-
-    @ApiModelProperty("List name")
-    private String name;
-
-    @ApiModelProperty("equipmentId")
+@AllArgsConstructor
+public class FilterContingencyListAttributes {
     private String equipmentId;
-
-    @ApiModelProperty("equipmentName")
     private String equipmentName;
-
-    @ApiModelProperty("equipmentType")
     private List<String> equipmentType;
-
-    @ApiModelProperty("nominalVoltage")
     private String nominalVoltage;
-
-    @ApiModelProperty("nominalVoltageOperator")
     private String nominalVoltageOperator;
-
 }

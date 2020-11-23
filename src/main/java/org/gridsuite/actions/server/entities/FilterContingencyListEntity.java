@@ -9,7 +9,7 @@ package org.gridsuite.actions.server.entities;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.gridsuite.actions.server.dto.GuiContingencyListAttributes;
+import org.gridsuite.actions.server.dto.FilterContingencyListAttributes;
 import org.springframework.data.cassandra.core.cql.PrimaryKeyType;
 import org.springframework.data.cassandra.core.mapping.PrimaryKeyColumn;
 import org.springframework.data.cassandra.core.mapping.Table;
@@ -20,10 +20,10 @@ import java.util.List;
  * @author Chamseddine benhamed <chamseddine.benhamed at rte-france.com>
  */
 @Getter
-@Table("gui_contingency_list")
+@Table("filter_contingency_list")
 @AllArgsConstructor
 @NoArgsConstructor
-public class GuiContingencyListEntity {
+public class FilterContingencyListEntity {
 
     @PrimaryKeyColumn(type = PrimaryKeyType.PARTITIONED)
     private String name;
@@ -38,12 +38,12 @@ public class GuiContingencyListEntity {
 
     private String nominalVoltageOperator;
 
-    public GuiContingencyListEntity(String name, GuiContingencyListAttributes guiContingencyListAttributes) {
+    public FilterContingencyListEntity(String name, FilterContingencyListAttributes filterContingencyListAttributes) {
         this.name = name;
-        this.equipmentId = guiContingencyListAttributes.getEquipmentId();
-        this.equipmentName = guiContingencyListAttributes.getEquipmentName();
-        this.equipmentType = guiContingencyListAttributes.getEquipmentType();
-        this.nominalVoltage = guiContingencyListAttributes.getNominalVoltage();
-        this.nominalVoltageOperator = guiContingencyListAttributes.getNominalVoltageOperator();
+        this.equipmentId = filterContingencyListAttributes.getEquipmentId();
+        this.equipmentName = filterContingencyListAttributes.getEquipmentName();
+        this.equipmentType = filterContingencyListAttributes.getEquipmentType();
+        this.nominalVoltage = filterContingencyListAttributes.getNominalVoltage();
+        this.nominalVoltageOperator = filterContingencyListAttributes.getNominalVoltageOperator();
     }
 }

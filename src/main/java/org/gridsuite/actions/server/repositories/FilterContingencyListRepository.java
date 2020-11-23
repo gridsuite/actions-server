@@ -6,7 +6,7 @@
  */
 package org.gridsuite.actions.server.repositories;
 
-import org.gridsuite.actions.server.entities.GuiContingencyListEntity;
+import org.gridsuite.actions.server.entities.FilterContingencyListEntity;
 import org.springframework.data.cassandra.repository.CassandraRepository;
 import org.springframework.stereotype.Repository;
 
@@ -16,9 +16,9 @@ import java.util.Optional;
  * @author Chamseddine benhamed <chamseddine.benhamed at rte-france.com>
  */
 @Repository
-public interface GuiContingencyListRepository extends CassandraRepository<GuiContingencyListEntity, String> {
+public interface FilterContingencyListRepository extends CassandraRepository<FilterContingencyListEntity, String> {
 
-    Optional<GuiContingencyListEntity> findByName(String name);
+    Optional<FilterContingencyListEntity> findByName(String name);
 
     void deleteByName(String name);
 
