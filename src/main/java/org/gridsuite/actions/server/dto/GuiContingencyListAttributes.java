@@ -11,14 +11,20 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.List;
+
 /**
- * @author Jon Harper <jon.harper at rte-france.com>
+ * @author Chamseddine benhamed <chamseddine.benhamed at rte-france.com>
  */
 
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class RenameContingencyListAttributes {
-    private String newContingencyListName;
+public class GuiContingencyListAttributes {
+    private String equipmentId;
+    private String equipmentName;
+    private List<String> equipmentType;
+    private String nominalVoltage;
+    private String nominalVoltageOperator;
 }

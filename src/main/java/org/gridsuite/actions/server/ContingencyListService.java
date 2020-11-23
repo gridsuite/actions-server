@@ -13,6 +13,14 @@ import com.powsybl.iidm.network.Network;
 import com.powsybl.network.store.client.NetworkStoreService;
 import com.powsybl.network.store.client.PreloadingStrategy;
 import com.powsybl.network.store.iidm.impl.NetworkFactoryImpl;
+import org.gridsuite.actions.server.dto.ContingencyList;
+import org.gridsuite.actions.server.dto.GuiContingencyList;
+import org.gridsuite.actions.server.dto.GuiContingencyListAttributes;
+import org.gridsuite.actions.server.entities.GuiContingencyListEntity;
+import org.gridsuite.actions.server.entities.ScriptContingencyListEntity;
+import org.gridsuite.actions.server.dto.ScriptContingencyList;
+import org.gridsuite.actions.server.repositories.GuiContingencyListRepository;
+import org.gridsuite.actions.server.repositories.ScriptContingencyListRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.ComponentScan;
@@ -36,30 +44,47 @@ public class ContingencyListService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ContingencyListService.class);
 
-    private ScriptContingencyListRepository repository;
+    private ScriptContingencyListRepository scriptContingencyListRepository;
+    private GuiContingencyListRepository guiContingencyListRepository;
 
     private NetworkStoreService networkStoreService;
 
-    public ContingencyListService(ScriptContingencyListRepository repository, NetworkStoreService networkStoreService) {
-        this.repository = repository;
+    public ContingencyListService(ScriptContingencyListRepository scriptContingencyListRepository, GuiContingencyListRepository guiContingencyListRepository,
+                                  NetworkStoreService networkStoreService) {
+        this.scriptContingencyListRepository = scriptContingencyListRepository;
+        this.guiContingencyListRepository = guiContingencyListRepository;
         this.networkStoreService = networkStoreService;
     }
 
-    private static ContingencyList fromEntity(ScriptContingencyListEntity entity) {
+    private static ContingencyList fromScriptContingencyListEntity(ScriptContingencyListEntity entity) {
         return new ScriptContingencyList(entity.getName(), entity.getScript() != null ? entity.getScript() : "");
+    }
+
+    private static ContingencyList fromGuiContingencyListEntity(GuiContingencyListEntity entity) {
+        return new GuiContingencyList(entity.getName(), entity.getEquipmentId(), entity.getEquipmentName(),
+                entity.getEquipmentType(), entity.getNominalVoltage(), entity.getNominalVoltageOperator());
     }
 
     private static String sanitizeParam(String param) {
         return param != null ? param.replaceAll("[\n|\r|\t]", "_") : null;
     }
 
-    List<ContingencyList> getContingencyLists() {
-        return repository.findAll().stream().map(ContingencyListService::fromEntity).collect(Collectors.toList());
+    List<ContingencyList> getScriptContingencyLists() {
+        return scriptContingencyListRepository.findAll().stream().map(ContingencyListService::fromScriptContingencyListEntity).collect(Collectors.toList());
     }
 
-    Optional<ContingencyList> getContingencyList(String name) {
+    List<ContingencyList> getGuiContingencyLists() {
+        return guiContingencyListRepository.findAll().stream().map(ContingencyListService::fromGuiContingencyListEntity).collect(Collectors.toList());
+    }
+
+    Optional<ContingencyList> getScriptContingencyList(String name) {
         Objects.requireNonNull(name);
-        return repository.findByName(name).map(ContingencyListService::fromEntity);
+        return scriptContingencyListRepository.findByName(name).map(ContingencyListService::fromScriptContingencyListEntity);
+    }
+
+    Optional<ContingencyList> getGuiContingencyList(String name) {
+        Objects.requireNonNull(name);
+        return guiContingencyListRepository.findByName(name).map(ContingencyListService::fromGuiContingencyListEntity);
     }
 
     private List<Contingency> toPowSyBlContingencyList(ContingencyList contingencyList, UUID networkUuid) {
@@ -83,7 +108,7 @@ public class ContingencyListService {
 
     Optional<List<Contingency>> exportContingencyList(String name, UUID networkUuid) {
         Objects.requireNonNull(name);
-        return getContingencyList(name)
+        return getScriptContingencyList(name)
                 .map(contingencyList -> toPowSyBlContingencyList(contingencyList, networkUuid));
     }
 
@@ -92,13 +117,21 @@ public class ContingencyListService {
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("Create script contingency list '{}'", sanitizeParam(name));
         }
-        repository.insert(new ScriptContingencyListEntity(name, script));
+        scriptContingencyListRepository.insert(new ScriptContingencyListEntity(name, script));
+    }
+
+    public void createGuiContingencyList(String name, GuiContingencyListAttributes guiContingencyListAttributes) {
+        Objects.requireNonNull(name);
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("Create script contingency list '{}'", sanitizeParam(name));
+        }
+        guiContingencyListRepository.insert(new GuiContingencyListEntity(name, guiContingencyListAttributes));
     }
 
     void deleteContingencyList(String name) {
         Objects.requireNonNull(name);
-        if (repository.existsByName(name)) {
-            repository.deleteByName(name);
+        if (scriptContingencyListRepository.existsByName(name)) {
+            scriptContingencyListRepository.deleteByName(name);
         } else {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Contingency list " + name + " not found");
         }
@@ -109,9 +142,9 @@ public class ContingencyListService {
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("rename script contingency list '{}' to '{}'", sanitizeParam(name), sanitizeParam(newName));
         }
-        Optional<ScriptContingencyListEntity> optionalContingencyListEntity = repository.findByName(name);
+        Optional<ScriptContingencyListEntity> optionalContingencyListEntity = scriptContingencyListRepository.findByName(name);
         if (optionalContingencyListEntity.isPresent()) {
-            repository.deleteByName(name);
+            scriptContingencyListRepository.deleteByName(name);
         } else {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Contingency list " + name + " not found");
         }

@@ -11,6 +11,7 @@ import com.powsybl.iidm.network.test.EurostagTutorialExample1Factory;
 import com.powsybl.network.store.client.NetworkStoreService;
 import com.powsybl.network.store.client.PreloadingStrategy;
 import com.powsybl.network.store.iidm.impl.NetworkFactoryImpl;
+import org.gridsuite.actions.server.repositories.ScriptContingencyListRepository;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -78,60 +79,60 @@ public class ContingencyListControllerTest extends AbstractEmbeddedCassandraSetu
                 .contentType(TEXT_PLAIN))
                 .andExpect(status().isOk());
 
-        mvc.perform(get("/" + VERSION + "/contingency-lists")
+        mvc.perform(get("/" + VERSION + "/script-contingency-lists")
                 .contentType(APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
                 .andExpect(content().json("[{\"name\":\"foo\",\"script\":\"contingency('NHV1_NHV2_1') {     equipments 'NHV1_NHV2_1'}\"}]"));
 
-        mvc.perform(get("/" + VERSION + "/contingency-lists/bar")
+        mvc.perform(get("/" + VERSION + "/script-contingency-lists/bar")
                 .contentType(APPLICATION_JSON))
                 .andExpect(status().isNotFound())
                 .andExpect(content().string(""));
 
-        mvc.perform(get("/" + VERSION + "/contingency-lists/foo")
+        mvc.perform(get("/" + VERSION + "/script-contingency-lists/foo")
                 .contentType(APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
                 .andExpect(content().json("{\"name\":\"foo\",\"script\":\"contingency('NHV1_NHV2_1') {     equipments 'NHV1_NHV2_1'}\"}"));
 
-        mvc.perform(get("/" + VERSION + "/contingency-lists/foo/export")
+        mvc.perform(get("/" + VERSION + "/script-contingency-lists/foo/export")
                 .contentType(APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
                 .andExpect(content().json("[]")); // there is no network so all contingencies are invalid
 
-        mvc.perform(get("/" + VERSION + "/contingency-lists/foo/export?networkUuid=" + NETWORK_UUID)
+        mvc.perform(get("/" + VERSION + "/script-contingency-lists/foo/export?networkUuid=" + NETWORK_UUID)
                 .contentType(APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
                 .andExpect(content().json("[{\"id\":\"NHV1_NHV2_1\",\"elements\":[{\"id\":\"NHV1_NHV2_1\",\"type\":\"BRANCH\"}]}]"));
 
-        mvc.perform(post("/" + VERSION + "/contingency-lists/baz/rename")
+        mvc.perform(post("/" + VERSION + "/script-contingency-lists/baz/rename")
                 .content("{\"newContingencyListName\": \"bar\"}")
                 .contentType(APPLICATION_JSON))
                 .andExpect(status().isNotFound());
 
-        mvc.perform(post("/" + VERSION + "/contingency-lists/foo/rename")
+        mvc.perform(post("/" + VERSION + "/script-contingency-lists/foo/rename")
                 .content("{\"newContingencyListName\": \"bar\"}")
                 .contentType(APPLICATION_JSON))
                 .andExpect(status().isOk());
 
-        mvc.perform(get("/" + VERSION + "/contingency-lists/foo")
+        mvc.perform(get("/" + VERSION + "/script-contingency-lists/foo")
                 .contentType(APPLICATION_JSON))
                 .andExpect(status().isNotFound())
                 .andExpect(content().string(""));
 
-        mvc.perform(get("/" + VERSION + "/contingency-lists/bar")
+        mvc.perform(get("/" + VERSION + "/script-contingency-lists/bar")
                 .contentType(APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
                 .andExpect(content().json("{\"name\":\"bar\",\"script\":\"contingency('NHV1_NHV2_1') {     equipments 'NHV1_NHV2_1'}\"}"));
 
-        mvc.perform(delete("/" + VERSION + "/contingency-lists/bar"))
+        mvc.perform(delete("/" + VERSION + "/script-contingency-lists/bar"))
                 .andExpect(status().isOk());
 
-        mvc.perform(delete("/" + VERSION + "/contingency-lists/foo"))
+        mvc.perform(delete("/" + VERSION + "/script-contingency-lists/foo"))
                 .andExpect(status().isNotFound());
     }
 
@@ -142,7 +143,7 @@ public class ContingencyListControllerTest extends AbstractEmbeddedCassandraSetu
                 .contentType(TEXT_PLAIN))
                 .andExpect(status().isOk());
 
-        mvc.perform(get("/" + VERSION + "/contingency-lists/foo/export")
+        mvc.perform(get("/" + VERSION + "/script-contingency-lists/foo/export")
                 .contentType(APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))

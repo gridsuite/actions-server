@@ -3,3 +3,14 @@ CREATE TABLE actions.script_contingency_list (
     script text,
     PRIMARY KEY (name)
 );
+
+CREATE TABLE actions.gui_contingency_list (
+    name text,
+    equipmentId text,
+    equipmentName text,
+    equipmentType list<text>,
+    nominalVoltage text,
+    nominalVoltageOperator text,
+    PRIMARY KEY (name)
+);
+
