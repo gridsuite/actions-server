@@ -8,6 +8,7 @@ package org.gridsuite.actions.server.entities;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import org.gridsuite.actions.server.dto.GuiContingencyListAttributes;
 import org.springframework.data.cassandra.core.cql.PrimaryKeyType;
 import org.springframework.data.cassandra.core.mapping.PrimaryKeyColumn;
@@ -21,6 +22,7 @@ import java.util.List;
 @Getter
 @Table("gui_contingency_list")
 @AllArgsConstructor
+@NoArgsConstructor
 public class GuiContingencyListEntity {
 
     @PrimaryKeyColumn(type = PrimaryKeyType.PARTITIONED)

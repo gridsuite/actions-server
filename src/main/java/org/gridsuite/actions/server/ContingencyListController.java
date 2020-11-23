@@ -94,7 +94,7 @@ public class ContingencyListController {
         service.createScriptContingencyList(name, script);
     }
 
-    @PutMapping(value = "gui-contingency-lists/{name}", consumes = MediaType.TEXT_PLAIN_VALUE)
+    @PutMapping(value = "gui-contingency-lists/{name}", consumes = MediaType.APPLICATION_JSON_VALUE)
     @ApiOperation(value = "Create a gui contingency list", response = ContingencyList.class)
     @ApiResponses(value = {@ApiResponse(code = 200, message = "The gui contingency list have been created successfully")})
     public void createGuiContingencyList(@PathVariable("name") String name, @RequestBody(required = false) GuiContingencyListAttributes guiContingencyListAttributes) {
