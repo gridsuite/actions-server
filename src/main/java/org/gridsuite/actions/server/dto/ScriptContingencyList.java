@@ -11,6 +11,7 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.gridsuite.actions.server.utils.ContingencyListType;
 
 /**
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at rte-france.com>
@@ -26,4 +27,9 @@ public class ScriptContingencyList implements ContingencyList {
 
     @ApiModelProperty("Script")
     private String script;
+
+    @Override
+    public ContingencyListType getType() {
+        return ContingencyListType.SCRIPT;
+    }
 }

@@ -11,8 +11,7 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-
-import java.util.List;
+import org.gridsuite.actions.server.utils.ContingencyListType;
 
 /**
  * @author Chamseddine benhamed <chamseddine.benhamed at rte-france.com>
@@ -21,19 +20,19 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @ApiModel("filter contingency list")
-public class FilterContingencyList implements ContingencyList {
+public class FiltersContingencyList implements ContingencyList {
 
     @ApiModelProperty("List name")
     private String name;
 
-    @ApiModelProperty("equipmentId")
-    private String equipmentId;
+    @ApiModelProperty("equipmentID")
+    private String equipmentID;
 
     @ApiModelProperty("equipmentName")
     private String equipmentName;
 
     @ApiModelProperty("equipmentType")
-    private List<String> equipmentType;
+    private String equipmentType;
 
     @ApiModelProperty("nominalVoltage")
     private String nominalVoltage;
@@ -41,4 +40,8 @@ public class FilterContingencyList implements ContingencyList {
     @ApiModelProperty("nominalVoltageOperator")
     private String nominalVoltageOperator;
 
+    @Override
+    public ContingencyListType getType() {
+        return ContingencyListType.FILTERS;
+    }
 }

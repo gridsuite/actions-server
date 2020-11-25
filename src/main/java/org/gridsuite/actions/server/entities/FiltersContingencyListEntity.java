@@ -14,16 +14,14 @@ import org.springframework.data.cassandra.core.cql.PrimaryKeyType;
 import org.springframework.data.cassandra.core.mapping.PrimaryKeyColumn;
 import org.springframework.data.cassandra.core.mapping.Table;
 
-import java.util.List;
-
 /**
  * @author Chamseddine benhamed <chamseddine.benhamed at rte-france.com>
  */
 @Getter
-@Table("filter_contingency_list")
+@Table("filters_contingency_list")
 @AllArgsConstructor
 @NoArgsConstructor
-public class FilterContingencyListEntity {
+public class FiltersContingencyListEntity {
 
     @PrimaryKeyColumn(type = PrimaryKeyType.PARTITIONED)
     private String name;
@@ -32,15 +30,15 @@ public class FilterContingencyListEntity {
 
     private String equipmentName;
 
-    private List<String> equipmentType;
+    private String equipmentType;
 
     private String nominalVoltage;
 
     private String nominalVoltageOperator;
 
-    public FilterContingencyListEntity(String name, FilterContingencyListAttributes filterContingencyListAttributes) {
+    public FiltersContingencyListEntity(String name, FilterContingencyListAttributes filterContingencyListAttributes) {
         this.name = name;
-        this.equipmentId = filterContingencyListAttributes.getEquipmentId();
+        this.equipmentId = filterContingencyListAttributes.getEquipmentID();
         this.equipmentName = filterContingencyListAttributes.getEquipmentName();
         this.equipmentType = filterContingencyListAttributes.getEquipmentType();
         this.nominalVoltage = filterContingencyListAttributes.getNominalVoltage();

@@ -113,7 +113,7 @@ public class ContingencyListControllerTest extends AbstractEmbeddedCassandraSetu
                 .contentType(APPLICATION_JSON))
                 .andExpect(status().isNotFound());
 
-        mvc.perform(post("/" + VERSION + "/script-contingency-lists/foo/rename")
+        mvc.perform(post("/" + VERSION + "/contingency-lists/foo/rename")
                 .content("{\"newContingencyListName\": \"bar\"}")
                 .contentType(APPLICATION_JSON))
                 .andExpect(status().isOk());
@@ -129,10 +129,10 @@ public class ContingencyListControllerTest extends AbstractEmbeddedCassandraSetu
                 .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
                 .andExpect(content().json("{\"name\":\"bar\",\"script\":\"contingency('NHV1_NHV2_1') {     equipments 'NHV1_NHV2_1'}\"}"));
 
-        mvc.perform(delete("/" + VERSION + "/script-contingency-lists/bar"))
+        mvc.perform(delete("/" + VERSION + "/contingency-lists/bar"))
                 .andExpect(status().isOk());
 
-        mvc.perform(delete("/" + VERSION + "/script-contingency-lists/foo"))
+        mvc.perform(delete("/" + VERSION + "/contingency-lists/foo"))
                 .andExpect(status().isNotFound());
     }
 

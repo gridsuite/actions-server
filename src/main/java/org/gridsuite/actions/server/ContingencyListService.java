@@ -13,14 +13,12 @@ import com.powsybl.iidm.network.Network;
 import com.powsybl.network.store.client.NetworkStoreService;
 import com.powsybl.network.store.client.PreloadingStrategy;
 import com.powsybl.network.store.iidm.impl.NetworkFactoryImpl;
-import org.gridsuite.actions.server.dto.ContingencyList;
-import org.gridsuite.actions.server.dto.FilterContingencyList;
-import org.gridsuite.actions.server.dto.FilterContingencyListAttributes;
-import org.gridsuite.actions.server.entities.FilterContingencyListEntity;
+import org.gridsuite.actions.server.dto.*;
+import org.gridsuite.actions.server.entities.FiltersContingencyListEntity;
 import org.gridsuite.actions.server.entities.ScriptContingencyListEntity;
-import org.gridsuite.actions.server.dto.ScriptContingencyList;
-import org.gridsuite.actions.server.repositories.FilterContingencyListRepository;
+import org.gridsuite.actions.server.repositories.FiltersContingencyListRepository;
 import org.gridsuite.actions.server.repositories.ScriptContingencyListRepository;
+import org.gridsuite.actions.server.utils.ContingencyListType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.ComponentScan;
@@ -33,6 +31,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at rte-france.com>
@@ -45,14 +44,14 @@ public class ContingencyListService {
     private static final Logger LOGGER = LoggerFactory.getLogger(ContingencyListService.class);
 
     private ScriptContingencyListRepository scriptContingencyListRepository;
-    private FilterContingencyListRepository filterContingencyListRepository;
+    private FiltersContingencyListRepository filtersContingencyListRepository;
 
     private NetworkStoreService networkStoreService;
 
-    public ContingencyListService(ScriptContingencyListRepository scriptContingencyListRepository, FilterContingencyListRepository filterContingencyListRepository,
+    public ContingencyListService(ScriptContingencyListRepository scriptContingencyListRepository, FiltersContingencyListRepository filtersContingencyListRepository,
                                   NetworkStoreService networkStoreService) {
         this.scriptContingencyListRepository = scriptContingencyListRepository;
-        this.filterContingencyListRepository = filterContingencyListRepository;
+        this.filtersContingencyListRepository = filtersContingencyListRepository;
         this.networkStoreService = networkStoreService;
     }
 
@@ -60,8 +59,8 @@ public class ContingencyListService {
         return new ScriptContingencyList(entity.getName(), entity.getScript() != null ? entity.getScript() : "");
     }
 
-    private static ContingencyList fromFilterContingencyListEntity(FilterContingencyListEntity entity) {
-        return new FilterContingencyList(entity.getName(), entity.getEquipmentId(), entity.getEquipmentName(),
+    private static ContingencyList fromFilterContingencyListEntity(FiltersContingencyListEntity entity) {
+        return new FiltersContingencyList(entity.getName(), entity.getEquipmentId(), entity.getEquipmentName(),
                 entity.getEquipmentType(), entity.getNominalVoltage(), entity.getNominalVoltageOperator());
     }
 
@@ -73,8 +72,17 @@ public class ContingencyListService {
         return scriptContingencyListRepository.findAll().stream().map(ContingencyListService::fromScriptContingencyListEntity).collect(Collectors.toList());
     }
 
+    List<ContingencyListAttributes> getContingencyLists() {
+        return Stream.concat(
+                scriptContingencyListRepository.findAll().stream().map(scriptContingencyListEntity ->
+                        new ContingencyListAttributes(scriptContingencyListEntity.getName(), ContingencyListType.SCRIPT)),
+                filtersContingencyListRepository.findAll().stream().map(filtersContingencyListEntity ->
+                        new ContingencyListAttributes(filtersContingencyListEntity.getName(), ContingencyListType.FILTERS))
+        ).collect(Collectors.toList());
+    }
+
     List<ContingencyList> getFilterContingencyLists() {
-        return filterContingencyListRepository.findAll().stream().map(ContingencyListService::fromFilterContingencyListEntity).collect(Collectors.toList());
+        return filtersContingencyListRepository.findAll().stream().map(ContingencyListService::fromFilterContingencyListEntity).collect(Collectors.toList());
     }
 
     Optional<ContingencyList> getScriptContingencyList(String name) {
@@ -84,7 +92,7 @@ public class ContingencyListService {
 
     Optional<ContingencyList> getFilterContingencyList(String name) {
         Objects.requireNonNull(name);
-        return filterContingencyListRepository.findByName(name).map(ContingencyListService::fromFilterContingencyListEntity);
+        return filtersContingencyListRepository.findByName(name).map(ContingencyListService::fromFilterContingencyListEntity);
     }
 
     private List<Contingency> toPowSyBlContingencyList(ContingencyList contingencyList, UUID networkUuid) {
@@ -125,13 +133,15 @@ public class ContingencyListService {
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("Create script contingency list '{}'", sanitizeParam(name));
         }
-        filterContingencyListRepository.insert(new FilterContingencyListEntity(name, filterContingencyListAttributes));
+        filtersContingencyListRepository.insert(new FiltersContingencyListEntity(name, filterContingencyListAttributes));
     }
 
     void deleteContingencyList(String name) {
         Objects.requireNonNull(name);
         if (scriptContingencyListRepository.existsByName(name)) {
             scriptContingencyListRepository.deleteByName(name);
+        } else if (filtersContingencyListRepository.existsByName(name)) {
+            filtersContingencyListRepository.deleteByName(name);
         } else {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Contingency list " + name + " not found");
         }
@@ -142,13 +152,21 @@ public class ContingencyListService {
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("rename script contingency list '{}' to '{}'", sanitizeParam(name), sanitizeParam(newName));
         }
-        Optional<ScriptContingencyListEntity> optionalContingencyListEntity = scriptContingencyListRepository.findByName(name);
-        if (optionalContingencyListEntity.isPresent()) {
+        Optional<ScriptContingencyListEntity> script = scriptContingencyListRepository.findByName(name);
+        Optional<FiltersContingencyListEntity> filters = filtersContingencyListRepository.findByName(name);
+        if (script.isPresent()) {
             scriptContingencyListRepository.deleteByName(name);
+            ScriptContingencyListEntity oldContingencyListEntity = script.get();
+            createScriptContingencyList(newName, oldContingencyListEntity.getScript());
+        } else if (filters.isPresent()) {
+            filtersContingencyListRepository.deleteByName(name);
+            FiltersContingencyListEntity oldFiltersContingencyListEntity = filters.get();
+            createFilterContingencyList(newName, new FilterContingencyListAttributes(oldFiltersContingencyListEntity.getEquipmentId(), oldFiltersContingencyListEntity.getEquipmentName(),
+                    oldFiltersContingencyListEntity.getEquipmentType(), oldFiltersContingencyListEntity.getNominalVoltage(), oldFiltersContingencyListEntity.getNominalVoltageOperator()));
+
         } else {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Contingency list " + name + " not found");
         }
-        ScriptContingencyListEntity oldContingencyListEntity = optionalContingencyListEntity.get();
-        createScriptContingencyList(newName, oldContingencyListEntity.getScript());
+
     }
 }

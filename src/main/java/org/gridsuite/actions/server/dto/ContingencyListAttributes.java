@@ -10,6 +10,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.gridsuite.actions.server.utils.ContingencyListType;
 
 /**
  * @author Chamseddine benhamed <chamseddine.benhamed at rte-france.com>
@@ -19,10 +20,7 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class FilterContingencyListAttributes {
-    private String equipmentID;
-    private String equipmentName;
-    private String equipmentType;
-    private String nominalVoltage;
-    private String nominalVoltageOperator;
+public class ContingencyListAttributes {
+    private String name;
+    private ContingencyListType type;
 }

@@ -6,10 +6,14 @@
  */
 package org.gridsuite.actions.server.dto;
 
+import org.gridsuite.actions.server.utils.ContingencyListType;
+
 /**
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at rte-france.com>
  */
 public interface ContingencyList {
 
     String getName();
+
+    ContingencyListType getType();
 }

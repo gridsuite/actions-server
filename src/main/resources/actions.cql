@@ -4,11 +4,11 @@ CREATE TABLE actions.script_contingency_list (
     PRIMARY KEY (name)
 );
 
-CREATE TABLE actions.filter_contingency_list (
+CREATE TABLE actions.filters_contingency_list (
     name text,
     equipmentId text,
     equipmentName text,
-    equipmentType list<text>,
+    equipmentType text,
     nominalVoltage text,
     nominalVoltageOperator text,
     PRIMARY KEY (name)
