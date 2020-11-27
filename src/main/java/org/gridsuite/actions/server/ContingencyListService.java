@@ -19,6 +19,7 @@ import org.gridsuite.actions.server.entities.ScriptContingencyListEntity;
 import org.gridsuite.actions.server.repositories.FiltersContingencyListRepository;
 import org.gridsuite.actions.server.repositories.ScriptContingencyListRepository;
 import org.gridsuite.actions.server.utils.ContingencyListType;
+import org.gridsuite.actions.server.utils.EquipmentType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.ComponentScan;
@@ -26,10 +27,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -55,11 +53,11 @@ public class ContingencyListService {
         this.networkStoreService = networkStoreService;
     }
 
-    private static ContingencyList fromScriptContingencyListEntity(ScriptContingencyListEntity entity) {
+    private static ScriptContingencyList fromScriptContingencyListEntity(ScriptContingencyListEntity entity) {
         return new ScriptContingencyList(entity.getName(), entity.getScript() != null ? entity.getScript() : "");
     }
 
-    private static ContingencyList fromFilterContingencyListEntity(FiltersContingencyListEntity entity) {
+    private static FiltersContingencyList fromFilterContingencyListEntity(FiltersContingencyListEntity entity) {
         return new FiltersContingencyList(entity.getName(), entity.getEquipmentId(), entity.getEquipmentName(),
                 entity.getEquipmentType(), entity.getNominalVoltage(), entity.getNominalVoltageOperator());
     }
@@ -68,7 +66,7 @@ public class ContingencyListService {
         return param != null ? param.replaceAll("[\n|\r|\t]", "_") : null;
     }
 
-    List<ContingencyList> getScriptContingencyLists() {
+    List<ScriptContingencyList> getScriptContingencyLists() {
         return scriptContingencyListRepository.findAll().stream().map(ContingencyListService::fromScriptContingencyListEntity).collect(Collectors.toList());
     }
 
@@ -81,43 +79,67 @@ public class ContingencyListService {
         ).collect(Collectors.toList());
     }
 
-    List<ContingencyList> getFilterContingencyLists() {
+    List<FiltersContingencyList> getFilterContingencyLists() {
         return filtersContingencyListRepository.findAll().stream().map(ContingencyListService::fromFilterContingencyListEntity).collect(Collectors.toList());
     }
 
-    Optional<ContingencyList> getScriptContingencyList(String name) {
+    Optional<ScriptContingencyList> getScriptContingencyList(String name) {
         Objects.requireNonNull(name);
         return scriptContingencyListRepository.findByName(name).map(ContingencyListService::fromScriptContingencyListEntity);
     }
 
-    Optional<ContingencyList> getFilterContingencyList(String name) {
+    Optional<FiltersContingencyList> getFiltersContingencyList(String name) {
         Objects.requireNonNull(name);
         return filtersContingencyListRepository.findByName(name).map(ContingencyListService::fromFilterContingencyListEntity);
     }
 
     private List<Contingency> toPowSyBlContingencyList(ContingencyList contingencyList, UUID networkUuid) {
-        if (contingencyList instanceof ScriptContingencyList) {
-            Network network;
-            if (networkUuid == null) {
-                // use an empty network, script might not have need to network
-                network = new NetworkFactoryImpl().createNetwork("empty", "empty");
-            } else {
-                network = networkStoreService.getNetwork(networkUuid, PreloadingStrategy.COLLECTION);
-                if (network == null) {
-                    throw new PowsyblException("Network '" + networkUuid + "' not found");
-                }
+        Network network;
+        if (networkUuid == null) {
+            // use an empty network, script might not have need to network
+            network = new NetworkFactoryImpl().createNetwork("empty", "empty");
+        } else {
+            network = networkStoreService.getNetwork(networkUuid, PreloadingStrategy.COLLECTION);
+            if (network == null) {
+                throw new PowsyblException("Network '" + networkUuid + "' not found");
             }
+        }
+
+        if (contingencyList instanceof ScriptContingencyList) {
             String script = ((ScriptContingencyList) contingencyList).getScript();
             return new ContingencyDslLoader(script).load(network);
+        } else if (contingencyList instanceof FiltersContingencyList) {
+            FiltersContingencyList filtersContingencyList = (FiltersContingencyList) contingencyList;
+            return getContingencies(filtersContingencyList, network);
         } else {
             throw new PowsyblException("Contingency list implementation not yet supported: " + contingencyList.getClass().getSimpleName());
         }
     }
 
+    private List<Contingency> getContingencies(FiltersContingencyList filtersContingencyList, Network network) {
+        List<Contingency> contingencies = new ArrayList<>();
+        switch (EquipmentType.valueOf(filtersContingencyList.getEquipmentType())) {
+            case  GENERATOR:
+                network.getGenerators();
+                // TO DO
+                break;
+            default:
+                throw new PowsyblException("Unknown equipment type");
+        }
+        return contingencies;
+    }
+
     Optional<List<Contingency>> exportContingencyList(String name, UUID networkUuid) {
         Objects.requireNonNull(name);
-        return getScriptContingencyList(name)
-                .map(contingencyList -> toPowSyBlContingencyList(contingencyList, networkUuid));
+
+        if (getScriptContingencyList(name).isPresent()) {
+            return getScriptContingencyList(name)
+                    .map(contingencyList -> toPowSyBlContingencyList(contingencyList, networkUuid));
+        } else {
+            return getFiltersContingencyList(name)
+                    .map(contingencyList -> toPowSyBlContingencyList(contingencyList, networkUuid));
+        }
+
     }
 
     void createScriptContingencyList(String name, String script) {

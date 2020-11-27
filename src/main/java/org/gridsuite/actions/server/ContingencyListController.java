@@ -13,10 +13,7 @@ import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 
 import org.gridsuite.actions.server.configs.ActionsApi;
-import org.gridsuite.actions.server.dto.ContingencyList;
-import org.gridsuite.actions.server.dto.ContingencyListAttributes;
-import org.gridsuite.actions.server.dto.FilterContingencyListAttributes;
-import org.gridsuite.actions.server.dto.RenameContingencyListAttributes;
+import org.gridsuite.actions.server.dto.*;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -44,14 +41,14 @@ public class ContingencyListController {
     @GetMapping(value = "script-contingency-lists", produces = MediaType.APPLICATION_JSON_VALUE)
     @ApiOperation(value = "Get all script contingency lists", response = List.class)
     @ApiResponses(value = {@ApiResponse(code = 200, message = "All script contingency lists")})
-    public ResponseEntity<List<ContingencyList>> getScriptContingencyLists() {
+    public ResponseEntity<List<ScriptContingencyList>> getScriptContingencyLists() {
         return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(service.getScriptContingencyLists());
     }
 
     @GetMapping(value = "filters-contingency-lists", produces = MediaType.APPLICATION_JSON_VALUE)
     @ApiOperation(value = "Get all script contingency lists", response = List.class)
     @ApiResponses(value = {@ApiResponse(code = 200, message = "All filters contingency lists")})
-    public ResponseEntity<List<ContingencyList>> getFilterContingencyLists() {
+    public ResponseEntity<List<FiltersContingencyList>> getFilterContingencyLists() {
         return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(service.getFilterContingencyLists());
     }
 
@@ -66,7 +63,7 @@ public class ContingencyListController {
     @ApiOperation(value = "Get script contingency list by name", response = ContingencyList.class)
     @ApiResponses(value = {@ApiResponse(code = 200, message = "The script contingency list"),
                            @ApiResponse(code = 404, message = "The script contingency list does not exists")})
-    public ResponseEntity<ContingencyList> getScriptContingencyList(@PathVariable("name") String name) {
+    public ResponseEntity<ScriptContingencyList> getScriptContingencyList(@PathVariable("name") String name) {
         return service.getScriptContingencyList(name).map(contingencyList -> ResponseEntity.ok()
                                                                                      .contentType(MediaType.APPLICATION_JSON)
                                                                                      .body(contingencyList))
@@ -77,14 +74,14 @@ public class ContingencyListController {
     @ApiOperation(value = "Get filters contingency list by name", response = ContingencyList.class)
     @ApiResponses(value = {@ApiResponse(code = 200, message = "The filters contingency list"),
             @ApiResponse(code = 404, message = "The filters contingency list does not exists")})
-    public ResponseEntity<ContingencyList> getFilterContingencyList(@PathVariable("name") String name) {
-        return service.getFilterContingencyList(name).map(contingencyList -> ResponseEntity.ok()
+    public ResponseEntity<FiltersContingencyList> getFilterContingencyList(@PathVariable("name") String name) {
+        return service.getFiltersContingencyList(name).map(contingencyList -> ResponseEntity.ok()
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(contingencyList))
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    @GetMapping(value = "script-contingency-lists/{name}/export", produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = "contingency-lists/{name}/export", produces = MediaType.APPLICATION_JSON_VALUE)
     @ApiOperation(value = "Export a contingency list to PowSyBl JSON format", response = List.class)
     @ApiResponses(value = {@ApiResponse(code = 200, message = "The contingency list on PowSyBl JSON format")})
     public ResponseEntity<List<Contingency>> exportContingencyList(@PathVariable("name") String name,

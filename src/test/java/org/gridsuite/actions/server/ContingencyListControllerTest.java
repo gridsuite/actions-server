@@ -74,9 +74,22 @@ public class ContingencyListControllerTest extends AbstractEmbeddedCassandraSetu
             "     equipments 'NHV1_NHV2_1'" +
             "}";
 
+        String filters = "{\n" +
+                "  \"equipmentID\": \"GEN*\"," +
+                "  \"equipmentName\": \"GEN*\"," +
+                "  \"equipmentType\": \"GENRATOR\"," +
+                "  \"nominalVoltage\": \"100\"," +
+                "  \"nominalVoltageOperator\": \">\"" +
+                "}";
+
         mvc.perform(put("/" + VERSION + "/script-contingency-lists/foo")
                 .content(script)
                 .contentType(TEXT_PLAIN))
+                .andExpect(status().isOk());
+
+        mvc.perform(put("/" + VERSION + "/filters-contingency-lists/tic")
+                .content(filters)
+                .contentType(APPLICATION_JSON))
                 .andExpect(status().isOk());
 
         mvc.perform(get("/" + VERSION + "/script-contingency-lists")
@@ -85,7 +98,18 @@ public class ContingencyListControllerTest extends AbstractEmbeddedCassandraSetu
                 .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
                 .andExpect(content().json("[{\"name\":\"foo\",\"script\":\"contingency('NHV1_NHV2_1') {     equipments 'NHV1_NHV2_1'}\"}]"));
 
+        mvc.perform(get("/" + VERSION + "/filters-contingency-lists")
+                .contentType(APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+                .andExpect(content().json("[{\"name\":\"tic\",\"equipmentID\":\"GEN*\",\"equipmentName\":\"GEN*\",\"equipmentType\":\"GENRATOR\",\"nominalVoltage\":\"100\",\"nominalVoltageOperator\":\">\",\"type\":\"FILTERS\"}]"));
+
         mvc.perform(get("/" + VERSION + "/script-contingency-lists/bar")
+                .contentType(APPLICATION_JSON))
+                .andExpect(status().isNotFound())
+                .andExpect(content().string(""));
+
+        mvc.perform(get("/" + VERSION + "/filters-contingency-lists/tac")
                 .contentType(APPLICATION_JSON))
                 .andExpect(status().isNotFound())
                 .andExpect(content().string(""));
@@ -96,13 +120,19 @@ public class ContingencyListControllerTest extends AbstractEmbeddedCassandraSetu
                 .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
                 .andExpect(content().json("{\"name\":\"foo\",\"script\":\"contingency('NHV1_NHV2_1') {     equipments 'NHV1_NHV2_1'}\"}"));
 
-        mvc.perform(get("/" + VERSION + "/script-contingency-lists/foo/export")
+        mvc.perform(get("/" + VERSION + "/filters-contingency-lists/tic")
+                .contentType(APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+                .andExpect(content().json("{\"name\":\"tic\",\"equipmentID\":\"GEN*\",\"equipmentName\":\"GEN*\",\"equipmentType\":\"GENRATOR\",\"nominalVoltage\":\"100\",\"nominalVoltageOperator\":\">\",\"type\":\"FILTERS\"}"));
+
+        mvc.perform(get("/" + VERSION + "/contingency-lists/foo/export")
                 .contentType(APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
                 .andExpect(content().json("[]")); // there is no network so all contingencies are invalid
 
-        mvc.perform(get("/" + VERSION + "/script-contingency-lists/foo/export?networkUuid=" + NETWORK_UUID)
+        mvc.perform(get("/" + VERSION + "/contingency-lists/foo/export?networkUuid=" + NETWORK_UUID)
                 .contentType(APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
@@ -118,6 +148,17 @@ public class ContingencyListControllerTest extends AbstractEmbeddedCassandraSetu
                 .contentType(APPLICATION_JSON))
                 .andExpect(status().isOk());
 
+        mvc.perform(post("/" + VERSION + "/contingency-lists/tic/rename")
+                .content("{\"newContingencyListName\": \"tac\"}")
+                .contentType(APPLICATION_JSON))
+                .andExpect(status().isOk());
+
+        mvc.perform(get("/" + VERSION + "/filters-contingency-lists/tac")
+                .contentType(APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+                .andExpect(content().json("{\"name\":\"tac\",\"equipmentID\":\"GEN*\",\"equipmentName\":\"GEN*\",\"equipmentType\":\"GENRATOR\",\"nominalVoltage\":\"100\",\"nominalVoltageOperator\":\">\",\"type\":\"FILTERS\"}"));
+
         mvc.perform(get("/" + VERSION + "/script-contingency-lists/foo")
                 .contentType(APPLICATION_JSON))
                 .andExpect(status().isNotFound())
@@ -132,7 +173,13 @@ public class ContingencyListControllerTest extends AbstractEmbeddedCassandraSetu
         mvc.perform(delete("/" + VERSION + "/contingency-lists/bar"))
                 .andExpect(status().isOk());
 
+        mvc.perform(delete("/" + VERSION + "/contingency-lists/tac"))
+                .andExpect(status().isOk());
+
         mvc.perform(delete("/" + VERSION + "/contingency-lists/foo"))
+                .andExpect(status().isNotFound());
+
+        mvc.perform(delete("/" + VERSION + "/contingency-lists/tac"))
                 .andExpect(status().isNotFound());
     }
 
@@ -143,7 +190,7 @@ public class ContingencyListControllerTest extends AbstractEmbeddedCassandraSetu
                 .contentType(TEXT_PLAIN))
                 .andExpect(status().isOk());
 
-        mvc.perform(get("/" + VERSION + "/script-contingency-lists/foo/export")
+        mvc.perform(get("/" + VERSION + "/contingency-lists/foo/export")
                 .contentType(APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
