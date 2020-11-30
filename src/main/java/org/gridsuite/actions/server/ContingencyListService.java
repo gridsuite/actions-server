@@ -7,7 +7,7 @@
 package org.gridsuite.actions.server;
 
 import com.powsybl.commons.PowsyblException;
-import com.powsybl.contingency.Contingency;
+import com.powsybl.contingency.*;
 import com.powsybl.contingency.dsl.ContingencyDslLoader;
 import com.powsybl.iidm.network.Network;
 import com.powsybl.network.store.client.NetworkStoreService;
@@ -28,6 +28,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.*;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -116,17 +117,117 @@ public class ContingencyListService {
         }
     }
 
+    private List<Contingency> getGeneratorContingencyList(Network network, FiltersContingencyList filtersContingencyList, Pattern equipmentIDPattern, Pattern equipmentNamePattern) {
+        return network.getGeneratorStream()
+                .filter(gen -> filtersContingencyList.getEquipmentName().equals("*") || gen.getOptionalName().isPresent() && equipmentNamePattern.matcher(gen.getOptionalName().get()).find())
+                .filter(gen -> filtersContingencyList.getEquipmentID().equals("*") || equipmentIDPattern.matcher(gen.getId()).find())
+                .filter(gen -> filtersContingencyList.getNominalVoltage().equals("*") || filterByVoltage(gen.getTargetV(), filtersContingencyList.getNominalVoltage(), filtersContingencyList.getNominalVoltageOperator()))
+                .map(gen -> new Contingency(gen.getNameOrId(), Collections.singletonList(new GeneratorContingency(gen.getId()))))
+                .collect(Collectors.toList());
+    }
+
+    private List<Contingency> getSVCContingencyList(Network network, FiltersContingencyList filtersContingencyList, Pattern equipmentIDPattern, Pattern equipmentNamePattern) {
+        return network.getStaticVarCompensatorStream()
+                .filter(svc -> filtersContingencyList.getEquipmentName().equals("*") || svc.getOptionalName().isPresent() && equipmentNamePattern.matcher(svc.getOptionalName().get()).find())
+                .filter(svc ->  filtersContingencyList.getEquipmentID().equals("*") || equipmentIDPattern.matcher(svc.getId()).find())
+                .filter(svc -> filtersContingencyList.getNominalVoltage().equals("*") || filterByVoltage(svc.getVoltageSetpoint(), filtersContingencyList.getNominalVoltage(), filtersContingencyList.getNominalVoltageOperator()))
+                .map(svc -> new Contingency(svc.getNameOrId(), Collections.singletonList(new StaticVarCompensatorContingency(svc.getId()))))
+                .collect(Collectors.toList());
+    }
+
+    private List<Contingency> getSCContingencyList(Network network, FiltersContingencyList filtersContingencyList, Pattern equipmentIDPattern, Pattern equipmentNamePattern) {
+        return network.getShuntCompensatorStream()
+                .filter(sc -> filtersContingencyList.getEquipmentName().equals("*") || sc.getOptionalName().isPresent() && equipmentNamePattern.matcher(sc.getOptionalName().get()).find())
+                .filter(sc -> filtersContingencyList.getEquipmentID().equals("*") || equipmentIDPattern.matcher(sc.getId()).find())
+                .filter(sc -> filtersContingencyList.getNominalVoltage().equals("*") || filterByVoltage(sc.getTargetV(), filtersContingencyList.getNominalVoltage(), filtersContingencyList.getNominalVoltageOperator()))
+                .map(sc -> new Contingency(sc.getNameOrId(), Collections.singletonList(new ShuntCompensatorContingency(sc.getId()))))
+                .collect(Collectors.toList());
+    }
+
+    private List<Contingency> getBranchContingencyList(Network network, FiltersContingencyList filtersContingencyList, Pattern equipmentIDPattern, Pattern equipmentNamePattern) {
+        return network.getBranchStream()
+                .filter(branch -> filtersContingencyList.getEquipmentName().equals("*") || branch.getOptionalName().isPresent() && equipmentNamePattern.matcher(branch.getOptionalName().get().toString()).find())
+                .filter(branch -> filtersContingencyList.getEquipmentID().equals("*") || equipmentIDPattern.matcher(branch.getId()).find())
+                .filter(branch -> filtersContingencyList.getNominalVoltage().equals("*") || filterByVoltage(branch.getTerminal1().getVoltageLevel().getNominalV(), filtersContingencyList.getNominalVoltage(), filtersContingencyList.getNominalVoltageOperator())
+                        || filterByVoltage(branch.getTerminal2().getVoltageLevel().getNominalV(), filtersContingencyList.getNominalVoltage(), filtersContingencyList.getNominalVoltageOperator()))
+                .map(branch -> new Contingency(branch.getNameOrId(), Collections.singletonList(new BranchContingency(branch.getId()))))
+                .collect(Collectors.toList());
+    }
+
+    private List<Contingency> getHvdcContingencyList(Network network, FiltersContingencyList filtersContingencyList, Pattern equipmentIDPattern, Pattern equipmentNamePattern) {
+        return network.getHvdcLineStream()
+                .filter(hvdcLine -> filtersContingencyList.getEquipmentName().equals("*") || hvdcLine.getOptionalName().isPresent() && equipmentNamePattern.matcher(hvdcLine.getOptionalName().get()).find())
+                .filter(hvdcLine -> filtersContingencyList.getEquipmentID().equals("*") || equipmentIDPattern.matcher(hvdcLine.getId()).find())
+                .filter(hvdcLine -> filtersContingencyList.getNominalVoltage().equals("*") || filterByVoltage(hvdcLine.getNominalV(), filtersContingencyList.getNominalVoltage(), filtersContingencyList.getNominalVoltageOperator()))
+                .map(hvdcLine -> new Contingency(hvdcLine.getNameOrId(), Collections.singletonList(new HvdcLineContingency(hvdcLine.getId()))))
+                .collect(Collectors.toList());
+    }
+
+    private List<Contingency> getBusbarSectionContingencyList(Network network, FiltersContingencyList filtersContingencyList, Pattern equipmentIDPattern, Pattern equipmentNamePattern) {
+        return network.getBusbarSectionStream()
+                .filter(bs -> filtersContingencyList.getEquipmentName().equals("*") || bs.getOptionalName().isPresent() && equipmentNamePattern.matcher(bs.getOptionalName().get()).find())
+                .filter(bs -> filtersContingencyList.getEquipmentID().equals("*") || equipmentIDPattern.matcher(bs.getId()).find())
+                .filter(bs -> filtersContingencyList.getNominalVoltage().equals("*") || filterByVoltage(bs.getV(), filtersContingencyList.getNominalVoltage(), filtersContingencyList.getNominalVoltageOperator()))
+                .map(bs -> new Contingency(bs.getNameOrId(), Collections.singletonList(new BusbarSectionContingency(bs.getId()))))
+                .collect(Collectors.toList());
+    }
+
+    private List<Contingency> getDanglingLineContingencyList(Network network, FiltersContingencyList filtersContingencyList, Pattern equipmentIDPattern, Pattern equipmentNamePattern) {
+        return network.getDanglingLineStream()
+                .filter(dl -> filtersContingencyList.getEquipmentName().equals("*") || dl.getOptionalName().isPresent() && equipmentNamePattern.matcher(dl.getOptionalName().get()).find())
+                .filter(dl -> filtersContingencyList.getEquipmentID().equals("*") || equipmentIDPattern.matcher(dl.getId()).find())
+                .filter(dl -> filtersContingencyList.getNominalVoltage().equals("*") || filterByVoltage(dl.getTerminal().getVoltageLevel().getNominalV(), filtersContingencyList.getNominalVoltage(), filtersContingencyList.getNominalVoltageOperator()))
+                .map(dl -> new Contingency(dl.getNameOrId(), Collections.singletonList(new DanglingLineContingency(dl.getId()))))
+                .collect(Collectors.toList());
+    }
+
     private List<Contingency> getContingencies(FiltersContingencyList filtersContingencyList, Network network) {
-        List<Contingency> contingencies = new ArrayList<>();
+        List<Contingency> contingencies = null;
+        Pattern equipmentNamePattern = Pattern.compile(filtersContingencyList.getEquipmentName().equals("*") ? ".*" : filtersContingencyList.getEquipmentName(), Pattern.CASE_INSENSITIVE);
+        Pattern equipmentIDPattern = Pattern.compile(filtersContingencyList.getEquipmentID().equals("*") ? ".*" : filtersContingencyList.getEquipmentID(), Pattern.CASE_INSENSITIVE);
         switch (EquipmentType.valueOf(filtersContingencyList.getEquipmentType())) {
             case  GENERATOR:
-                network.getGenerators();
-                // TO DO
+                contingencies = getGeneratorContingencyList(network, filtersContingencyList, equipmentIDPattern, equipmentNamePattern);
+                break;
+            case STATIC_VAR_COMPENSATOR:
+                contingencies = getSVCContingencyList(network, filtersContingencyList, equipmentIDPattern, equipmentNamePattern);
+                break;
+            case SHUNT_COMPENSATOR:
+                contingencies = getSCContingencyList(network, filtersContingencyList, equipmentIDPattern, equipmentNamePattern);
+                break;
+            case BRANCH:
+                contingencies = getBranchContingencyList(network, filtersContingencyList, equipmentIDPattern, equipmentNamePattern);
+                break;
+            case HVDC_LINE:
+                contingencies = getHvdcContingencyList(network, filtersContingencyList, equipmentIDPattern, equipmentNamePattern);
+                break;
+            case BUSBAR_SECTION:
+                contingencies = getBusbarSectionContingencyList(network, filtersContingencyList, equipmentIDPattern, equipmentNamePattern);
+                break;
+            case DANGLING_LINE:
+                contingencies = getDanglingLineContingencyList(network, filtersContingencyList, equipmentIDPattern, equipmentNamePattern);
                 break;
             default:
                 throw new PowsyblException("Unknown equipment type");
         }
         return contingencies;
+    }
+
+    private boolean filterByVoltage(double equipmentNominalVoltage, String nominalVoltage, String nominalVoltageOperator) {
+        double voltage = Double.parseDouble(nominalVoltage);
+        if (nominalVoltageOperator.equals("=")) {
+            return equipmentNominalVoltage == voltage;
+        } else if (nominalVoltageOperator.equals(">")) {
+            return equipmentNominalVoltage > voltage;
+        } else if (nominalVoltageOperator.equals(">=")) {
+            return equipmentNominalVoltage >= voltage;
+        } else if (nominalVoltageOperator.equals("<")) {
+            return equipmentNominalVoltage <= voltage;
+        } else if (nominalVoltageOperator.equals("<=")) {
+            return equipmentNominalVoltage <= voltage;
+        } else {
+            throw new PowsyblException("Unknown nominal voltage operator");
+        }
     }
 
     Optional<List<Contingency>> exportContingencyList(String name, UUID networkUuid) {
