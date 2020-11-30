@@ -9,7 +9,6 @@ package org.gridsuite.actions.server.dto;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 import org.gridsuite.actions.server.utils.ContingencyListType;
 
 /**
@@ -17,7 +16,6 @@ import org.gridsuite.actions.server.utils.ContingencyListType;
  */
 
 @Getter
-@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 public class ContingencyListAttributes {
