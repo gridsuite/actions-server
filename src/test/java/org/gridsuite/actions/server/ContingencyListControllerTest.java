@@ -249,7 +249,6 @@ public class ContingencyListControllerTest extends AbstractEmbeddedCassandraSetu
                 "  \"nominalVoltageOperator\": \"<=\"" +
                 "}";
 
-
         String twtFilters = "{\n" +
                 "  \"equipmentID\": \"NHV1.*\"," +
                 "  \"equipmentName\": \"*\"," +
