@@ -85,62 +85,6 @@ public class ContingencyListControllerTest extends AbstractEmbeddedCassandraSetu
                 "  \"nominalVoltageOperator\": \">\"" +
                 "}";
 
-        String branchFilters = "{\n" +
-                "  \"equipmentID\": \"NHV1.*\"," +
-                "  \"equipmentName\": \"*\"," +
-                "  \"equipmentType\": \"BRANCH\"," +
-                "  \"nominalVoltage\": \"100\"," +
-                "  \"nominalVoltageOperator\": \">\"" +
-                "}";
-
-        String generatorFilters = "{\n" +
-                "  \"equipmentID\": \"*\"," +
-                "  \"equipmentName\": \"*\"," +
-                "  \"equipmentType\": \"GENERATOR\"," +
-                "  \"nominalVoltage\": \"*\"," +
-                "  \"nominalVoltageOperator\": \"=\"" +
-                "}";
-
-        String svcFilters = "{\n" +
-                "  \"equipmentID\": \"*\"," +
-                "  \"equipmentName\": \"*\"," +
-                "  \"equipmentType\": \"STATIC_VAR_COMPENSATOR\"," +
-                "  \"nominalVoltage\": \"*\"," +
-                "  \"nominalVoltageOperator\": \"=\"" +
-                "}";
-
-        String scFilters = "{\n" +
-                "  \"equipmentID\": \"*\"," +
-                "  \"equipmentName\": \"*\"," +
-                "  \"equipmentType\": \"SHUNT_COMPENSATOR\"," +
-                "  \"nominalVoltage\": \"*\"," +
-                "  \"nominalVoltageOperator\": \"=\"" +
-                "}";
-
-        String hvdcFilters = "{\n" +
-                "  \"equipmentID\": \"*\"," +
-                "  \"equipmentName\": \"*\"," +
-                "  \"equipmentType\": \"HVDC_LINE\"," +
-                "  \"nominalVoltage\": \"*\"," +
-                "  \"nominalVoltageOperator\": \"=\"" +
-                "}";
-
-        String bbsFilters = "{\n" +
-                "  \"equipmentID\": \"*\"," +
-                "  \"equipmentName\": \"*\"," +
-                "  \"equipmentType\": \"BUSBAR_SECTION\"," +
-                "  \"nominalVoltage\": \"*\"," +
-                "  \"nominalVoltageOperator\": \"=\"" +
-                "}";
-
-        String dlFilters = "{\n" +
-                "  \"equipmentID\": \"*\"," +
-                "  \"equipmentName\": \"*\"," +
-                "  \"equipmentType\": \"DANGLING_LINE\"," +
-                "  \"nominalVoltage\": \"*\"," +
-                "  \"nominalVoltageOperator\": \"=\"" +
-                "}";
-
         // Put data
         mvc.perform(put("/" + VERSION + "/script-contingency-lists/foo")
                 .content(script)
@@ -251,21 +195,6 @@ public class ContingencyListControllerTest extends AbstractEmbeddedCassandraSetu
                 .andExpect(status().isNotFound())
                 .andExpect(content().string(""));
 
-        mvc.perform(put("/" + VERSION + "/filters-contingency-lists/generatorFilters")
-                .content(generatorFilters)
-                .contentType(APPLICATION_JSON))
-                .andExpect(status().isOk());
-
-        testExportContingencies("branchFilters", branchFilters, " [{\"id\":\"NHV1_NHV2_2\",\"elements\":[{\"id\":\"NHV1_NHV2_2\",\"type\":\"BRANCH\"}]}," +
-                "{\"id\":\"NHV1_NHV2_1\",\"elements\":[{\"id\":\"NHV1_NHV2_1\",\"type\":\"BRANCH\"}]}," +
-                "{\"id\":\"NGEN_NHV1\",\"elements\":[{\"id\":\"NGEN_NHV1\",\"type\":\"BRANCH\"}]}]");
-        testExportContingencies("generatorFilters", generatorFilters, " [{\"id\":\"GEN\",\"elements\":[{\"id\":\"GEN\",\"type\":\"GENERATOR\"}]}]");
-        testExportContingencies("svcFilters", svcFilters, " []");
-        testExportContingencies("scFilters", scFilters, " []");
-        testExportContingencies("hvdcFilters", hvdcFilters, " []");
-        testExportContingencies("bbsFilters", bbsFilters, " []");
-        testExportContingencies("dlFilters", dlFilters, " []");
-
         // delete data
         mvc.perform(delete("/" + VERSION + "/contingency-lists/bar"))
                 .andExpect(status().isOk());
@@ -280,12 +209,88 @@ public class ContingencyListControllerTest extends AbstractEmbeddedCassandraSetu
                 .andExpect(status().isNotFound());
     }
 
+    @Test
+    public void testExportContingencies() throws Exception {
+        String branchFilters = "{\n" +
+                "  \"equipmentID\": \"NHV1.*\"," +
+                "  \"equipmentName\": \"*\"," +
+                "  \"equipmentType\": \"BRANCH\"," +
+                "  \"nominalVoltage\": \"100\"," +
+                "  \"nominalVoltageOperator\": \">\"" +
+                "}";
+
+        String generatorFilters = "{\n" +
+                "  \"equipmentID\": \"*\"," +
+                "  \"equipmentName\": \"*\"," +
+                "  \"equipmentType\": \"GENERATOR\"," +
+                "  \"nominalVoltage\": \"*\"," +
+                "  \"nominalVoltageOperator\": \"=\"" +
+                "}";
+
+        String svcFilters = "{\n" +
+                "  \"equipmentID\": \"*\"," +
+                "  \"equipmentName\": \"*\"," +
+                "  \"equipmentType\": \"STATIC_VAR_COMPENSATOR\"," +
+                "  \"nominalVoltage\": \"*\"," +
+                "  \"nominalVoltageOperator\": \"=\"" +
+                "}";
+
+        String scFilters = "{\n" +
+                "  \"equipmentID\": \"*\"," +
+                "  \"equipmentName\": \"*\"," +
+                "  \"equipmentType\": \"SHUNT_COMPENSATOR\"," +
+                "  \"nominalVoltage\": \"*\"," +
+                "  \"nominalVoltageOperator\": \"=\"" +
+                "}";
+
+        String hvdcFilters = "{\n" +
+                "  \"equipmentID\": \"*\"," +
+                "  \"equipmentName\": \"*\"," +
+                "  \"equipmentType\": \"HVDC_LINE\"," +
+                "  \"nominalVoltage\": \"*\"," +
+                "  \"nominalVoltageOperator\": \"=\"" +
+                "}";
+
+        String bbsFilters = "{\n" +
+                "  \"equipmentID\": \"*\"," +
+                "  \"equipmentName\": \"*\"," +
+                "  \"equipmentType\": \"BUSBAR_SECTION\"," +
+                "  \"nominalVoltage\": \"*\"," +
+                "  \"nominalVoltageOperator\": \"=\"" +
+                "}";
+
+        String dlFilters = "{\n" +
+                "  \"equipmentID\": \"*\"," +
+                "  \"equipmentName\": \"*\"," +
+                "  \"equipmentType\": \"DANGLING_LINE\"," +
+                "  \"nominalVoltage\": \"*\"," +
+                "  \"nominalVoltageOperator\": \"=\"" +
+                "}";
+
+        testExportContingencies("branchFilters", branchFilters, " [{\"id\":\"NHV1_NHV2_2\",\"elements\":[{\"id\":\"NHV1_NHV2_2\",\"type\":\"BRANCH\"}]}," +
+                "{\"id\":\"NHV1_NHV2_1\",\"elements\":[{\"id\":\"NHV1_NHV2_1\",\"type\":\"BRANCH\"}]}," +
+                "{\"id\":\"NGEN_NHV1\",\"elements\":[{\"id\":\"NGEN_NHV1\",\"type\":\"BRANCH\"}]}]");
+        testExportContingencies("generatorFilters", generatorFilters, " [{\"id\":\"GEN\",\"elements\":[{\"id\":\"GEN\",\"type\":\"GENERATOR\"}]}]");
+        testExportContingencies("svcFilters", svcFilters, " []");
+        testExportContingencies("scFilters", scFilters, " []");
+        testExportContingencies("hvdcFilters", hvdcFilters, " []");
+        testExportContingencies("bbsFilters", bbsFilters, " []");
+        testExportContingencies("dlFilters", dlFilters, " []");
+    }
+
     private void testExportContingencies(String filtersName, String content, String expectedContent) throws Exception {
         // put new data
         mvc.perform(put("/" + VERSION + "/filters-contingency-lists/" + filtersName)
                 .content(content)
                 .contentType(APPLICATION_JSON))
                 .andExpect(status().isOk());
+
+        // export contingencies
+        mvc.perform(get("/" + VERSION + "/contingency-lists/" + filtersName + "/export?networkUuid=" + NETWORK_UUID)
+                .contentType(APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+                .andExpect(content().json(expectedContent));
 
         // delete data
         mvc.perform(delete("/" + VERSION + "/contingency-lists/" + filtersName))
@@ -310,5 +315,8 @@ public class ContingencyListControllerTest extends AbstractEmbeddedCassandraSetu
         ContingencyListAttributes contingencyListAttributes = new ContingencyListAttributes("myList", ContingencyListType.SCRIPT);
         assertEquals("myList", contingencyListAttributes.getName());
         assertEquals(ContingencyListType.SCRIPT, contingencyListAttributes.getType());
+        ContingencyListAttributes contingencyListAttributes2 = new ContingencyListAttributes();
+        assertEquals(null, contingencyListAttributes2.getName());
+        assertEquals(null, contingencyListAttributes2.getType());
     }
 }
