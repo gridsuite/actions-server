@@ -220,7 +220,7 @@ public class ContingencyListControllerTest extends AbstractEmbeddedCassandraSetu
                 "}";
 
         String generatorFilters = "{\n" +
-                "  \"equipmentID\": \"*\"," +
+                "  \"equipmentID\": \".*\"," +
                 "  \"equipmentName\": \"*\"," +
                 "  \"equipmentType\": \"GENERATOR\"," +
                 "  \"nominalVoltage\": \"*\"," +
@@ -228,42 +228,42 @@ public class ContingencyListControllerTest extends AbstractEmbeddedCassandraSetu
                 "}";
 
         String svcFilters = "{\n" +
-                "  \"equipmentID\": \"*\"," +
-                "  \"equipmentName\": \"*\"," +
+                "  \"equipmentID\": \".*\"," +
+                "  \"equipmentName\": \".*\"," +
                 "  \"equipmentType\": \"STATIC_VAR_COMPENSATOR\"," +
-                "  \"nominalVoltage\": \"*\"," +
+                "  \"nominalVoltage\": \".*\"," +
                 "  \"nominalVoltageOperator\": \"=\"" +
                 "}";
 
         String scFilters = "{\n" +
-                "  \"equipmentID\": \"*\"," +
-                "  \"equipmentName\": \"*\"," +
+                "  \"equipmentID\": \".*\"," +
+                "  \"equipmentName\": \".*\"," +
                 "  \"equipmentType\": \"SHUNT_COMPENSATOR\"," +
-                "  \"nominalVoltage\": \"*\"," +
+                "  \"nominalVoltage\": \".*\"," +
                 "  \"nominalVoltageOperator\": \"=\"" +
                 "}";
 
         String hvdcFilters = "{\n" +
-                "  \"equipmentID\": \"*\"," +
-                "  \"equipmentName\": \"*\"," +
+                "  \"equipmentID\": \".*\"," +
+                "  \"equipmentName\": \".*\"," +
                 "  \"equipmentType\": \"HVDC_LINE\"," +
-                "  \"nominalVoltage\": \"*\"," +
+                "  \"nominalVoltage\": \".*\"," +
                 "  \"nominalVoltageOperator\": \"=\"" +
                 "}";
 
         String bbsFilters = "{\n" +
-                "  \"equipmentID\": \"*\"," +
-                "  \"equipmentName\": \"*\"," +
+                "  \"equipmentID\": \".*\"," +
+                "  \"equipmentName\": \".*\"," +
                 "  \"equipmentType\": \"BUSBAR_SECTION\"," +
-                "  \"nominalVoltage\": \"*\"," +
+                "  \"nominalVoltage\": \".*\"," +
                 "  \"nominalVoltageOperator\": \"=\"" +
                 "}";
 
         String dlFilters = "{\n" +
-                "  \"equipmentID\": \"*\"," +
-                "  \"equipmentName\": \"*\"," +
+                "  \"equipmentID\": \".*\"," +
+                "  \"equipmentName\": \".*\"," +
                 "  \"equipmentType\": \"DANGLING_LINE\"," +
-                "  \"nominalVoltage\": \"*\"," +
+                "  \"nominalVoltage\": \".*\"," +
                 "  \"nominalVoltageOperator\": \"=\"" +
                 "}";
 

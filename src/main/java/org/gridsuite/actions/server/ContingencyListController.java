@@ -12,7 +12,6 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 
-import org.gridsuite.actions.server.configs.ActionsApi;
 import org.gridsuite.actions.server.dto.*;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.http.MediaType;
