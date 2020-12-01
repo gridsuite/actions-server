@@ -219,6 +219,37 @@ public class ContingencyListControllerTest extends AbstractEmbeddedCassandraSetu
                 "  \"nominalVoltageOperator\": \">\"" +
                 "}";
 
+        String lineFiltersInf100 = "{\n" +
+                "  \"equipmentID\": \"NHV1.*\"," +
+                "  \"equipmentName\": \"*\"," +
+                "  \"equipmentType\": \"LINE\"," +
+                "  \"nominalVoltage\": \"100\"," +
+                "  \"nominalVoltageOperator\": \"<\"" +
+                "}";
+
+        String lineFiltersEg380 = "{\n" +
+                "  \"equipmentID\": \"NHV1.*\"," +
+                "  \"equipmentName\": \"*\"," +
+                "  \"equipmentType\": \"LINE\"," +
+                "  \"nominalVoltage\": \"380\"," +
+                "  \"nominalVoltageOperator\": \"=\"" +
+                "}";
+        String lineFiltersInfEg380 = "{\n" +
+                "  \"equipmentID\": \"NHV1.*\"," +
+                "  \"equipmentName\": \"*\"," +
+                "  \"equipmentType\": \"LINE\"," +
+                "  \"nominalVoltage\": \"380\"," +
+                "  \"nominalVoltageOperator\": \"<=\"" +
+                "}";
+        String lineFiltersSupEg380 = "{\n" +
+                "  \"equipmentID\": \"NHV1.*\"," +
+                "  \"equipmentName\": \"*\"," +
+                "  \"equipmentType\": \"LINE\"," +
+                "  \"nominalVoltage\": \"380\"," +
+                "  \"nominalVoltageOperator\": \"<=\"" +
+                "}";
+
+
         String twtFilters = "{\n" +
                 "  \"equipmentID\": \"NHV1.*\"," +
                 "  \"equipmentName\": \"*\"," +
@@ -252,7 +283,7 @@ public class ContingencyListControllerTest extends AbstractEmbeddedCassandraSetu
                 "}";
 
         String hvdcFilters = "{\n" +
-                "  \"equipmentID\": \".*\"," +
+                "  \"equipmentID\": \"HVDC.*\"," +
                 "  \"equipmentName\": \".*\"," +
                 "  \"equipmentType\": \"HVDC_LINE\"," +
                 "  \"nominalVoltage\": \".*\"," +
@@ -260,7 +291,7 @@ public class ContingencyListControllerTest extends AbstractEmbeddedCassandraSetu
                 "}";
 
         String bbsFilters = "{\n" +
-                "  \"equipmentID\": \".*\"," +
+                "  \"equipmentID\": \"BBS.*\"," +
                 "  \"equipmentName\": \".*\"," +
                 "  \"equipmentType\": \"BUSBAR_SECTION\"," +
                 "  \"nominalVoltage\": \".*\"," +
@@ -268,14 +299,23 @@ public class ContingencyListControllerTest extends AbstractEmbeddedCassandraSetu
                 "}";
 
         String dlFilters = "{\n" +
-                "  \"equipmentID\": \".*\"," +
+                "  \"equipmentID\": \"DL.*\"," +
                 "  \"equipmentName\": \".*\"," +
                 "  \"equipmentType\": \"DANGLING_LINE\"," +
                 "  \"nominalVoltage\": \".*\"," +
                 "  \"nominalVoltageOperator\": \"=\"" +
                 "}";
 
-        testExportContingencies("lineFilters", lineFilters, "[{\"id\":\"NHV1_NHV2_2\",\"elements\":[{\"id\":\"NHV1_NHV2_2\",\"type\":\"BRANCH\"}]},{\"id\":\"NHV1_NHV2_1\",\"elements\":[{\"id\":\"NHV1_NHV2_1\",\"type\":\"BRANCH\"}]}]");
+        testExportContingencies("lineFilters", lineFilters, "[{\"id\":\"NHV1_NHV2_2\",\"elements\":[{\"id\":\"NHV1_NHV2_2\",\"type\":\"BRANCH\"}]}," +
+                "{\"id\":\"NHV1_NHV2_1\",\"elements\":[{\"id\":\"NHV1_NHV2_1\",\"type\":\"BRANCH\"}]}]");
+        testExportContingencies("lineFiltersInf100", lineFiltersInf100, "[]");
+        testExportContingencies("lineFiltersEg380", lineFiltersEg380, "[{\"id\":\"NHV1_NHV2_2\",\"elements\":[{\"id\":\"NHV1_NHV2_2\",\"type\":\"BRANCH\"}]}," +
+                "{\"id\":\"NHV1_NHV2_1\",\"elements\":[{\"id\":\"NHV1_NHV2_1\",\"type\":\"BRANCH\"}]}]");
+        testExportContingencies("lineFiltersInfEg380", lineFiltersInfEg380, "[{\"id\":\"NHV1_NHV2_2\",\"elements\":[{\"id\":\"NHV1_NHV2_2\",\"type\":\"BRANCH\"}]}," +
+                "{\"id\":\"NHV1_NHV2_1\",\"elements\":[{\"id\":\"NHV1_NHV2_1\",\"type\":\"BRANCH\"}]}]");
+        testExportContingencies("lineFiltersSupEg380", lineFiltersSupEg380, "[{\"id\":\"NHV1_NHV2_2\",\"elements\":[{\"id\":\"NHV1_NHV2_2\",\"type\":\"BRANCH\"}]}," +
+                "{\"id\":\"NHV1_NHV2_1\",\"elements\":[{\"id\":\"NHV1_NHV2_1\",\"type\":\"BRANCH\"}]}]");
+        testExportContingencies("twtFilters", twtFilters, " [{\"id\":\"NGEN_NHV1\",\"elements\":[{\"id\":\"NGEN_NHV1\",\"type\":\"BRANCH\"}]}]");
         testExportContingencies("generatorFilters", generatorFilters, " [{\"id\":\"GEN\",\"elements\":[{\"id\":\"GEN\",\"type\":\"GENERATOR\"}]}]");
         testExportContingencies("svcFilters", svcFilters, " []");
         testExportContingencies("scFilters", scFilters, " []");
