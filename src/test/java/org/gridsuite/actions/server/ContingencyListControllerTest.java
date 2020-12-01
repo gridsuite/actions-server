@@ -211,10 +211,18 @@ public class ContingencyListControllerTest extends AbstractEmbeddedCassandraSetu
 
     @Test
     public void testExportContingencies() throws Exception {
-        String branchFilters = "{\n" +
+        String lineFilters = "{\n" +
                 "  \"equipmentID\": \"NHV1.*\"," +
                 "  \"equipmentName\": \"*\"," +
-                "  \"equipmentType\": \"BRANCH\"," +
+                "  \"equipmentType\": \"LINE\"," +
+                "  \"nominalVoltage\": \"100\"," +
+                "  \"nominalVoltageOperator\": \">\"" +
+                "}";
+
+        String twtFilters = "{\n" +
+                "  \"equipmentID\": \"NHV1.*\"," +
+                "  \"equipmentName\": \"*\"," +
+                "  \"equipmentType\": \"TWO_WINDINGS_TRANSFORMER\"," +
                 "  \"nominalVoltage\": \"100\"," +
                 "  \"nominalVoltageOperator\": \">\"" +
                 "}";
@@ -267,9 +275,7 @@ public class ContingencyListControllerTest extends AbstractEmbeddedCassandraSetu
                 "  \"nominalVoltageOperator\": \"=\"" +
                 "}";
 
-        testExportContingencies("branchFilters", branchFilters, " [{\"id\":\"NHV1_NHV2_2\",\"elements\":[{\"id\":\"NHV1_NHV2_2\",\"type\":\"BRANCH\"}]}," +
-                "{\"id\":\"NHV1_NHV2_1\",\"elements\":[{\"id\":\"NHV1_NHV2_1\",\"type\":\"BRANCH\"}]}," +
-                "{\"id\":\"NGEN_NHV1\",\"elements\":[{\"id\":\"NGEN_NHV1\",\"type\":\"BRANCH\"}]}]");
+        testExportContingencies("lineFilters", lineFilters, "[{\"id\":\"NHV1_NHV2_2\",\"elements\":[{\"id\":\"NHV1_NHV2_2\",\"type\":\"BRANCH\"}]},{\"id\":\"NHV1_NHV2_1\",\"elements\":[{\"id\":\"NHV1_NHV2_1\",\"type\":\"BRANCH\"}]}]");
         testExportContingencies("generatorFilters", generatorFilters, " [{\"id\":\"GEN\",\"elements\":[{\"id\":\"GEN\",\"type\":\"GENERATOR\"}]}]");
         testExportContingencies("svcFilters", svcFilters, " []");
         testExportContingencies("scFilters", scFilters, " []");
