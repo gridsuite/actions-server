@@ -236,7 +236,13 @@ public class ContingencyListControllerTest extends AbstractEmbeddedCassandraSetu
         testExportContingencies("twtFilters", twtFilters3, " [{\"id\":\"NGEN_NHV1\",\"elements\":[{\"id\":\"NGEN_NHV1\",\"type\":\"BRANCH\"}]},{\"id\":\"NHV2_NLOAD\",\"elements\":[{\"id\":\"NHV2_NLOAD\",\"type\":\"BRANCH\"}]}]");
 
         String generatorFilters = "{\"equipmentID\": \"*\", \"equipmentName\": \"*\", \"equipmentType\": \"GENERATOR\", \"nominalVoltage\": \"*\",\"nominalVoltageOperator\": \"=\"}";
+        String generatorFilters2 = "{\"equipmentID\": \"^GEN$\", \"equipmentName\": \"*\", \"equipmentType\": \"GENERATOR\", \"nominalVoltage\": \"*\",\"nominalVoltageOperator\": \"=\"}";
+        String generatorFilters3 = "{\"equipmentID\": \"*\", \"equipmentName\": \"GEN\", \"equipmentType\": \"GENERATOR\", \"nominalVoltage\": \"*\",\"nominalVoltageOperator\": \"=\"}";
+        String generatorFilters4 = "{\"equipmentID\": \"*\", \"equipmentName\": \"*\", \"equipmentType\": \"GENERATOR\", \"nominalVoltage\": \"10\",\"nominalVoltageOperator\": \"<\"}";
         testExportContingencies("generatorFilters", generatorFilters, " [{\"id\":\"GEN\",\"elements\":[{\"id\":\"GEN\",\"type\":\"GENERATOR\"}]},{\"id\":\"GEN2\",\"elements\":[{\"id\":\"GEN2\",\"type\":\"GENERATOR\"}]}]");
+        testExportContingencies("generatorFilters", generatorFilters2, " [{\"id\":\"GEN\",\"elements\":[{\"id\":\"GEN\",\"type\":\"GENERATOR\"}]}]");
+        testExportContingencies("generatorFilters", generatorFilters3, " []");
+        testExportContingencies("generatorFilters", generatorFilters4, " []");
 
         String svcFilters = "{\"equipmentID\": \"*\", \"equipmentName\": \"*\", \"equipmentType\": \"STATIC_VAR_COMPENSATOR\", \"nominalVoltage\": \"*\",\"nominalVoltageOperator\": \"=\"}";
         testExportContingencies("svcFilters", svcFilters, " []");
