@@ -211,15 +211,14 @@ public class ContingencyListControllerTest extends AbstractEmbeddedCassandraSetu
 
     @Test
     public void testExportContingencies() throws Exception {
-        String lineFilters = "{\n" +
+        String lineFilters = "{ " +
                 "  \"equipmentID\": \"NHV1.*\"," +
                 "  \"equipmentName\": \"*\"," +
                 "  \"equipmentType\": \"LINE\"," +
                 "  \"nominalVoltage\": \"100\"," +
                 "  \"nominalVoltageOperator\": \">\"" +
                 "}";
-
-        String lineFiltersInf100 = "{\n" +
+        String lineFiltersInf100 = "{ " +
                 "  \"equipmentID\": \"NHV1.*\"," +
                 "  \"equipmentName\": \"*\"," +
                 "  \"equipmentType\": \"LINE\"," +
@@ -227,61 +226,117 @@ public class ContingencyListControllerTest extends AbstractEmbeddedCassandraSetu
                 "  \"nominalVoltageOperator\": \"<\"" +
                 "}";
 
-        String lineFiltersEg380 = "{\n" +
+        String lineFiltersEg380 = "{ " +
                 "  \"equipmentID\": \"NHV1.*\"," +
                 "  \"equipmentName\": \"*\"," +
                 "  \"equipmentType\": \"LINE\"," +
                 "  \"nominalVoltage\": \"380\"," +
                 "  \"nominalVoltageOperator\": \"=\"" +
                 "}";
-        String lineFiltersInfEg380 = "{\n" +
+        String lineFiltersInfEg380 = "{ " +
                 "  \"equipmentID\": \"NHV1.*\"," +
                 "  \"equipmentName\": \"*\"," +
                 "  \"equipmentType\": \"LINE\"," +
                 "  \"nominalVoltage\": \"380\"," +
                 "  \"nominalVoltageOperator\": \"<=\"" +
                 "}";
-        String lineFiltersSupEg380 = "{\n" +
+        String lineFiltersSupEg380 = "{ " +
                 "  \"equipmentID\": \"NHV1.*\"," +
                 "  \"equipmentName\": \"*\"," +
                 "  \"equipmentType\": \"LINE\"," +
                 "  \"nominalVoltage\": \"380\"," +
-                "  \"nominalVoltageOperator\": \"<=\"" +
+                "  \"nominalVoltageOperator\": \">=\"" +
                 "}";
 
-        String twtFilters = "{\n" +
+        String twtFilters = "{ " +
                 "  \"equipmentID\": \"NHV1.*\"," +
                 "  \"equipmentName\": \"*\"," +
                 "  \"equipmentType\": \"TWO_WINDINGS_TRANSFORMER\"," +
                 "  \"nominalVoltage\": \"100\"," +
                 "  \"nominalVoltageOperator\": \">\"" +
                 "}";
-
-        String generatorFilters = "{\n" +
+        String generatorFilters = "{ " +
                 "  \"equipmentID\": \".*\"," +
                 "  \"equipmentName\": \"*\"," +
                 "  \"equipmentType\": \"GENERATOR\"," +
                 "  \"nominalVoltage\": \"*\"," +
                 "  \"nominalVoltageOperator\": \"=\"" +
                 "}";
+        String generatorFilters2 = "{ " +
+                "  \"equipmentID\": \"GEN.*\"," +
+                "  \"equipmentName\": \"*\"," +
+                "  \"equipmentType\": \"GENERATOR\"," +
+                "  \"nominalVoltage\": \"380\"," +
+                "  \"nominalVoltageOperator\": \"=\"" +
+                "}";
 
-        String svcFilters = "{\n" +
-                "  \"equipmentID\": \".*\"," +
-                "  \"equipmentName\": \".*\"," +
+        String generatorFilters3 = "{ " +
+                "  \"equipmentID\": \"GEN.*\"," +
+                "  \"equipmentName\": \"GEN*\"," +
+                "  \"equipmentType\": \"GENERATOR\"," +
+                "  \"nominalVoltage\": \"380\"," +
+                "  \"nominalVoltageOperator\": \"=\"" +
+                "}";
+
+        String svcFilters = "{ " +
+                "  \"equipmentID\": \"SVC1.*\"," +
+                "  \"equipmentName\": \"*\"," +
                 "  \"equipmentType\": \"STATIC_VAR_COMPENSATOR\"," +
                 "  \"nominalVoltage\": \".*\"," +
                 "  \"nominalVoltageOperator\": \"=\"" +
                 "}";
-
-        String scFilters = "{\n" +
-                "  \"equipmentID\": \".*\"," +
-                "  \"equipmentName\": \".*\"," +
-                "  \"equipmentType\": \"SHUNT_COMPENSATOR\"," +
+        String svcFilters2 = "{ " +
+                "  \"equipmentID\": \"*\"," +
+                "  \"equipmentName\": \"SVC1.*\"," +
+                "  \"equipmentType\": \"STATIC_VAR_COMPENSATOR\"," +
                 "  \"nominalVoltage\": \".*\"," +
                 "  \"nominalVoltageOperator\": \"=\"" +
                 "}";
+        String svcFilters3 = "{ " +
+                "  \"equipmentID\": \"*\"," +
+                "  \"equipmentName\": \"*\"," +
+                "  \"equipmentType\": \"STATIC_VAR_COMPENSATOR\"," +
+                "  \"nominalVoltage\": \"100\"," +
+                "  \"nominalVoltageOperator\": \">\"" +
+                "}";
 
-        String hvdcFilters = "{\n" +
+        String scFilters = "{ " +
+                "  \"equipmentID\": \"*\"," +
+                "  \"equipmentName\": \"*\"," +
+                "  \"equipmentType\": \"SHUNT_COMPENSATOR\"," +
+                "  \"nominalVoltage\": \"100\"," +
+                "  \"nominalVoltageOperator\": \"<\"" +
+                "}";
+        String scFilters2 = "{ " +
+                "  \"equipmentID\": \"SC.*\"," +
+                "  \"equipmentName\": \"*\"," +
+                "  \"equipmentType\": \"SHUNT_COMPENSATOR\"," +
+                "  \"nominalVoltage\": \"*\"," +
+                "  \"nominalVoltageOperator\": \"=\"" +
+                "}";
+        String scFilters3 = "{ " +
+                "  \"equipmentID\": \"*\"," +
+                "  \"equipmentName\": \"SC.*\"," +
+                "  \"equipmentType\": \"SHUNT_COMPENSATOR\"," +
+                "  \"nominalVoltage\": \"*\"," +
+                "  \"nominalVoltageOperator\": \"=\"" +
+                "}";
+
+        String hvdcFilters = "{ " +
+                "  \"equipmentID\": \"HVDC.*\"," +
+                "  \"equipmentName\": \".*\"," +
+                "  \"equipmentType\": \"HVDC_LINE\"," +
+                "  \"nominalVoltage\": \".*\"," +
+                "  \"nominalVoltageOperator\": \"=\"" +
+                "}";
+        String hvdcFilters2 = "{ " +
+                "  \"equipmentID\": \"HVDC.*\"," +
+                "  \"equipmentName\": \".*\"," +
+                "  \"equipmentType\": \"HVDC_LINE\"," +
+                "  \"nominalVoltage\": \".*\"," +
+                "  \"nominalVoltageOperator\": \"=\"" +
+                "}";
+        String hvdcFilters3 = "{ " +
                 "  \"equipmentID\": \"HVDC.*\"," +
                 "  \"equipmentName\": \".*\"," +
                 "  \"equipmentType\": \"HVDC_LINE\"," +
@@ -289,7 +344,7 @@ public class ContingencyListControllerTest extends AbstractEmbeddedCassandraSetu
                 "  \"nominalVoltageOperator\": \"=\"" +
                 "}";
 
-        String bbsFilters = "{\n" +
+        String bbsFilters = "{ " +
                 "  \"equipmentID\": \"BBS.*\"," +
                 "  \"equipmentName\": \".*\"," +
                 "  \"equipmentType\": \"BUSBAR_SECTION\"," +
@@ -297,7 +352,7 @@ public class ContingencyListControllerTest extends AbstractEmbeddedCassandraSetu
                 "  \"nominalVoltageOperator\": \"=\"" +
                 "}";
 
-        String dlFilters = "{\n" +
+        String dlFilters = "{ " +
                 "  \"equipmentID\": \"DL.*\"," +
                 "  \"equipmentName\": \".*\"," +
                 "  \"equipmentType\": \"DANGLING_LINE\"," +
@@ -316,6 +371,8 @@ public class ContingencyListControllerTest extends AbstractEmbeddedCassandraSetu
                 "{\"id\":\"NHV1_NHV2_1\",\"elements\":[{\"id\":\"NHV1_NHV2_1\",\"type\":\"BRANCH\"}]}]");
         testExportContingencies("twtFilters", twtFilters, " [{\"id\":\"NGEN_NHV1\",\"elements\":[{\"id\":\"NGEN_NHV1\",\"type\":\"BRANCH\"}]}]");
         testExportContingencies("generatorFilters", generatorFilters, " [{\"id\":\"GEN\",\"elements\":[{\"id\":\"GEN\",\"type\":\"GENERATOR\"}]}]");
+        testExportContingencies("generatorFilters2", generatorFilters2, " []");
+        testExportContingencies("generatorFilters3", generatorFilters3, " []");
         testExportContingencies("svcFilters", svcFilters, " []");
         testExportContingencies("scFilters", scFilters, " []");
         testExportContingencies("hvdcFilters", hvdcFilters, " []");
