@@ -10,7 +10,6 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import org.gridsuite.actions.server.utils.ContingencyListType;
 
 /**
@@ -18,7 +17,6 @@ import org.gridsuite.actions.server.utils.ContingencyListType;
  */
 @Getter
 @AllArgsConstructor
-@NoArgsConstructor
 @ApiModel("Script contingency list")
 public class ScriptContingencyList implements ContingencyList {
 

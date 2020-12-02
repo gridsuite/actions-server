@@ -66,7 +66,7 @@ public class ContingencyListControllerTest extends AbstractEmbeddedCassandraSetu
     public void setUp() {
         MockitoAnnotations.initMocks(this);
 
-        Network network = EurostagTutorialExample1Factory.create(new NetworkFactoryImpl());
+        Network network = EurostagTutorialExample1Factory.createWithMoreGenerators(new NetworkFactoryImpl());
         given(networkStoreService.getNetwork(NETWORK_UUID, PreloadingStrategy.COLLECTION)).willReturn(network);
     }
 
@@ -211,177 +211,52 @@ public class ContingencyListControllerTest extends AbstractEmbeddedCassandraSetu
 
     @Test
     public void testExportContingencies() throws Exception {
-        String lineFilters = "{ " +
-                "  \"equipmentID\": \"NHV1.*\"," +
-                "  \"equipmentName\": \"*\"," +
-                "  \"equipmentType\": \"LINE\"," +
-                "  \"nominalVoltage\": \"100\"," +
-                "  \"nominalVoltageOperator\": \">\"" +
-                "}";
-        String lineFiltersInf100 = "{ " +
-                "  \"equipmentID\": \"NHV1.*\"," +
-                "  \"equipmentName\": \"*\"," +
-                "  \"equipmentType\": \"LINE\"," +
-                "  \"nominalVoltage\": \"100\"," +
-                "  \"nominalVoltageOperator\": \"<\"" +
-                "}";
+        String lineFilters = "{\"equipmentID\": \"*\", \"equipmentName\": \"*\", \"equipmentType\": \"LINE\", \"nominalVoltage\": \"*\",\"nominalVoltageOperator\": \"=\"}";
+        String lineFilters1 = "{\"equipmentID\": \"NHV1.*\", \"equipmentName\": \"*\", \"equipmentType\": \"LINE\", \"nominalVoltage\": \"100\",\"nominalVoltageOperator\": \"<\"}";
+        String lineFilters2 = "{\"equipmentID\": \"NHV1.*\", \"equipmentName\": \"*\", \"equipmentType\": \"LINE\", \"nominalVoltage\": \"380\",\"nominalVoltageOperator\": \"=\"}";
+        String lineFilters3 = "{\"equipmentID\": \"NHV1.*\", \"equipmentName\": \"*\", \"equipmentType\": \"LINE\", \"nominalVoltage\": \"390\",\"nominalVoltageOperator\": \">=\"}";
+        String lineFilters4 = "{\"equipmentID\": \"NHV1.*\", \"equipmentName\": \"*\", \"equipmentType\": \"LINE\", \"nominalVoltage\": \"390\",\"nominalVoltageOperator\": \"<=\"}";
+        String lineFilters5 = "{\"equipmentID\": \"*\", \"equipmentName\": \"*\", \"equipmentType\": \"LINE\", \"nominalVoltage\": \"100\",\"nominalVoltageOperator\": \">\"}";
+        String lineFilters6 = "{\"equipmentID\": \"*\", \"equipmentName\": \"NVH1*\", \"equipmentType\": \"LINE\", \"nominalVoltage\": \"100\",\"nominalVoltageOperator\": \">\"}";
+        testExportContingencies("lineFilters", lineFilters, " [{\"id\":\"NHV1_NHV2_2\",\"elements\":[{\"id\":\"NHV1_NHV2_2\",\"type\":\"BRANCH\"}]},{\"id\":\"NHV1_NHV2_1\",\"elements\":[{\"id\":\"NHV1_NHV2_1\",\"type\":\"BRANCH\"}]}]");
+        testExportContingencies("lineFilters", lineFilters1, " []");
+        testExportContingencies("lineFilters", lineFilters2, " [{\"id\":\"NHV1_NHV2_2\",\"elements\":[{\"id\":\"NHV1_NHV2_2\",\"type\":\"BRANCH\"}]},{\"id\":\"NHV1_NHV2_1\",\"elements\":[{\"id\":\"NHV1_NHV2_1\",\"type\":\"BRANCH\"}]}]");
+        testExportContingencies("lineFilters", lineFilters3, " []");
+        testExportContingencies("lineFilters", lineFilters4, " [{\"id\":\"NHV1_NHV2_2\",\"elements\":[{\"id\":\"NHV1_NHV2_2\",\"type\":\"BRANCH\"}]},{\"id\":\"NHV1_NHV2_1\",\"elements\":[{\"id\":\"NHV1_NHV2_1\",\"type\":\"BRANCH\"}]}]");
+        testExportContingencies("lineFilters", lineFilters5, " [{\"id\":\"NHV1_NHV2_2\",\"elements\":[{\"id\":\"NHV1_NHV2_2\",\"type\":\"BRANCH\"}]},{\"id\":\"NHV1_NHV2_1\",\"elements\":[{\"id\":\"NHV1_NHV2_1\",\"type\":\"BRANCH\"}]}]");
+        testExportContingencies("lineFilters", lineFilters6, " []");
 
-        String lineFiltersEg380 = "{ " +
-                "  \"equipmentID\": \"NHV1.*\"," +
-                "  \"equipmentName\": \"*\"," +
-                "  \"equipmentType\": \"LINE\"," +
-                "  \"nominalVoltage\": \"380\"," +
-                "  \"nominalVoltageOperator\": \"=\"" +
-                "}";
-        String lineFiltersInfEg380 = "{ " +
-                "  \"equipmentID\": \"NHV1.*\"," +
-                "  \"equipmentName\": \"*\"," +
-                "  \"equipmentType\": \"LINE\"," +
-                "  \"nominalVoltage\": \"380\"," +
-                "  \"nominalVoltageOperator\": \"<=\"" +
-                "}";
-        String lineFiltersSupEg380 = "{ " +
-                "  \"equipmentID\": \"NHV1.*\"," +
-                "  \"equipmentName\": \"*\"," +
-                "  \"equipmentType\": \"LINE\"," +
-                "  \"nominalVoltage\": \"380\"," +
-                "  \"nominalVoltageOperator\": \">=\"" +
-                "}";
+        String twtFilters = "{\"equipmentID\": \"*\", \"equipmentName\": \"*\", \"equipmentType\": \"TWO_WINDINGS_TRANSFORMER\", \"nominalVoltage\": \"*\",\"nominalVoltageOperator\": \"*\"}";
+        String twtFilters1 = "{\"equipmentID\": \"NGEN_NHV1\", \"equipmentName\": \"*\", \"equipmentType\": \"TWO_WINDINGS_TRANSFORMER\", \"nominalVoltage\": \"*\",\"nominalVoltageOperator\": \"*\"}";
+        String twtFilters2 = "{\"equipmentID\": \"*\", \"equipmentName\": \"NGEN_NHV1\", \"equipmentType\": \"TWO_WINDINGS_TRANSFORMER\", \"nominalVoltage\": \"*\",\"nominalVoltageOperator\": \"*\"}";
+        String twtFilters3 = "{\"equipmentID\": \"*\", \"equipmentName\": \"*\", \"equipmentType\": \"TWO_WINDINGS_TRANSFORMER\", \"nominalVoltage\": \"10\",\"nominalVoltageOperator\": \">\"}";
+        testExportContingencies("twtFilters", twtFilters, " [{\"id\":\"NGEN_NHV1\",\"elements\":[{\"id\":\"NGEN_NHV1\",\"type\":\"BRANCH\"}]},{\"id\":\"NHV2_NLOAD\",\"elements\":[{\"id\":\"NHV2_NLOAD\",\"type\":\"BRANCH\"}]}]");
+        testExportContingencies("twtFilters", twtFilters1, " [{\"id\":\"NGEN_NHV1\",\"elements\":[{\"id\":\"NGEN_NHV1\",\"type\":\"BRANCH\"}]}]");
+        testExportContingencies("twtFilters", twtFilters2, " []");
+        testExportContingencies("twtFilters", twtFilters3, " [{\"id\":\"NGEN_NHV1\",\"elements\":[{\"id\":\"NGEN_NHV1\",\"type\":\"BRANCH\"}]},{\"id\":\"NHV2_NLOAD\",\"elements\":[{\"id\":\"NHV2_NLOAD\",\"type\":\"BRANCH\"}]}]");
 
-        String twtFilters = "{ " +
-                "  \"equipmentID\": \"NHV1.*\"," +
-                "  \"equipmentName\": \"*\"," +
-                "  \"equipmentType\": \"TWO_WINDINGS_TRANSFORMER\"," +
-                "  \"nominalVoltage\": \"100\"," +
-                "  \"nominalVoltageOperator\": \">\"" +
-                "}";
-        String generatorFilters = "{ " +
-                "  \"equipmentID\": \".*\"," +
-                "  \"equipmentName\": \"*\"," +
-                "  \"equipmentType\": \"GENERATOR\"," +
-                "  \"nominalVoltage\": \"*\"," +
-                "  \"nominalVoltageOperator\": \"=\"" +
-                "}";
-        String generatorFilters2 = "{ " +
-                "  \"equipmentID\": \"GEN.*\"," +
-                "  \"equipmentName\": \"*\"," +
-                "  \"equipmentType\": \"GENERATOR\"," +
-                "  \"nominalVoltage\": \"380\"," +
-                "  \"nominalVoltageOperator\": \"=\"" +
-                "}";
+        String generatorFilters = "{\"equipmentID\": \"*\", \"equipmentName\": \"*\", \"equipmentType\": \"GENERATOR\", \"nominalVoltage\": \"*\",\"nominalVoltageOperator\": \"=\"}";
+        testExportContingencies("generatorFilters", generatorFilters, " [{\"id\":\"GEN\",\"elements\":[{\"id\":\"GEN\",\"type\":\"GENERATOR\"}]},{\"id\":\"GEN2\",\"elements\":[{\"id\":\"GEN2\",\"type\":\"GENERATOR\"}]}]");
 
-        String generatorFilters3 = "{ " +
-                "  \"equipmentID\": \"GEN.*\"," +
-                "  \"equipmentName\": \"GEN*\"," +
-                "  \"equipmentType\": \"GENERATOR\"," +
-                "  \"nominalVoltage\": \"380\"," +
-                "  \"nominalVoltageOperator\": \"=\"" +
-                "}";
-
-        String svcFilters = "{ " +
-                "  \"equipmentID\": \"SVC1.*\"," +
-                "  \"equipmentName\": \"*\"," +
-                "  \"equipmentType\": \"STATIC_VAR_COMPENSATOR\"," +
-                "  \"nominalVoltage\": \".*\"," +
-                "  \"nominalVoltageOperator\": \"=\"" +
-                "}";
-        String svcFilters2 = "{ " +
-                "  \"equipmentID\": \"*\"," +
-                "  \"equipmentName\": \"SVC1.*\"," +
-                "  \"equipmentType\": \"STATIC_VAR_COMPENSATOR\"," +
-                "  \"nominalVoltage\": \".*\"," +
-                "  \"nominalVoltageOperator\": \"=\"" +
-                "}";
-        String svcFilters3 = "{ " +
-                "  \"equipmentID\": \"*\"," +
-                "  \"equipmentName\": \"*\"," +
-                "  \"equipmentType\": \"STATIC_VAR_COMPENSATOR\"," +
-                "  \"nominalVoltage\": \"100\"," +
-                "  \"nominalVoltageOperator\": \">\"" +
-                "}";
-
-        String scFilters = "{ " +
-                "  \"equipmentID\": \"*\"," +
-                "  \"equipmentName\": \"*\"," +
-                "  \"equipmentType\": \"SHUNT_COMPENSATOR\"," +
-                "  \"nominalVoltage\": \"100\"," +
-                "  \"nominalVoltageOperator\": \"<\"" +
-                "}";
-        String scFilters2 = "{ " +
-                "  \"equipmentID\": \"SC.*\"," +
-                "  \"equipmentName\": \"*\"," +
-                "  \"equipmentType\": \"SHUNT_COMPENSATOR\"," +
-                "  \"nominalVoltage\": \"*\"," +
-                "  \"nominalVoltageOperator\": \"=\"" +
-                "}";
-        String scFilters3 = "{ " +
-                "  \"equipmentID\": \"*\"," +
-                "  \"equipmentName\": \"SC.*\"," +
-                "  \"equipmentType\": \"SHUNT_COMPENSATOR\"," +
-                "  \"nominalVoltage\": \"*\"," +
-                "  \"nominalVoltageOperator\": \"=\"" +
-                "}";
-
-        String hvdcFilters = "{ " +
-                "  \"equipmentID\": \"HVDC.*\"," +
-                "  \"equipmentName\": \".*\"," +
-                "  \"equipmentType\": \"HVDC_LINE\"," +
-                "  \"nominalVoltage\": \".*\"," +
-                "  \"nominalVoltageOperator\": \"=\"" +
-                "}";
-        String hvdcFilters2 = "{ " +
-                "  \"equipmentID\": \"HVDC.*\"," +
-                "  \"equipmentName\": \".*\"," +
-                "  \"equipmentType\": \"HVDC_LINE\"," +
-                "  \"nominalVoltage\": \".*\"," +
-                "  \"nominalVoltageOperator\": \"=\"" +
-                "}";
-        String hvdcFilters3 = "{ " +
-                "  \"equipmentID\": \"HVDC.*\"," +
-                "  \"equipmentName\": \".*\"," +
-                "  \"equipmentType\": \"HVDC_LINE\"," +
-                "  \"nominalVoltage\": \".*\"," +
-                "  \"nominalVoltageOperator\": \"=\"" +
-                "}";
-
-        String bbsFilters = "{ " +
-                "  \"equipmentID\": \"BBS.*\"," +
-                "  \"equipmentName\": \".*\"," +
-                "  \"equipmentType\": \"BUSBAR_SECTION\"," +
-                "  \"nominalVoltage\": \".*\"," +
-                "  \"nominalVoltageOperator\": \"=\"" +
-                "}";
-
-        String dlFilters = "{ " +
-                "  \"equipmentID\": \"DL.*\"," +
-                "  \"equipmentName\": \".*\"," +
-                "  \"equipmentType\": \"DANGLING_LINE\"," +
-                "  \"nominalVoltage\": \".*\"," +
-                "  \"nominalVoltageOperator\": \"=\"" +
-                "}";
-
-        testExportContingencies("lineFilters", lineFilters, "[{\"id\":\"NHV1_NHV2_2\",\"elements\":[{\"id\":\"NHV1_NHV2_2\",\"type\":\"BRANCH\"}]}," +
-                "{\"id\":\"NHV1_NHV2_1\",\"elements\":[{\"id\":\"NHV1_NHV2_1\",\"type\":\"BRANCH\"}]}]");
-        testExportContingencies("lineFiltersInf100", lineFiltersInf100, "[]");
-        testExportContingencies("lineFiltersEg380", lineFiltersEg380, "[{\"id\":\"NHV1_NHV2_2\",\"elements\":[{\"id\":\"NHV1_NHV2_2\",\"type\":\"BRANCH\"}]}," +
-                "{\"id\":\"NHV1_NHV2_1\",\"elements\":[{\"id\":\"NHV1_NHV2_1\",\"type\":\"BRANCH\"}]}]");
-        testExportContingencies("lineFiltersInfEg380", lineFiltersInfEg380, "[{\"id\":\"NHV1_NHV2_2\",\"elements\":[{\"id\":\"NHV1_NHV2_2\",\"type\":\"BRANCH\"}]}," +
-                "{\"id\":\"NHV1_NHV2_1\",\"elements\":[{\"id\":\"NHV1_NHV2_1\",\"type\":\"BRANCH\"}]}]");
-        testExportContingencies("lineFiltersSupEg380", lineFiltersSupEg380, "[{\"id\":\"NHV1_NHV2_2\",\"elements\":[{\"id\":\"NHV1_NHV2_2\",\"type\":\"BRANCH\"}]}," +
-                "{\"id\":\"NHV1_NHV2_1\",\"elements\":[{\"id\":\"NHV1_NHV2_1\",\"type\":\"BRANCH\"}]}]");
-        testExportContingencies("twtFilters", twtFilters, " [{\"id\":\"NGEN_NHV1\",\"elements\":[{\"id\":\"NGEN_NHV1\",\"type\":\"BRANCH\"}]}]");
-        testExportContingencies("generatorFilters", generatorFilters, " [{\"id\":\"GEN\",\"elements\":[{\"id\":\"GEN\",\"type\":\"GENERATOR\"}]}]");
-        testExportContingencies("generatorFilters2", generatorFilters2, " []");
-        testExportContingencies("generatorFilters3", generatorFilters3, " []");
+        String svcFilters = "{\"equipmentID\": \"*\", \"equipmentName\": \"*\", \"equipmentType\": \"STATIC_VAR_COMPENSATOR\", \"nominalVoltage\": \"*\",\"nominalVoltageOperator\": \"=\"}";
         testExportContingencies("svcFilters", svcFilters, " []");
+
+        String scFilters = "{\"equipmentID\": \"*\", \"equipmentName\": \"*\", \"equipmentType\": \"SHUNT_COMPENSATOR\", \"nominalVoltage\": \"*\",\"nominalVoltageOperator\": \"=\"}";
         testExportContingencies("scFilters", scFilters, " []");
+
+        String hvdcFilters = "{\"equipmentID\": \"*\", \"equipmentName\": \"*\", \"equipmentType\": \"HVDC_LINE\", \"nominalVoltage\": \"*\",\"nominalVoltageOperator\": \"=\"}";
         testExportContingencies("hvdcFilters", hvdcFilters, " []");
+
+        String bbsFilters = "{\"equipmentID\": \"*\", \"equipmentName\": \"*\", \"equipmentType\": \"BUSBAR_SECTION\", \"nominalVoltage\": \"*\",\"nominalVoltageOperator\": \"=\"}";
         testExportContingencies("bbsFilters", bbsFilters, " []");
+
+        String dlFilters = "{\"equipmentID\": \"*\", \"equipmentName\": \"*\", \"equipmentType\": \"DANGLING_LINE\", \"nominalVoltage\": \"*\",\"nominalVoltageOperator\": \"=\"}";
         testExportContingencies("dlFilters", dlFilters, " []");
+
     }
 
     private void testExportContingencies(String filtersName, String content, String expectedContent) throws Exception {
-        // put new data
+        // put the data
         mvc.perform(put("/" + VERSION + "/filters-contingency-lists/" + filtersName)
                 .content(content)
                 .contentType(APPLICATION_JSON))
