@@ -6,7 +6,6 @@
  */
 package org.gridsuite.actions.server.entities;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.gridsuite.actions.server.dto.FilterContingencyListAttributes;
@@ -19,7 +18,6 @@ import org.springframework.data.cassandra.core.mapping.Table;
  */
 @Getter
 @Table("filters_contingency_list")
-@AllArgsConstructor
 @NoArgsConstructor
 public class FiltersContingencyListEntity {
 
