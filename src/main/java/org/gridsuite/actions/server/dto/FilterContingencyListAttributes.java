@@ -23,6 +23,6 @@ public class FilterContingencyListAttributes {
     private String equipmentID;
     private String equipmentName;
     private String equipmentType;
-    private String nominalVoltage;
+    private double nominalVoltage;
     private String nominalVoltageOperator;
 }

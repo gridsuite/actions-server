@@ -30,7 +30,7 @@ public class FiltersContingencyListEntity {
 
     private String equipmentType;
 
-    private String nominalVoltage;
+    private double nominalVoltage;
 
     private String nominalVoltageOperator;
 

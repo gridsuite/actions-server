@@ -33,7 +33,7 @@ public class FiltersContingencyList implements ContingencyList {
     private String equipmentType;
 
     @ApiModelProperty("nominalVoltage")
-    private String nominalVoltage;
+    private double nominalVoltage;
 
     @ApiModelProperty("nominalVoltageOperator")
     private String nominalVoltageOperator;

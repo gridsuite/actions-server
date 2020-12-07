@@ -9,7 +9,7 @@ CREATE TABLE actions.filters_contingency_list (
     equipmentId text,
     equipmentName text,
     equipmentType text,
-    nominalVoltage text,
+    nominalVoltage float,
     nominalVoltageOperator text,
     PRIMARY KEY (name)
 );

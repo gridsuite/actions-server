@@ -45,7 +45,7 @@ public class ContingencyListController {
     }
 
     @GetMapping(value = "filters-contingency-lists", produces = MediaType.APPLICATION_JSON_VALUE)
-    @ApiOperation(value = "Get all script contingency lists", response = List.class)
+    @ApiOperation(value = "Get all contingency lists", response = List.class)
     @ApiResponses(value = {@ApiResponse(code = 200, message = "All filters contingency lists")})
     public ResponseEntity<List<FiltersContingencyList>> getFilterContingencyLists() {
         return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(service.getFilterContingencyLists());
