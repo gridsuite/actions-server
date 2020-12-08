@@ -20,6 +20,7 @@ import org.gridsuite.actions.server.repositories.FiltersContingencyListRepositor
 import org.gridsuite.actions.server.repositories.ScriptContingencyListRepository;
 import org.gridsuite.actions.server.utils.ContingencyListType;
 import org.gridsuite.actions.server.utils.EquipmentType;
+import org.gridsuite.actions.server.utils.NominalVoltageOperator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.ComponentScan;
@@ -119,7 +120,7 @@ public class ContingencyListService {
 
     private <I extends Injection<I>> Stream<Injection<I>> getInjectionContingencyList(Stream<Injection<I>> stream, FiltersContingencyList filtersContingencyList, Pattern equipmentIDPattern, Pattern equipmentNamePattern) {
         return   stream
-                .filter(injection -> filtersContingencyList.getEquipmentName().equals(".*") || injection.getOptionalName().isPresent() && equipmentNamePattern.matcher((CharSequence) injection.getOptionalName().get()).find())
+                .filter(injection -> filtersContingencyList.getEquipmentName().equals(".*") || injection.getOptionalName().isPresent() && equipmentNamePattern.matcher(injection.getOptionalName().get()).find())
                 .filter(injection -> equipmentIDPattern.matcher(injection.getId()).find())
                 .filter(injection -> filtersContingencyList.getNominalVoltage() == -1 || filterByVoltage(injection.getTerminal().getVoltageLevel().getNominalV(), filtersContingencyList.getNominalVoltage(), filtersContingencyList.getNominalVoltageOperator()));
     }
@@ -144,7 +145,7 @@ public class ContingencyListService {
 
     private <I extends Branch<I>> List<Contingency> getBranchContingencyList(Stream<Branch<I>> stream, FiltersContingencyList filtersContingencyList, Pattern equipmentIDPattern, Pattern equipmentNamePattern) {
         return   stream
-                .filter(branch -> filtersContingencyList.getEquipmentName().equals(".*") || branch.getOptionalName().isPresent() && equipmentNamePattern.matcher((CharSequence) branch.getOptionalName().get()).find())
+                .filter(branch -> filtersContingencyList.getEquipmentName().equals(".*") || branch.getOptionalName().isPresent() && equipmentNamePattern.matcher(branch.getOptionalName().get()).find())
                 .filter(branch -> equipmentIDPattern.matcher(branch.getId()).find())
                 .filter(branch -> filtersContingencyList.getNominalVoltage() == -1 || filterByVoltage(branch.getTerminal1().getVoltageLevel().getNominalV(), filtersContingencyList.getNominalVoltage(), filtersContingencyList.getNominalVoltageOperator())
                         || filterByVoltage(branch.getTerminal2().getVoltageLevel().getNominalV(), filtersContingencyList.getNominalVoltage(), filtersContingencyList.getNominalVoltageOperator()))
@@ -217,18 +218,19 @@ public class ContingencyListService {
     }
 
     private boolean filterByVoltage(double equipmentNominalVoltage, double nominalVoltage, String nominalVoltageOperator) {
-        if (nominalVoltageOperator.equals("=")) {
-            return equipmentNominalVoltage == nominalVoltage;
-        } else if (nominalVoltageOperator.equals(">")) {
-            return equipmentNominalVoltage > nominalVoltage;
-        } else if (nominalVoltageOperator.equals(">=")) {
-            return equipmentNominalVoltage >= nominalVoltage;
-        } else if (nominalVoltageOperator.equals("<")) {
-            return equipmentNominalVoltage <= nominalVoltage;
-        } else if (nominalVoltageOperator.equals("<=")) {
-            return equipmentNominalVoltage <= nominalVoltage;
-        } else {
-            throw new PowsyblException("Unknown nominal voltage operator");
+        switch (NominalVoltageOperator.fromOperator(nominalVoltageOperator)) {
+            case EQUAL:
+                return equipmentNominalVoltage == nominalVoltage;
+            case LESS_THAN:
+                return equipmentNominalVoltage < nominalVoltage;
+            case LESS_THAN_OR_EQUAL:
+                return equipmentNominalVoltage <= nominalVoltage;
+            case MORE_THAN:
+                return equipmentNominalVoltage > nominalVoltage;
+            case MORE_THAN_OR_EQUAL:
+                return equipmentNominalVoltage >= nominalVoltage;
+            default:
+                throw new PowsyblException("Unknown nominal voltage operator");
         }
     }
 
