@@ -222,7 +222,7 @@ public class ContingencyListControllerTest extends AbstractEmbeddedCassandraSetu
     }
 
     @Test
-    public void testExportContingencies() throws Exception {
+    public void testExportContingencies1() throws Exception {
         String lineFilters = "{\"equipmentID\": \".*\", \"equipmentName\": \".*\", \"equipmentType\": \"LINE\", \"nominalVoltage\": \"-1\",\"nominalVoltageOperator\": \"=\"}";
         String lineFilters1 = "{\"equipmentID\": \"NHV1.*\", \"equipmentName\": \".*\", \"equipmentType\": \"LINE\", \"nominalVoltage\": \"100\",\"nominalVoltageOperator\": \"<\"}";
         String lineFilters2 = "{\"equipmentID\": \"NHV1.*\", \"equipmentName\": \".*\", \"equipmentType\": \"LINE\", \"nominalVoltage\": \"380\",\"nominalVoltageOperator\": \"=\"}";
@@ -265,7 +265,10 @@ public class ContingencyListControllerTest extends AbstractEmbeddedCassandraSetu
         testExportContingencies("svcFilters", svcFilters2, " [{\"id\":\"SVC3\",\"elements\":[{\"id\":\"SVC3\",\"type\":\"STATIC_VAR_COMPENSATOR\"}]}]", NETWORK_UUID_3);
         testExportContingencies("svcFilters", svcFilters3, " []", NETWORK_UUID_3);
         testExportContingencies("svcFilters", svcFilters4, " []", NETWORK_UUID_3);
+    }
 
+    @Test
+    public void testExportContingencies2() throws Exception {
         String scFilters = "{\"equipmentID\": \".*\", \"equipmentName\": \".*\", \"equipmentType\": \"SHUNT_COMPENSATOR\", \"nominalVoltage\": \"-1\",\"nominalVoltageOperator\": \"=\"}";
         String scFilters2 = "{\"equipmentID\": \"^SHUNT*\", \"equipmentName\": \".*\", \"equipmentType\": \"SHUNT_COMPENSATOR\", \"nominalVoltage\": \"-1\",\"nominalVoltageOperator\": \"=\"}";
         String scFilters3 = "{\"equipmentID\": \".*\", \"equipmentName\": \"SHUNT*\", \"equipmentType\": \"SHUNT_COMPENSATOR\", \"nominalVoltage\": \"-1\",\"nominalVoltageOperator\": \"=\"}";
@@ -291,7 +294,6 @@ public class ContingencyListControllerTest extends AbstractEmbeddedCassandraSetu
 
         String dlFilters = "{\"equipmentID\": \".*\", \"equipmentName\": \".*\", \"equipmentType\": \"DANGLING_LINE\", \"nominalVoltage\": \"-1\",\"nominalVoltageOperator\": \"=\"}";
         testExportContingencies("dlFilters", dlFilters, " []", NETWORK_UUID);
-
     }
 
     private void testExportContingencies(String filtersName, String content, String expectedContent, UUID uuid) throws Exception {
