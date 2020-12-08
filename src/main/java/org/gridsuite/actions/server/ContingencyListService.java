@@ -117,7 +117,7 @@ public class ContingencyListService {
         }
     }
 
-    private Stream<Injection> getInjectionContingencyList(Stream<Injection> stream, FiltersContingencyList filtersContingencyList, Pattern equipmentIDPattern, Pattern equipmentNamePattern) {
+    private <I extends Injection<I>> Stream<Injection<I>> getInjectionContingencyList(Stream<Injection<I>> stream, FiltersContingencyList filtersContingencyList, Pattern equipmentIDPattern, Pattern equipmentNamePattern) {
         return   stream
                 .filter(injection -> filtersContingencyList.getEquipmentName().equals(".*") || injection.getOptionalName().isPresent() && equipmentNamePattern.matcher((CharSequence) injection.getOptionalName().get()).find())
                 .filter(injection -> equipmentIDPattern.matcher(injection.getId()).find())
@@ -142,7 +142,7 @@ public class ContingencyListService {
                 .collect(Collectors.toList());
     }
 
-    private List<Contingency> getBranchContingencyList(Stream<Branch> stream, FiltersContingencyList filtersContingencyList, Pattern equipmentIDPattern, Pattern equipmentNamePattern) {
+    private <I extends Branch<I>> List<Contingency> getBranchContingencyList(Stream<Branch<I>> stream, FiltersContingencyList filtersContingencyList, Pattern equipmentIDPattern, Pattern equipmentNamePattern) {
         return   stream
                 .filter(branch -> filtersContingencyList.getEquipmentName().equals(".*") || branch.getOptionalName().isPresent() && equipmentNamePattern.matcher((CharSequence) branch.getOptionalName().get()).find())
                 .filter(branch -> equipmentIDPattern.matcher(branch.getId()).find())
