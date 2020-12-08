@@ -120,8 +120,7 @@ public class ContingencyListService {
 
     private <I extends Injection<I>> Stream<Injection<I>> getInjectionContingencyList(Stream<Injection<I>> stream, FiltersContingencyList filtersContingencyList, Pattern equipmentIDPattern, Pattern equipmentNamePattern) {
         return   stream
-                .filter(injection -> filtersContingencyList.getEquipmentName().equals(".*") || injection.getOptionalName().isPresent() && equipmentNamePattern.matcher(injection.getOptionalName().get()).find())
-                .filter(injection -> equipmentIDPattern.matcher(injection.getId()).find())
+                .filter(injection -> equipmentIDPattern.matcher(injection.getId()).find() || injection.getOptionalName().isPresent() && equipmentNamePattern.matcher(injection.getOptionalName().get()).find())
                 .filter(injection -> filtersContingencyList.getNominalVoltage() == -1 || filterByVoltage(injection.getTerminal().getVoltageLevel().getNominalV(), filtersContingencyList.getNominalVoltage(), filtersContingencyList.getNominalVoltageOperator()));
     }
 
@@ -145,8 +144,7 @@ public class ContingencyListService {
 
     private <I extends Branch<I>> List<Contingency> getBranchContingencyList(Stream<Branch<I>> stream, FiltersContingencyList filtersContingencyList, Pattern equipmentIDPattern, Pattern equipmentNamePattern) {
         return   stream
-                .filter(branch -> filtersContingencyList.getEquipmentName().equals(".*") || branch.getOptionalName().isPresent() && equipmentNamePattern.matcher(branch.getOptionalName().get()).find())
-                .filter(branch -> equipmentIDPattern.matcher(branch.getId()).find())
+                .filter(branch -> equipmentIDPattern.matcher(branch.getId()).find() || branch.getOptionalName().isPresent() && equipmentNamePattern.matcher(branch.getOptionalName().get()).find())
                 .filter(branch -> filtersContingencyList.getNominalVoltage() == -1 || filterByVoltage(branch.getTerminal1().getVoltageLevel().getNominalV(), filtersContingencyList.getNominalVoltage(), filtersContingencyList.getNominalVoltageOperator())
                         || filterByVoltage(branch.getTerminal2().getVoltageLevel().getNominalV(), filtersContingencyList.getNominalVoltage(), filtersContingencyList.getNominalVoltageOperator()))
                 .map(branch -> new Contingency(branch.getId(), Collections.singletonList(new BranchContingency(branch.getId()))))
@@ -163,8 +161,7 @@ public class ContingencyListService {
 
     private List<Contingency> getHvdcContingencyList(Network network, FiltersContingencyList filtersContingencyList, Pattern equipmentIDPattern, Pattern equipmentNamePattern) {
         return network.getHvdcLineStream()
-                .filter(hvdcLine -> filtersContingencyList.getEquipmentName().equals(".*") || hvdcLine.getOptionalName().isPresent() && equipmentNamePattern.matcher(hvdcLine.getOptionalName().get()).find())
-                .filter(hvdcLine -> equipmentIDPattern.matcher(hvdcLine.getId()).find())
+                .filter(hvdcLine -> equipmentIDPattern.matcher(hvdcLine.getId()).find() || hvdcLine.getOptionalName().isPresent() && equipmentNamePattern.matcher(hvdcLine.getOptionalName().get()).find())
                 .filter(hvdcLine -> filtersContingencyList.getNominalVoltage() == -1 || filterByVoltage(hvdcLine.getNominalV(), filtersContingencyList.getNominalVoltage(), filtersContingencyList.getNominalVoltageOperator()))
                 .map(hvdcLine -> new Contingency(hvdcLine.getId(), Collections.singletonList(new HvdcLineContingency(hvdcLine.getId()))))
                 .collect(Collectors.toList());
