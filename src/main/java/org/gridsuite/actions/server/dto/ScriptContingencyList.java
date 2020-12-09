@@ -26,6 +26,7 @@ public class ScriptContingencyList implements ContingencyList {
     @ApiModelProperty("Script")
     private String script;
 
+    @ApiModelProperty("Type")
     @Override
     public ContingencyListType getType() {
         return ContingencyListType.SCRIPT;

@@ -8,7 +8,7 @@ package org.gridsuite.actions.server.entities;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.gridsuite.actions.server.dto.FilterContingencyListAttributes;
+import org.gridsuite.actions.server.dto.FiltersContingencyListAttributes;
 import org.springframework.data.cassandra.core.cql.PrimaryKeyType;
 import org.springframework.data.cassandra.core.mapping.PrimaryKeyColumn;
 import org.springframework.data.cassandra.core.mapping.Table;
@@ -34,12 +34,12 @@ public class FiltersContingencyListEntity {
 
     private String nominalVoltageOperator;
 
-    public FiltersContingencyListEntity(String name, FilterContingencyListAttributes filterContingencyListAttributes) {
+    public FiltersContingencyListEntity(String name, FiltersContingencyListAttributes filtersContingencyListAttributes) {
         this.name = name;
-        this.equipmentId = filterContingencyListAttributes.getEquipmentID();
-        this.equipmentName = filterContingencyListAttributes.getEquipmentName();
-        this.equipmentType = filterContingencyListAttributes.getEquipmentType();
-        this.nominalVoltage = filterContingencyListAttributes.getNominalVoltage();
-        this.nominalVoltageOperator = filterContingencyListAttributes.getNominalVoltageOperator();
+        this.equipmentId = filtersContingencyListAttributes.getEquipmentID();
+        this.equipmentName = filtersContingencyListAttributes.getEquipmentName();
+        this.equipmentType = filtersContingencyListAttributes.getEquipmentType();
+        this.nominalVoltage = filtersContingencyListAttributes.getNominalVoltage();
+        this.nominalVoltageOperator = filtersContingencyListAttributes.getNominalVoltageOperator();
     }
 }

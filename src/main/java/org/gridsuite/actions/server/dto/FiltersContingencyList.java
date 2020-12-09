@@ -17,27 +17,28 @@ import org.gridsuite.actions.server.utils.ContingencyListType;
  */
 @Getter
 @AllArgsConstructor
-@ApiModel("filter contingency list")
+@ApiModel("Filter contingency list")
 public class FiltersContingencyList implements ContingencyList {
 
     @ApiModelProperty("List name")
     private String name;
 
-    @ApiModelProperty("equipmentID")
+    @ApiModelProperty("Equipment ID")
     private String equipmentID;
 
-    @ApiModelProperty("equipmentName")
+    @ApiModelProperty("Equipment name")
     private String equipmentName;
 
-    @ApiModelProperty("equipmentType")
+    @ApiModelProperty("Equipment type")
     private String equipmentType;
 
-    @ApiModelProperty("nominalVoltage")
+    @ApiModelProperty("Nominal voltage")
     private double nominalVoltage;
 
-    @ApiModelProperty("nominalVoltageOperator")
+    @ApiModelProperty("Nominal voltage operator")
     private String nominalVoltageOperator;
 
+    @ApiModelProperty("Type")
     @Override
     public ContingencyListType getType() {
         return ContingencyListType.FILTERS;

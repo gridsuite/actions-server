@@ -32,13 +32,11 @@ import java.util.UUID;
 
 import static com.powsybl.network.store.model.NetworkStoreApi.VERSION;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import static org.mockito.BDDMockito.given;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.http.MediaType.TEXT_PLAIN;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -334,7 +332,7 @@ public class ContingencyListControllerTest extends AbstractEmbeddedCassandraSetu
         assertEquals("myList", contingencyListAttributes.getName());
         assertEquals(ContingencyListType.SCRIPT, contingencyListAttributes.getType());
         ContingencyListAttributes contingencyListAttributes2 = new ContingencyListAttributes();
-        assertEquals(null, contingencyListAttributes2.getName());
-        assertEquals(null, contingencyListAttributes2.getType());
+        assertNull(contingencyListAttributes2.getName());
+        assertNull(contingencyListAttributes2.getType());
     }
 }

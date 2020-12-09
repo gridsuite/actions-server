@@ -6,6 +6,8 @@
  */
 package org.gridsuite.actions.server.dto;
 
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -19,10 +21,21 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class FilterContingencyListAttributes {
+@ApiModel("filter contingency list attributes")
+public class FiltersContingencyListAttributes {
+
+    @ApiModelProperty("Equipment ID")
     private String equipmentID;
+
+    @ApiModelProperty("Equipment name")
     private String equipmentName;
+
+    @ApiModelProperty("Equipment type")
     private String equipmentType;
+
+    @ApiModelProperty("Nominal voltage")
     private double nominalVoltage;
+
+    @ApiModelProperty("Nominal voltage operator")
     private String nominalVoltageOperator;
 }

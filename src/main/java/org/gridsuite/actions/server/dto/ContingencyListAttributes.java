@@ -6,6 +6,8 @@
  */
 package org.gridsuite.actions.server.dto;
 
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -18,7 +20,12 @@ import org.gridsuite.actions.server.utils.ContingencyListType;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
+@ApiModel("Contingency list attributes")
 public class ContingencyListAttributes {
+
+    @ApiModelProperty("List name")
     private String name;
+
+    @ApiModelProperty("List type")
     private ContingencyListType type;
 }

@@ -45,7 +45,7 @@ public class ContingencyListController {
     }
 
     @GetMapping(value = "filters-contingency-lists", produces = MediaType.APPLICATION_JSON_VALUE)
-    @ApiOperation(value = "Get all contingency lists", response = List.class)
+    @ApiOperation(value = "Get all filters contingency lists", response = List.class)
     @ApiResponses(value = {@ApiResponse(code = 200, message = "All filters contingency lists")})
     public ResponseEntity<List<FiltersContingencyList>> getFilterContingencyLists() {
         return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(service.getFilterContingencyLists());
@@ -101,7 +101,7 @@ public class ContingencyListController {
     @PutMapping(value = "filters-contingency-lists/{name}", consumes = MediaType.APPLICATION_JSON_VALUE)
     @ApiOperation(value = "Create a filters contingency list", response = ContingencyList.class)
     @ApiResponses(value = {@ApiResponse(code = 200, message = "The filters contingency list have been created successfully")})
-    public void createFilterContingencyList(@PathVariable("name") String name, @RequestBody(required = true) FilterContingencyListAttributes filtersContingencyListAttributes) {
+    public void createFilterContingencyList(@PathVariable("name") String name, @RequestBody(required = true) FiltersContingencyListAttributes filtersContingencyListAttributes) {
         service.createFilterContingencyList(name, filtersContingencyListAttributes);
     }
 

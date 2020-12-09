@@ -44,6 +44,7 @@ public class ContingencyListService {
     private static final Logger LOGGER = LoggerFactory.getLogger(ContingencyListService.class);
 
     private ScriptContingencyListRepository scriptContingencyListRepository;
+
     private FiltersContingencyListRepository filtersContingencyListRepository;
 
     private NetworkStoreService networkStoreService;
@@ -119,31 +120,31 @@ public class ContingencyListService {
     }
 
     private <I extends Injection<I>> Stream<Injection<I>> getInjectionContingencyList(Stream<Injection<I>> stream, FiltersContingencyList filtersContingencyList, Pattern equipmentIDPattern, Pattern equipmentNamePattern) {
-        return   stream
+        return stream
                 .filter(injection -> equipmentIDPattern.matcher(injection.getId()).find() || injection.getOptionalName().isPresent() && equipmentNamePattern.matcher(injection.getOptionalName().get()).find())
                 .filter(injection -> filtersContingencyList.getNominalVoltage() == -1 || filterByVoltage(injection.getTerminal().getVoltageLevel().getNominalV(), filtersContingencyList.getNominalVoltage(), filtersContingencyList.getNominalVoltageOperator()));
     }
 
     private List<Contingency> getGeneratorContingencyList(Network network, FiltersContingencyList filtersContingencyList, Pattern equipmentIDPattern, Pattern equipmentNamePattern) {
-        return  getInjectionContingencyList(network.getGeneratorStream().map(gen -> (Injection<Generator>) gen), filtersContingencyList, equipmentIDPattern, equipmentNamePattern)
+        return getInjectionContingencyList(network.getGeneratorStream().map(gen -> gen), filtersContingencyList, equipmentIDPattern, equipmentNamePattern)
                 .map(injection -> new Contingency(injection.getId(), Collections.singletonList(new GeneratorContingency(injection.getId()))))
                 .collect(Collectors.toList());
     }
 
     private List<Contingency> getSVCContingencyList(Network network, FiltersContingencyList filtersContingencyList, Pattern equipmentIDPattern, Pattern equipmentNamePattern) {
-        return  getInjectionContingencyList(network.getStaticVarCompensatorStream().map(svc -> (Injection<StaticVarCompensator>) svc), filtersContingencyList, equipmentIDPattern, equipmentNamePattern)
+        return getInjectionContingencyList(network.getStaticVarCompensatorStream().map(svc -> svc), filtersContingencyList, equipmentIDPattern, equipmentNamePattern)
                 .map(injection -> new Contingency(injection.getId(), Collections.singletonList(new StaticVarCompensatorContingency(injection.getId()))))
                 .collect(Collectors.toList());
     }
 
     private List<Contingency> getSCContingencyList(Network network, FiltersContingencyList filtersContingencyList, Pattern equipmentIDPattern, Pattern equipmentNamePattern) {
-        return  getInjectionContingencyList(network.getShuntCompensatorStream().map(sc -> (Injection<ShuntCompensator>) sc), filtersContingencyList, equipmentIDPattern, equipmentNamePattern)
+        return getInjectionContingencyList(network.getShuntCompensatorStream().map(sc -> sc), filtersContingencyList, equipmentIDPattern, equipmentNamePattern)
                 .map(injection -> new Contingency(injection.getId(), Collections.singletonList(new ShuntCompensatorContingency(injection.getId()))))
                 .collect(Collectors.toList());
     }
 
     private <I extends Branch<I>> List<Contingency> getBranchContingencyList(Stream<Branch<I>> stream, FiltersContingencyList filtersContingencyList, Pattern equipmentIDPattern, Pattern equipmentNamePattern) {
-        return   stream
+        return stream
                 .filter(branch -> equipmentIDPattern.matcher(branch.getId()).find() || branch.getOptionalName().isPresent() && equipmentNamePattern.matcher(branch.getOptionalName().get()).find())
                 .filter(branch -> filtersContingencyList.getNominalVoltage() == -1 || filterByVoltage(branch.getTerminal1().getVoltageLevel().getNominalV(), filtersContingencyList.getNominalVoltage(), filtersContingencyList.getNominalVoltageOperator())
                         || filterByVoltage(branch.getTerminal2().getVoltageLevel().getNominalV(), filtersContingencyList.getNominalVoltage(), filtersContingencyList.getNominalVoltageOperator()))
@@ -152,11 +153,11 @@ public class ContingencyListService {
     }
 
     private List<Contingency> getLineContingencyList(Network network, FiltersContingencyList filtersContingencyList, Pattern equipmentIDPattern, Pattern equipmentNamePattern) {
-        return  getBranchContingencyList(network.getLineStream().map(line -> (Branch<Line>) line), filtersContingencyList, equipmentIDPattern, equipmentNamePattern);
+        return  getBranchContingencyList(network.getLineStream().map(line -> line), filtersContingencyList, equipmentIDPattern, equipmentNamePattern);
     }
 
     private List<Contingency> get2WTransformerContingencyList(Network network, FiltersContingencyList filtersContingencyList, Pattern equipmentIDPattern, Pattern equipmentNamePattern) {
-        return  getBranchContingencyList(network.getTwoWindingsTransformerStream().map(twt -> (Branch<TwoWindingsTransformer>) twt), filtersContingencyList, equipmentIDPattern, equipmentNamePattern);
+        return  getBranchContingencyList(network.getTwoWindingsTransformerStream().map(twt -> twt), filtersContingencyList, equipmentIDPattern, equipmentNamePattern);
     }
 
     private List<Contingency> getHvdcContingencyList(Network network, FiltersContingencyList filtersContingencyList, Pattern equipmentIDPattern, Pattern equipmentNamePattern) {
@@ -168,19 +169,19 @@ public class ContingencyListService {
     }
 
     private List<Contingency> getBusbarSectionContingencyList(Network network, FiltersContingencyList filtersContingencyList, Pattern equipmentIDPattern, Pattern equipmentNamePattern) {
-        return getInjectionContingencyList(network.getBusbarSectionStream().map(bbs -> (Injection<BusbarSection>) bbs), filtersContingencyList, equipmentIDPattern, equipmentNamePattern)
+        return getInjectionContingencyList(network.getBusbarSectionStream().map(bbs -> bbs), filtersContingencyList, equipmentIDPattern, equipmentNamePattern)
                 .map(injection -> new Contingency(injection.getId(), Collections.singletonList(new BusbarSectionContingency(injection.getId()))))
                 .collect(Collectors.toList());
     }
 
     private List<Contingency> getDanglingLineContingencyList(Network network, FiltersContingencyList filtersContingencyList, Pattern equipmentIDPattern, Pattern equipmentNamePattern) {
-        return getInjectionContingencyList(network.getDanglingLineStream().map(dl -> (Injection<DanglingLine>) dl), filtersContingencyList, equipmentIDPattern, equipmentNamePattern)
+        return getInjectionContingencyList(network.getDanglingLineStream().map(dl -> dl), filtersContingencyList, equipmentIDPattern, equipmentNamePattern)
                 .map(injection -> new Contingency(injection.getId(), Collections.singletonList(new DanglingLineContingency(injection.getId()))))
                 .collect(Collectors.toList());
     }
 
     private List<Contingency> getContingencies(FiltersContingencyList filtersContingencyList, Network network) {
-        List<Contingency> contingencies = null;
+        List<Contingency> contingencies;
         Pattern equipmentNamePattern = Pattern.compile(filtersContingencyList.getEquipmentName(), Pattern.CASE_INSENSITIVE);
         Pattern equipmentIDPattern = Pattern.compile(filtersContingencyList.getEquipmentID(), Pattern.CASE_INSENSITIVE);
         switch (EquipmentType.valueOf(filtersContingencyList.getEquipmentType())) {
@@ -246,12 +247,12 @@ public class ContingencyListService {
         scriptContingencyListRepository.insert(new ScriptContingencyListEntity(name, script));
     }
 
-    public void createFilterContingencyList(String name, FilterContingencyListAttributes filterContingencyListAttributes) {
+    public void createFilterContingencyList(String name, FiltersContingencyListAttributes filtersContingencyListAttributes) {
         Objects.requireNonNull(name);
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("Create script contingency list '{}'", sanitizeParam(name));
         }
-        filtersContingencyListRepository.insert(new FiltersContingencyListEntity(name, filterContingencyListAttributes));
+        filtersContingencyListRepository.insert(new FiltersContingencyListEntity(name, filtersContingencyListAttributes));
     }
 
     void deleteContingencyList(String name) {
@@ -278,7 +279,7 @@ public class ContingencyListService {
             createScriptContingencyList(newName, oldContingencyListEntity.getScript());
         }, () -> filters.map(oldFiltersContingencyListEntity -> {
             filtersContingencyListRepository.deleteByName(name);
-            createFilterContingencyList(newName, new FilterContingencyListAttributes(oldFiltersContingencyListEntity.getEquipmentId(), oldFiltersContingencyListEntity.getEquipmentName(),
+            createFilterContingencyList(newName, new FiltersContingencyListAttributes(oldFiltersContingencyListEntity.getEquipmentId(), oldFiltersContingencyListEntity.getEquipmentName(),
                     oldFiltersContingencyListEntity.getEquipmentType(), oldFiltersContingencyListEntity.getNominalVoltage(), oldFiltersContingencyListEntity.getNominalVoltageOperator()));
             return oldFiltersContingencyListEntity;
         }).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Contingency list " + name + " not found")));
