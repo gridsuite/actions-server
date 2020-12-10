@@ -4,10 +4,11 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
-package org.gridsuite.actions.server;
+package org.gridsuite.actions.server.configs;
 
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
+import org.gridsuite.actions.server.ContingencyListController;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import springfox.documentation.builders.ApiInfoBuilder;

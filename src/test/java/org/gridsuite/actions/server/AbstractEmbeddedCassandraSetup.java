@@ -9,6 +9,7 @@ package org.gridsuite.actions.server;
 import com.github.nosan.embedded.cassandra.api.connection.ClusterCassandraConnection;
 import com.github.nosan.embedded.cassandra.api.cql.CqlDataSet;
 
+import org.gridsuite.actions.server.configs.CassandraConfig;
 import org.gridsuite.actions.test.EmbeddedCassandraFactoryConfig;
 import org.junit.Before;
 import org.springframework.beans.factory.annotation.Autowired;

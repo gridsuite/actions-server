@@ -6,24 +6,22 @@
  */
 package org.gridsuite.actions.server.dto;
 
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
 /**
  * @author Jon Harper <jon.harper at rte-france.com>
  */
+
+@Getter
+@Setter
+@NoArgsConstructor
+@ApiModel("Contingency list renaming infos")
 public class RenameContingencyListAttributes {
+
+    @ApiModelProperty("New contingency list name")
     private String newContingencyListName;
-
-    public String getNewContingencyListName() {
-        return newContingencyListName;
-    }
-
-    public void setNewContingencyListName(String newContingencyListName) {
-        this.newContingencyListName = newContingencyListName;
-    }
-
-    public RenameContingencyListAttributes() {
-    }
-
-    public RenameContingencyListAttributes(String newContingencyListName) {
-        setNewContingencyListName(newContingencyListName);
-    }
 }
