@@ -26,10 +26,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.util.AntPathMatcher;
+import org.springframework.util.PathMatcher;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.*;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -48,6 +49,8 @@ public class ContingencyListService {
     private FiltersContingencyListRepository filtersContingencyListRepository;
 
     private NetworkStoreService networkStoreService;
+
+    private PathMatcher antMatcher = new AntPathMatcher();
 
     public ContingencyListService(ScriptContingencyListRepository scriptContingencyListRepository, FiltersContingencyListRepository filtersContingencyListRepository,
                                   NetworkStoreService networkStoreService) {
@@ -119,95 +122,97 @@ public class ContingencyListService {
         }
     }
 
-    private <I extends Injection<I>> Stream<Injection<I>> getInjectionContingencyList(Stream<Injection<I>> stream, FiltersContingencyList filtersContingencyList, Pattern equipmentIDPattern, Pattern equipmentNamePattern) {
+    private <I extends Injection<I>> Stream<Injection<I>> getInjectionContingencyList(Stream<Injection<I>> stream, FiltersContingencyList filtersContingencyList) {
         return stream
-                .filter(injection -> equipmentIDPattern.matcher(injection.getId()).find() || injection.getOptionalName().isPresent() && equipmentNamePattern.matcher(injection.getOptionalName().get()).find())
+                .filter(injection -> matches(filtersContingencyList.getEquipmentID(), injection.getId()) || injection.getOptionalName().isPresent() && matches(filtersContingencyList.getEquipmentName(), injection.getOptionalName().get()))
                 .filter(injection -> filtersContingencyList.getNominalVoltage() == -1 || filterByVoltage(injection.getTerminal().getVoltageLevel().getNominalV(), filtersContingencyList.getNominalVoltage(), filtersContingencyList.getNominalVoltageOperator()));
     }
 
-    private List<Contingency> getGeneratorContingencyList(Network network, FiltersContingencyList filtersContingencyList, Pattern equipmentIDPattern, Pattern equipmentNamePattern) {
-        return getInjectionContingencyList(network.getGeneratorStream().map(gen -> gen), filtersContingencyList, equipmentIDPattern, equipmentNamePattern)
+    private List<Contingency> getGeneratorContingencyList(Network network, FiltersContingencyList filtersContingencyList) {
+        return getInjectionContingencyList(network.getGeneratorStream().map(gen -> gen), filtersContingencyList)
                 .map(injection -> new Contingency(injection.getId(), Collections.singletonList(new GeneratorContingency(injection.getId()))))
                 .collect(Collectors.toList());
     }
 
-    private List<Contingency> getSVCContingencyList(Network network, FiltersContingencyList filtersContingencyList, Pattern equipmentIDPattern, Pattern equipmentNamePattern) {
-        return getInjectionContingencyList(network.getStaticVarCompensatorStream().map(svc -> svc), filtersContingencyList, equipmentIDPattern, equipmentNamePattern)
+    private List<Contingency> getSVCContingencyList(Network network, FiltersContingencyList filtersContingencyList) {
+        return getInjectionContingencyList(network.getStaticVarCompensatorStream().map(svc -> svc), filtersContingencyList)
                 .map(injection -> new Contingency(injection.getId(), Collections.singletonList(new StaticVarCompensatorContingency(injection.getId()))))
                 .collect(Collectors.toList());
     }
 
-    private List<Contingency> getSCContingencyList(Network network, FiltersContingencyList filtersContingencyList, Pattern equipmentIDPattern, Pattern equipmentNamePattern) {
-        return getInjectionContingencyList(network.getShuntCompensatorStream().map(sc -> sc), filtersContingencyList, equipmentIDPattern, equipmentNamePattern)
+    private List<Contingency> getSCContingencyList(Network network, FiltersContingencyList filtersContingencyList) {
+        return getInjectionContingencyList(network.getShuntCompensatorStream().map(sc -> sc), filtersContingencyList)
                 .map(injection -> new Contingency(injection.getId(), Collections.singletonList(new ShuntCompensatorContingency(injection.getId()))))
                 .collect(Collectors.toList());
     }
 
-    private <I extends Branch<I>> List<Contingency> getBranchContingencyList(Stream<Branch<I>> stream, FiltersContingencyList filtersContingencyList, Pattern equipmentIDPattern, Pattern equipmentNamePattern) {
+    private <I extends Branch<I>> List<Contingency> getBranchContingencyList(Stream<Branch<I>> stream, FiltersContingencyList filtersContingencyList) {
         return stream
-                .filter(branch -> equipmentIDPattern.matcher(branch.getId()).find() || branch.getOptionalName().isPresent() && equipmentNamePattern.matcher(branch.getOptionalName().get()).find())
+                .filter(branch -> matches(filtersContingencyList.getEquipmentID(), branch.getId()) || branch.getOptionalName().isPresent() && matches(filtersContingencyList.getEquipmentName(), branch.getOptionalName().get()))
                 .filter(branch -> filtersContingencyList.getNominalVoltage() == -1 || filterByVoltage(branch.getTerminal1().getVoltageLevel().getNominalV(), filtersContingencyList.getNominalVoltage(), filtersContingencyList.getNominalVoltageOperator())
                         || filterByVoltage(branch.getTerminal2().getVoltageLevel().getNominalV(), filtersContingencyList.getNominalVoltage(), filtersContingencyList.getNominalVoltageOperator()))
                 .map(branch -> new Contingency(branch.getId(), Collections.singletonList(new BranchContingency(branch.getId()))))
                 .collect(Collectors.toList());
     }
 
-    private List<Contingency> getLineContingencyList(Network network, FiltersContingencyList filtersContingencyList, Pattern equipmentIDPattern, Pattern equipmentNamePattern) {
-        return  getBranchContingencyList(network.getLineStream().map(line -> line), filtersContingencyList, equipmentIDPattern, equipmentNamePattern);
+    private List<Contingency> getLineContingencyList(Network network, FiltersContingencyList filtersContingencyList) {
+        return  getBranchContingencyList(network.getLineStream().map(line -> line), filtersContingencyList);
     }
 
-    private List<Contingency> get2WTransformerContingencyList(Network network, FiltersContingencyList filtersContingencyList, Pattern equipmentIDPattern, Pattern equipmentNamePattern) {
-        return  getBranchContingencyList(network.getTwoWindingsTransformerStream().map(twt -> twt), filtersContingencyList, equipmentIDPattern, equipmentNamePattern);
+    private List<Contingency> get2WTransformerContingencyList(Network network, FiltersContingencyList filtersContingencyList) {
+        return  getBranchContingencyList(network.getTwoWindingsTransformerStream().map(twt -> twt), filtersContingencyList);
     }
 
-    private List<Contingency> getHvdcContingencyList(Network network, FiltersContingencyList filtersContingencyList, Pattern equipmentIDPattern, Pattern equipmentNamePattern) {
+    private List<Contingency> getHvdcContingencyList(Network network, FiltersContingencyList filtersContingencyList) {
         return network.getHvdcLineStream()
-                .filter(hvdcLine -> equipmentIDPattern.matcher(hvdcLine.getId()).find() || hvdcLine.getOptionalName().isPresent() && equipmentNamePattern.matcher(hvdcLine.getOptionalName().get()).find())
+                .filter(hvdcLine -> matches(filtersContingencyList.getEquipmentID(), hvdcLine.getId()) || hvdcLine.getOptionalName().isPresent() && matches(filtersContingencyList.getEquipmentName(), hvdcLine.getOptionalName().get()))
                 .filter(hvdcLine -> filtersContingencyList.getNominalVoltage() == -1 || filterByVoltage(hvdcLine.getNominalV(), filtersContingencyList.getNominalVoltage(), filtersContingencyList.getNominalVoltageOperator()))
                 .map(hvdcLine -> new Contingency(hvdcLine.getId(), Collections.singletonList(new HvdcLineContingency(hvdcLine.getId()))))
                 .collect(Collectors.toList());
     }
 
-    private List<Contingency> getBusbarSectionContingencyList(Network network, FiltersContingencyList filtersContingencyList, Pattern equipmentIDPattern, Pattern equipmentNamePattern) {
-        return getInjectionContingencyList(network.getBusbarSectionStream().map(bbs -> bbs), filtersContingencyList, equipmentIDPattern, equipmentNamePattern)
+    private List<Contingency> getBusbarSectionContingencyList(Network network, FiltersContingencyList filtersContingencyList) {
+        return getInjectionContingencyList(network.getBusbarSectionStream().map(bbs -> bbs), filtersContingencyList)
                 .map(injection -> new Contingency(injection.getId(), Collections.singletonList(new BusbarSectionContingency(injection.getId()))))
                 .collect(Collectors.toList());
     }
 
-    private List<Contingency> getDanglingLineContingencyList(Network network, FiltersContingencyList filtersContingencyList, Pattern equipmentIDPattern, Pattern equipmentNamePattern) {
-        return getInjectionContingencyList(network.getDanglingLineStream().map(dl -> dl), filtersContingencyList, equipmentIDPattern, equipmentNamePattern)
+    private List<Contingency> getDanglingLineContingencyList(Network network, FiltersContingencyList filtersContingencyList) {
+        return getInjectionContingencyList(network.getDanglingLineStream().map(dl -> dl), filtersContingencyList)
                 .map(injection -> new Contingency(injection.getId(), Collections.singletonList(new DanglingLineContingency(injection.getId()))))
                 .collect(Collectors.toList());
     }
 
+    private boolean matches(String pattern, String path) {
+        return antMatcher.match(pattern, path);
+    }
+
     private List<Contingency> getContingencies(FiltersContingencyList filtersContingencyList, Network network) {
         List<Contingency> contingencies;
-        Pattern equipmentNamePattern = Pattern.compile(filtersContingencyList.getEquipmentName(), Pattern.CASE_INSENSITIVE);
-        Pattern equipmentIDPattern = Pattern.compile(filtersContingencyList.getEquipmentID(), Pattern.CASE_INSENSITIVE);
         switch (EquipmentType.valueOf(filtersContingencyList.getEquipmentType())) {
             case  GENERATOR:
-                contingencies = getGeneratorContingencyList(network, filtersContingencyList, equipmentIDPattern, equipmentNamePattern);
+                contingencies = getGeneratorContingencyList(network, filtersContingencyList);
                 break;
             case STATIC_VAR_COMPENSATOR:
-                contingencies = getSVCContingencyList(network, filtersContingencyList, equipmentIDPattern, equipmentNamePattern);
+                contingencies = getSVCContingencyList(network, filtersContingencyList);
                 break;
             case SHUNT_COMPENSATOR:
-                contingencies = getSCContingencyList(network, filtersContingencyList, equipmentIDPattern, equipmentNamePattern);
+                contingencies = getSCContingencyList(network, filtersContingencyList);
                 break;
             case HVDC_LINE:
-                contingencies = getHvdcContingencyList(network, filtersContingencyList, equipmentIDPattern, equipmentNamePattern);
+                contingencies = getHvdcContingencyList(network, filtersContingencyList);
                 break;
             case BUSBAR_SECTION:
-                contingencies = getBusbarSectionContingencyList(network, filtersContingencyList, equipmentIDPattern, equipmentNamePattern);
+                contingencies = getBusbarSectionContingencyList(network, filtersContingencyList);
                 break;
             case DANGLING_LINE:
-                contingencies = getDanglingLineContingencyList(network, filtersContingencyList, equipmentIDPattern, equipmentNamePattern);
+                contingencies = getDanglingLineContingencyList(network, filtersContingencyList);
                 break;
             case LINE:
-                contingencies = getLineContingencyList(network, filtersContingencyList, equipmentIDPattern, equipmentNamePattern);
+                contingencies = getLineContingencyList(network, filtersContingencyList);
                 break;
             case TWO_WINDINGS_TRANSFORMER:
-                contingencies = get2WTransformerContingencyList(network, filtersContingencyList, equipmentIDPattern, equipmentNamePattern);
+                contingencies = get2WTransformerContingencyList(network, filtersContingencyList);
                 break;
             default:
                 throw new PowsyblException("Unknown equipment type");
