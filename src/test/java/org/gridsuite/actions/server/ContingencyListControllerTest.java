@@ -27,12 +27,12 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.web.util.NestedServletException;
 
 import java.util.UUID;
 
 import static com.powsybl.network.store.model.NetworkStoreApi.VERSION;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import static org.junit.Assert.*;
 import static org.mockito.BDDMockito.given;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.http.MediaType.TEXT_PLAIN;
@@ -53,6 +53,7 @@ public class ContingencyListControllerTest extends AbstractEmbeddedCassandraSetu
     private static final UUID NETWORK_UUID_2 = UUID.fromString("7928181c-7977-4592-ba19-88027e4254e5");
     private static final UUID NETWORK_UUID_3 = UUID.fromString("7928181c-7977-4592-ba19-88027e4254e6");
     private static final UUID NETWORK_UUID_4 = UUID.fromString("7928181c-7977-4592-ba19-88027e4254e7");
+    private static final UUID NETWORK_UUID_5 = UUID.fromString("7928181c-7977-4592-ba19-88027e4254e8");
 
     @Autowired
     private MockMvc mvc;
@@ -327,7 +328,34 @@ public class ContingencyListControllerTest extends AbstractEmbeddedCassandraSetu
     }
 
     @Test
-    public void contingencyListAttributesTest() throws Exception {
+    public void testExportContingencies3()  {
+        Throwable e = null;
+        String lineFilters = "{\"equipmentID\": \"*\", \"equipmentName\": \"*\", \"equipmentType\": \"LINE\", \"nominalVoltage\": \"-1\",\"nominalVoltageOperator\": \"=\"}";
+        try {
+            testExportContingencies("lineFilters", lineFilters, " [{\"id\":\"NHV1_NHV2_2\",\"elements\":[{\"id\":\"NHV1_NHV2_2\",\"type\":\"BRANCH\"}]},{\"id\":\"NHV1_NHV2_1\",\"elements\":[{\"id\":\"NHV1_NHV2_1\",\"type\":\"BRANCH\"}]}]", NETWORK_UUID_5);
+        } catch (Throwable ex) {
+            e = ex;
+        }
+        assertTrue(e instanceof NestedServletException);
+        assertEquals("Request processing failed; nested exception is com.powsybl.commons.PowsyblException: Network '7928181c-7977-4592-ba19-88027e4254e8' not found", e.getMessage());
+
+    }
+
+    @Test
+    public void testExportContingencies4() {
+        Throwable e = null;
+        String lineFilters = "{\"equipmentID\": \"*\", \"equipmentName\": \"*\", \"equipmentType\": \"LINE\", \"nominalVoltage\": \"200\",\"nominalVoltageOperator\": \"$\"}";
+        try {
+            testExportContingencies("lineFilters", lineFilters, " [{\"id\":\"NHV1_NHV2_2\",\"elements\":[{\"id\":\"NHV1_NHV2_2\",\"type\":\"BRANCH\"}]},{\"id\":\"NHV1_NHV2_1\",\"elements\":[{\"id\":\"NHV1_NHV2_1\",\"type\":\"BRANCH\"}]}]", NETWORK_UUID);
+        } catch (Throwable ex) {
+            e = ex;
+        }
+        assertTrue(e instanceof NestedServletException);
+        assertEquals("Request processing failed; nested exception is com.powsybl.commons.PowsyblException: Unknown nominal voltage operator", e.getMessage());
+    }
+
+    @Test
+    public void contingencyListAttributesTest() {
         ContingencyListAttributes contingencyListAttributes = new ContingencyListAttributes("myList", ContingencyListType.SCRIPT);
         assertEquals("myList", contingencyListAttributes.getName());
         assertEquals(ContingencyListType.SCRIPT, contingencyListAttributes.getType());

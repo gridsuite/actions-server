@@ -50,7 +50,7 @@ public class ContingencyListService {
 
     private NetworkStoreService networkStoreService;
 
-    private PathMatcher antMatcher = new AntPathMatcher("\0");
+    private final PathMatcher antMatcher = new AntPathMatcher("\0");
 
     public ContingencyListService(ScriptContingencyListRepository scriptContingencyListRepository, FiltersContingencyListRepository filtersContingencyListRepository,
                                   NetworkStoreService networkStoreService) {
