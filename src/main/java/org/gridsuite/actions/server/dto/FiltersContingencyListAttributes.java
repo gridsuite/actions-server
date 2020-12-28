@@ -13,6 +13,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.List;
+
 /**
  * @author Chamseddine benhamed <chamseddine.benhamed at rte-france.com>
  */
@@ -38,4 +40,8 @@ public class FiltersContingencyListAttributes {
 
     @ApiModelProperty("Nominal voltage operator")
     private String nominalVoltageOperator;
+
+    @ApiModelProperty("Countries")
+    private List<String> countries;
+
 }

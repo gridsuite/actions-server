@@ -12,6 +12,8 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.gridsuite.actions.server.utils.ContingencyListType;
 
+import java.util.Set;
+
 /**
  * @author Chamseddine benhamed <chamseddine.benhamed at rte-france.com>
  */
@@ -37,6 +39,9 @@ public class FiltersContingencyList implements ContingencyList {
 
     @ApiModelProperty("Nominal voltage operator")
     private String nominalVoltageOperator;
+
+    @ApiModelProperty("Countries")
+    private Set<String> countries;
 
     @ApiModelProperty("Type")
     @Override
