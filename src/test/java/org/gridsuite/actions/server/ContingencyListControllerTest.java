@@ -97,7 +97,8 @@ public class ContingencyListControllerTest extends AbstractEmbeddedCassandraSetu
                 "  \"equipmentName\": \"GEN*\"," +
                 "  \"equipmentType\": \"GENERATOR\"," +
                 "  \"nominalVoltage\": \"100\"," +
-                "  \"nominalVoltageOperator\": \">\"" +
+                "  \"nominalVoltageOperator\": \">\"," +
+                "  \"countries\": [\"FRANCE\", \"BELGIUM\"]" +
                 "}";
 
         // Put data

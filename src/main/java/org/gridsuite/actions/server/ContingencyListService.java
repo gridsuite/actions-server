@@ -65,7 +65,7 @@ public class ContingencyListService {
 
     private static FiltersContingencyList fromFilterContingencyListEntity(FiltersContingencyListEntity entity) {
         return new FiltersContingencyList(entity.getName(), entity.getEquipmentId(), entity.getEquipmentName(),
-                entity.getEquipmentType(), entity.getNominalVoltage(), entity.getNominalVoltageOperator(), new HashSet<>(entity.getCountries()));
+                entity.getEquipmentType(), entity.getNominalVoltage(), entity.getNominalVoltageOperator(), entity.getCountries());
     }
 
     private static String sanitizeParam(String param) {
@@ -162,7 +162,7 @@ public class ContingencyListService {
                 .filter(branch -> matches(filtersContingencyList.getEquipmentID(), branch.getId()) || branch.getOptionalName().isPresent() && matches(filtersContingencyList.getEquipmentName(), branch.getOptionalName().get()))
                 .filter(branch -> filtersContingencyList.getNominalVoltage() == -1 || filterByVoltage(branch.getTerminal1().getVoltageLevel().getNominalV(), filtersContingencyList.getNominalVoltage(), filtersContingencyList.getNominalVoltageOperator())
                         || filterByVoltage(branch.getTerminal2().getVoltageLevel().getNominalV(), filtersContingencyList.getNominalVoltage(), filtersContingencyList.getNominalVoltageOperator()))
-                .filter(injection -> countryFilter(injection, filtersContingencyList))
+                .filter(branch -> countryFilter(branch, filtersContingencyList))
             .map(branch -> new Contingency(branch.getId(), Collections.singletonList(new BranchContingency(branch.getId()))))
                 .collect(Collectors.toList());
     }
