@@ -65,7 +65,7 @@ public class ContingencyListService {
 
     private static FiltersContingencyList fromFilterContingencyListEntity(FiltersContingencyListEntity entity) {
         return new FiltersContingencyList(entity.getName(), entity.getEquipmentId(), entity.getEquipmentName(),
-                entity.getEquipmentType(), entity.getNominalVoltage(), entity.getNominalVoltageOperator());
+                entity.getEquipmentType(), entity.getNominalVoltage(), entity.getNominalVoltageOperator(), entity.getCountries());
     }
 
     private static String sanitizeParam(String param) {
@@ -122,10 +122,21 @@ public class ContingencyListService {
         }
     }
 
+    boolean countryFilter(Connectable<?> con, FiltersContingencyList filter) {
+        Set<String> countries = filter.getCountries();
+        return countries.isEmpty() || con.getTerminals().stream().anyMatch(connectable ->
+            connectable.getVoltageLevel().getSubstation().getCountry().isPresent() && countries.contains(connectable.getVoltageLevel().getSubstation().getCountry().get().getName()));
+    }
+
+    boolean countryFilter(HvdcLine hvdcLine, FiltersContingencyList filter) {
+        return countryFilter(hvdcLine.getConverterStation1(), filter) || countryFilter(hvdcLine.getConverterStation2(), filter);
+    }
+
     private <I extends Injection<I>> Stream<Injection<I>> getInjectionContingencyList(Stream<Injection<I>> stream, FiltersContingencyList filtersContingencyList) {
         return stream
                 .filter(injection -> matches(filtersContingencyList.getEquipmentID(), injection.getId()) || injection.getOptionalName().isPresent() && matches(filtersContingencyList.getEquipmentName(), injection.getOptionalName().get()))
-                .filter(injection -> filtersContingencyList.getNominalVoltage() == -1 || filterByVoltage(injection.getTerminal().getVoltageLevel().getNominalV(), filtersContingencyList.getNominalVoltage(), filtersContingencyList.getNominalVoltageOperator()));
+                .filter(injection -> filtersContingencyList.getNominalVoltage() == -1 || filterByVoltage(injection.getTerminal().getVoltageLevel().getNominalV(), filtersContingencyList.getNominalVoltage(), filtersContingencyList.getNominalVoltageOperator()))
+                .filter(injection -> countryFilter(injection, filtersContingencyList));
     }
 
     private List<Contingency> getGeneratorContingencyList(Network network, FiltersContingencyList filtersContingencyList) {
@@ -151,7 +162,8 @@ public class ContingencyListService {
                 .filter(branch -> matches(filtersContingencyList.getEquipmentID(), branch.getId()) || branch.getOptionalName().isPresent() && matches(filtersContingencyList.getEquipmentName(), branch.getOptionalName().get()))
                 .filter(branch -> filtersContingencyList.getNominalVoltage() == -1 || filterByVoltage(branch.getTerminal1().getVoltageLevel().getNominalV(), filtersContingencyList.getNominalVoltage(), filtersContingencyList.getNominalVoltageOperator())
                         || filterByVoltage(branch.getTerminal2().getVoltageLevel().getNominalV(), filtersContingencyList.getNominalVoltage(), filtersContingencyList.getNominalVoltageOperator()))
-                .map(branch -> new Contingency(branch.getId(), Collections.singletonList(new BranchContingency(branch.getId()))))
+                .filter(branch -> countryFilter(branch, filtersContingencyList))
+            .map(branch -> new Contingency(branch.getId(), Collections.singletonList(new BranchContingency(branch.getId()))))
                 .collect(Collectors.toList());
     }
 
@@ -167,7 +179,8 @@ public class ContingencyListService {
         return network.getHvdcLineStream()
                 .filter(hvdcLine -> matches(filtersContingencyList.getEquipmentID(), hvdcLine.getId()) || hvdcLine.getOptionalName().isPresent() && matches(filtersContingencyList.getEquipmentName(), hvdcLine.getOptionalName().get()))
                 .filter(hvdcLine -> filtersContingencyList.getNominalVoltage() == -1 || filterByVoltage(hvdcLine.getNominalV(), filtersContingencyList.getNominalVoltage(), filtersContingencyList.getNominalVoltageOperator()))
-                .map(hvdcLine -> new Contingency(hvdcLine.getId(), Collections.singletonList(new HvdcLineContingency(hvdcLine.getId()))))
+                .filter(hvdcLine -> countryFilter(hvdcLine, filtersContingencyList))
+            .map(hvdcLine -> new Contingency(hvdcLine.getId(), Collections.singletonList(new HvdcLineContingency(hvdcLine.getId()))))
                 .collect(Collectors.toList());
     }
 
@@ -284,8 +297,13 @@ public class ContingencyListService {
             createScriptContingencyList(newName, oldContingencyListEntity.getScript());
         }, () -> filters.map(oldFiltersContingencyListEntity -> {
             filtersContingencyListRepository.deleteByName(name);
-            createFilterContingencyList(newName, new FiltersContingencyListAttributes(oldFiltersContingencyListEntity.getEquipmentId(), oldFiltersContingencyListEntity.getEquipmentName(),
-                    oldFiltersContingencyListEntity.getEquipmentType(), oldFiltersContingencyListEntity.getNominalVoltage(), oldFiltersContingencyListEntity.getNominalVoltageOperator()));
+            createFilterContingencyList(newName, new FiltersContingencyListAttributes(oldFiltersContingencyListEntity.getEquipmentId(),
+                oldFiltersContingencyListEntity.getEquipmentName(),
+                    oldFiltersContingencyListEntity.getEquipmentType(),
+                oldFiltersContingencyListEntity.getNominalVoltage(),
+                oldFiltersContingencyListEntity.getNominalVoltageOperator(),
+                oldFiltersContingencyListEntity.getCountries()
+            ));
             return oldFiltersContingencyListEntity;
         }).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Contingency list " + name + " not found")));
     }

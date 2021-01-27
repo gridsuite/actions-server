@@ -13,6 +13,11 @@ import org.springframework.data.cassandra.core.cql.PrimaryKeyType;
 import org.springframework.data.cassandra.core.mapping.PrimaryKeyColumn;
 import org.springframework.data.cassandra.core.mapping.Table;
 
+import java.util.HashSet;
+import java.util.Set;
+
+import static org.apache.commons.collections4.SetUtils.emptyIfNull;
+
 /**
  * @author Chamseddine benhamed <chamseddine.benhamed at rte-france.com>
  */
@@ -34,6 +39,8 @@ public class FiltersContingencyListEntity {
 
     private String nominalVoltageOperator;
 
+    private Set<String> countries;
+
     public FiltersContingencyListEntity(String name, FiltersContingencyListAttributes filtersContingencyListAttributes) {
         this.name = name;
         this.equipmentId = filtersContingencyListAttributes.getEquipmentID();
@@ -41,5 +48,6 @@ public class FiltersContingencyListEntity {
         this.equipmentType = filtersContingencyListAttributes.getEquipmentType();
         this.nominalVoltage = filtersContingencyListAttributes.getNominalVoltage();
         this.nominalVoltageOperator = filtersContingencyListAttributes.getNominalVoltageOperator();
+        this.countries = new HashSet<>(emptyIfNull(filtersContingencyListAttributes.getCountries()));
     }
 }

@@ -10,6 +10,7 @@ CREATE TABLE actions.filters_contingency_list (
     equipmentName text,
     equipmentType text,
     nominalVoltage float,
+    countries frozen<list<text>>,
     nominalVoltageOperator text,
     PRIMARY KEY (name)
 );
