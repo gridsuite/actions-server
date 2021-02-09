@@ -54,7 +54,8 @@ public class ContingencyListService {
 
     private final FiltersToGroovyScript filtersToScript = new FiltersToGroovyScript();
 
-    public ContingencyListService(ScriptContingencyListRepository scriptContingencyListRepository, FiltersContingencyListRepository filtersContingencyListRepository,
+    public ContingencyListService(ScriptContingencyListRepository scriptContingencyListRepository,
+                                  FiltersContingencyListRepository filtersContingencyListRepository,
                                   NetworkStoreService networkStoreService) {
         this.scriptContingencyListRepository = scriptContingencyListRepository;
         this.filtersContingencyListRepository = filtersContingencyListRepository;
@@ -269,7 +270,7 @@ public class ContingencyListService {
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("Create script contingency list '{}'", sanitizeParam(name));
         }
-        scriptContingencyListRepository.insert(new ScriptContingencyListEntity(name, script));
+        scriptContingencyListRepository.save(new ScriptContingencyListEntity(name, script));
     }
 
     public void createFilterContingencyList(String name, FiltersContingencyListAttributes filtersContingencyListAttributes) {
@@ -277,7 +278,7 @@ public class ContingencyListService {
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("Create script contingency list '{}'", sanitizeParam(name));
         }
-        filtersContingencyListRepository.insert(new FiltersContingencyListEntity(name, filtersContingencyListAttributes));
+        filtersContingencyListRepository.save(new FiltersContingencyListEntity(name, filtersContingencyListAttributes));
     }
 
     void deleteContingencyList(String name) {
@@ -328,7 +329,7 @@ public class ContingencyListService {
         Optional<FiltersContingencyListEntity> filter = filtersContingencyListRepository.findByName(name);
         filter.ifPresentOrElse(entity -> {
             String script = generateGroovyScriptFromFilters(fromFilterContingencyListEntityAttributes(entity));
-            scriptContingencyListRepository.insert(new ScriptContingencyListEntity(name, script));
+            scriptContingencyListRepository.save(new ScriptContingencyListEntity(name, script));
             filtersContingencyListRepository.deleteByName(name);
         }, () -> {
                 throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Contingency list " + name + " not found");
@@ -344,7 +345,7 @@ public class ContingencyListService {
         Optional<FiltersContingencyListEntity> filter = filtersContingencyListRepository.findByName(name);
         filter.ifPresentOrElse(entity -> {
             String script = generateGroovyScriptFromFilters(fromFilterContingencyListEntityAttributes(entity));
-            scriptContingencyListRepository.insert(new ScriptContingencyListEntity(scriptName, script));
+            scriptContingencyListRepository.save(new ScriptContingencyListEntity(scriptName, script));
         }, () -> {
                 throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Contingency list " + name + " not found");
             });

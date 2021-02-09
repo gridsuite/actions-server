@@ -7,19 +7,22 @@
 package org.gridsuite.actions.server.repositories;
 
 import org.gridsuite.actions.server.entities.FiltersContingencyListEntity;
-import org.springframework.data.cassandra.repository.CassandraRepository;
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 
 /**
  * @author Chamseddine benhamed <chamseddine.benhamed at rte-france.com>
+ * @author Franck Lecuyer <franck.lecuyer at rte-france.com>
  */
 @Repository
-public interface FiltersContingencyListRepository extends CassandraRepository<FiltersContingencyListEntity, String> {
+public interface FiltersContingencyListRepository extends JpaRepository<FiltersContingencyListEntity, String> {
 
     Optional<FiltersContingencyListEntity> findByName(String name);
 
+    @Transactional
     void deleteByName(String name);
 
     boolean existsByName(String name);

@@ -15,6 +15,9 @@ import com.powsybl.network.store.client.NetworkStoreService;
 import com.powsybl.network.store.client.PreloadingStrategy;
 import com.powsybl.network.store.iidm.impl.NetworkFactoryImpl;
 import org.gridsuite.actions.server.dto.ContingencyListAttributes;
+import org.gridsuite.actions.server.entities.FiltersContingencyListEntity;
+import org.gridsuite.actions.server.entities.ScriptContingencyListEntity;
+import org.gridsuite.actions.server.repositories.FiltersContingencyListRepository;
 import org.gridsuite.actions.server.repositories.ScriptContingencyListRepository;
 import org.gridsuite.actions.server.utils.ContingencyListType;
 import org.gridsuite.actions.server.utils.EquipmentType;
@@ -23,7 +26,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -49,9 +53,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * @author Franck Lecuyer <franck.lecuyer at rte-france.com>
  */
 @RunWith(SpringRunner.class)
-@WebMvcTest(ContingencyListController.class)
+@SpringBootTest
+@AutoConfigureMockMvc
 @ContextConfiguration(classes = {ActionsApplication.class})
-public class ContingencyListControllerTest extends AbstractEmbeddedCassandraSetup {
+public class ContingencyListControllerTest {
 
     private static final UUID NETWORK_UUID = UUID.fromString("7928181c-7977-4592-ba19-88027e4254e4");
     private static final UUID NETWORK_UUID_2 = UUID.fromString("7928181c-7977-4592-ba19-88027e4254e5");
@@ -60,16 +65,21 @@ public class ContingencyListControllerTest extends AbstractEmbeddedCassandraSetu
     private static final UUID NETWORK_UUID_5 = UUID.fromString("7928181c-7977-4592-ba19-88027e4254e8");
 
     @Autowired
+    private ScriptContingencyListRepository scriptContingencyListRepository;
+
+    @Autowired
+    private FiltersContingencyListRepository filtersContingencyListRepository;
+
+    @Autowired
     private MockMvc mvc;
-
-    @Autowired
-    private ScriptContingencyListRepository contingencyListRepository;
-
-    @Autowired
-    private ContingencyListService contingencyListService;
 
     @MockBean
     private NetworkStoreService networkStoreService;
+
+    private void cleanDB() {
+        scriptContingencyListRepository.deleteAll();
+        filtersContingencyListRepository.deleteAll();
+    }
 
     @Before
     public void setUp() {
@@ -223,6 +233,8 @@ public class ContingencyListControllerTest extends AbstractEmbeddedCassandraSetu
 
         mvc.perform(delete("/" + VERSION + "/contingency-lists/tac"))
                 .andExpect(status().isNotFound());
+
+        cleanDB();
     }
 
     public StringBuilder jsonVal(String id, String val, boolean trailingComma) {
@@ -301,7 +313,6 @@ public class ContingencyListControllerTest extends AbstractEmbeddedCassandraSetu
         testExportContingencies("svcFilters", svcFilters4, " []", NETWORK_UUID_3);
         testExportContingencies("svcFilters", svcFilters5, " [{\"id\":\"SVC3\",\"elements\":[{\"id\":\"SVC3\",\"type\":\"STATIC_VAR_COMPENSATOR\"}]},{\"id\":\"SVC2\",\"elements\":[{\"id\":\"SVC2\",\"type\":\"STATIC_VAR_COMPENSATOR\"}]}]", NETWORK_UUID_3);
         testExportContingencies("svcFilters", svcFilters6, " []", NETWORK_UUID_3);
-
     }
 
     @Test
@@ -364,6 +375,7 @@ public class ContingencyListControllerTest extends AbstractEmbeddedCassandraSetu
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
                 .andExpect(content().json("[]"));
+        cleanDB();
     }
 
     @Test
@@ -467,5 +479,36 @@ public class ContingencyListControllerTest extends AbstractEmbeddedCassandraSetu
         mvc.perform(get("/" + VERSION + "/filters-contingency-lists/tic")
                 .contentType(APPLICATION_JSON))
                 .andExpect(status().isOk());
+    }
+
+    @Test
+    public void scriptContingencyListEntityTest() {
+        ScriptContingencyListEntity entity = new ScriptContingencyListEntity();
+        entity.setName("list1");
+        entity.setScript("");
+
+        assertEquals("list1", entity.getName());
+        assertEquals("", entity.getScript());
+    }
+
+    @Test
+    public void filtersContingencyListEntityTest() {
+        FiltersContingencyListEntity entity = new FiltersContingencyListEntity();
+        entity.setName("list1");
+        entity.setEquipmentId("id1");
+        entity.setEquipmentName("name1");
+        entity.setEquipmentType("LINE");
+        entity.setNominalVoltage(225.);
+        entity.setNominalVoltageOperator("=");
+        entity.setCountries(Set.of("FRANCE", "ITALY"));
+
+        assertEquals("list1", entity.getName());
+        assertEquals("id1", entity.getEquipmentId());
+        assertEquals("name1", entity.getEquipmentName());
+        assertEquals("LINE", entity.getEquipmentType());
+        assertEquals(225., entity.getNominalVoltage(), 0.1);
+        assertEquals("=", entity.getNominalVoltageOperator());
+        assertTrue(entity.getCountries().contains("FRANCE"));
+        assertTrue(entity.getCountries().contains("ITALY"));
     }
 }
