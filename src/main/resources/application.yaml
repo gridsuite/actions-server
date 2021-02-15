@@ -12,13 +12,6 @@ spring:
         implicit-strategy: org.hibernate.boot.model.naming.ImplicitNamingStrategyJpaCompliantImpl
     properties:
       dialect: org.hibernate.dialect.PostgreSQLDialect
-      hibernate.format_sql: false
-  datasource:
-    platform: postgres
-    url: jdbc:postgresql://localhost:5432/actions
-    username: postgres
-    password: postgres
-    driverClassName: org.postgresql.Driver
 
 network-store-server:
   base-uri: http://localhost:8080

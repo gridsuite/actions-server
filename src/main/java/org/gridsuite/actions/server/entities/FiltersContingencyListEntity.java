@@ -48,7 +48,7 @@ public class FiltersContingencyListEntity {
     private String nominalVoltageOperator;
 
     @Column(name = "countries")
-    @ElementCollection(fetch = FetchType.EAGER, targetClass = String.class)
+    @ElementCollection(fetch = FetchType.EAGER)
     private Set<String> countries;
 
     public FiltersContingencyListEntity(String name, FiltersContingencyListAttributes filtersContingencyListAttributes) {
