@@ -25,9 +25,15 @@ public class DataSourceConfig {
     @Bean
     public DataSource getDataSource(Environment env) {
         DataSourceBuilder dataSourceBuilder = DataSourceBuilder.create();
+        String driver = env.getRequiredProperty("driver");
+
         dataSourceBuilder.driverClassName(env.getRequiredProperty("driverClassName"));
-        dataSourceBuilder.url(env.getRequiredProperty("url"));
-        dataSourceBuilder.username(env.getRequiredProperty("username"));
+        if (driver.equals("h2")) {
+            dataSourceBuilder.url(env.getRequiredProperty("url"));
+        } else if (driver.equals("postgresql")) {
+            dataSourceBuilder.url(env.getRequiredProperty("url") + "/" + env.getRequiredProperty("database"));
+        }
+        dataSourceBuilder.username(env.getRequiredProperty("login"));
         dataSourceBuilder.password(env.getRequiredProperty("password"));
         return dataSourceBuilder.build();
     }
