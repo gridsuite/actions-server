@@ -26,12 +26,13 @@ public class DataSourceConfig {
     public DataSource getDataSource(Environment env) {
         DataSourceBuilder dataSourceBuilder = DataSourceBuilder.create();
         String driver = env.getRequiredProperty("driver");
-
-        dataSourceBuilder.driverClassName(env.getRequiredProperty("driverClassName"));
         if (driver.equals("h2")) {
             dataSourceBuilder.url(env.getRequiredProperty("url"));
         } else if (driver.equals("postgresql")) {
-            dataSourceBuilder.url(env.getRequiredProperty("url") + "/" + env.getRequiredProperty("database"));
+            dataSourceBuilder.url("jdbc:postgresql://" +
+                    env.getRequiredProperty("host") + ":" +
+                    env.getRequiredProperty("port") + "/" +
+                    env.getRequiredProperty("database"));
         }
         dataSourceBuilder.username(env.getRequiredProperty("login"));
         dataSourceBuilder.password(env.getRequiredProperty("password"));
