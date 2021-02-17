@@ -33,9 +33,9 @@ public class DataSourceConfig {
                     env.getRequiredProperty("host") + ":" +
                     env.getRequiredProperty("port") + "/" +
                     env.getRequiredProperty("database"));
+            dataSourceBuilder.username(env.getRequiredProperty("login"));
+            dataSourceBuilder.password(env.getRequiredProperty("password"));
         }
-        dataSourceBuilder.username(env.getRequiredProperty("login"));
-        dataSourceBuilder.password(env.getRequiredProperty("password"));
         return dataSourceBuilder.build();
     }
 }
