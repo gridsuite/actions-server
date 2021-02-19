@@ -88,9 +88,9 @@ public class ContingencyListControllerTest extends AbstractEmbeddedCassandraSetu
     @Test
     public void test() throws Exception {
         String script =
-            "contingency('NHV1_NHV2_1') {" +
-            "     equipments 'NHV1_NHV2_1'" +
-            "}";
+                "contingency('NHV1_NHV2_1') {" +
+                        "     equipments 'NHV1_NHV2_1'" +
+                        "}";
 
         String filters = "{\n" +
                 "  \"equipmentID\": \"GEN*\"," +
@@ -232,12 +232,12 @@ public class ContingencyListControllerTest extends AbstractEmbeddedCassandraSetu
     public String genContingencyFilter(String id, String name, EquipmentType type,
                                        Integer nominalVoltage, String nominalVoltageOperator, Set<String> countries) {
         return "{" +
-            jsonVal("equipmentID", id, true) +
-            jsonVal("equipmentName", name, true) +
-            jsonVal("equipmentType", type.name(), true) +
-            jsonVal("nominalVoltage", "" + nominalVoltage, true) +
-            jsonVal("nominalVoltageOperator", nominalVoltageOperator, true) +
-            "\"countries\": [" + (!countries.isEmpty() ? "\"" + join(countries, "\",\"") + "\"" : "") + "]}";
+                jsonVal("equipmentID", id, true) +
+                jsonVal("equipmentName", name, true) +
+                jsonVal("equipmentType", type.name(), true) +
+                jsonVal("nominalVoltage", "" + nominalVoltage, true) +
+                jsonVal("nominalVoltageOperator", nominalVoltageOperator, true) +
+                "\"countries\": [" + (!countries.isEmpty() ? "\"" + join(countries, "\",\"") + "\"" : "") + "]}";
 
     }
 
@@ -349,7 +349,8 @@ public class ContingencyListControllerTest extends AbstractEmbeddedCassandraSetu
 
         // delete data
         mvc.perform(delete("/" + VERSION + "/contingency-lists/" + filtersName))
-                .andExpect(status().isOk());    }
+                .andExpect(status().isOk());
+    }
 
     @Test
     public void emptyScriptTest() throws Exception {
@@ -366,7 +367,7 @@ public class ContingencyListControllerTest extends AbstractEmbeddedCassandraSetu
     }
 
     @Test
-    public void testExportContingencies3()  {
+    public void testExportContingencies3() {
         Throwable e = null;
         String lineFilters = genContingencyFilter("*", "*", EquipmentType.LINE, -1, "=", Collections.emptySet());
         try {
@@ -400,5 +401,75 @@ public class ContingencyListControllerTest extends AbstractEmbeddedCassandraSetu
         ContingencyListAttributes contingencyListAttributes2 = new ContingencyListAttributes();
         assertNull(contingencyListAttributes2.getName());
         assertNull(contingencyListAttributes2.getType());
+    }
+
+    @Test
+    public void replaceFiltersWithScriptTest() throws Exception {
+        String filters = "{\n" +
+                "  \"equipmentID\": \"GEN*\"," +
+                "  \"equipmentName\": \"GEN*\"," +
+                "  \"equipmentType\": \"GENERATOR\"," +
+                "  \"nominalVoltage\": \"100\"," +
+                "  \"nominalVoltageOperator\": \">\"," +
+                "  \"countries\": [\"FRANCE\", \"BELGIUM\"]" +
+                "}";
+
+        // Put data
+        mvc.perform(put("/" + VERSION + "/filters-contingency-lists/tic")
+                .content(filters)
+                .contentType(APPLICATION_JSON))
+                .andExpect(status().isOk());
+
+        // replace with groovy script
+        mvc.perform(put("/" + VERSION + "/filters-contingency-lists/tic/replace-with-script")
+                .content(filters)
+                .contentType(APPLICATION_JSON))
+                .andExpect(status().isOk());
+
+        // check filter list tic not found
+        mvc.perform(get("/" + VERSION + "/filters-contingency-lists/tic")
+                .contentType(APPLICATION_JSON))
+                .andExpect(status().isNotFound());
+
+        // check script tic is found
+        mvc.perform(get("/" + VERSION + "/script-contingency-lists/tic")
+                .contentType(APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON));
+    }
+
+    @Test
+    public void copyFiltersToScriptTest() throws Exception {
+        String filters = "{\n" +
+                "  \"equipmentID\": \"GEN*\"," +
+                "  \"equipmentName\": \"GEN*\"," +
+                "  \"equipmentType\": \"GENERATOR\"," +
+                "  \"nominalVoltage\": \"100\"," +
+                "  \"nominalVoltageOperator\": \">\"," +
+                "  \"countries\": [\"FRANCE\", \"BELGIUM\"]" +
+                "}";
+
+        // Put data
+        mvc.perform(put("/" + VERSION + "/filters-contingency-lists/tic")
+                .content(filters)
+                .contentType(APPLICATION_JSON))
+                .andExpect(status().isOk());
+
+        // new script from filters
+        mvc.perform(put("/" + VERSION + "/filters-contingency-lists/tac/new-script")
+                .content(filters)
+                .contentType(APPLICATION_JSON))
+                .andExpect(status().isOk());
+
+        // check script tac is found
+        mvc.perform(get("/" + VERSION + "/script-contingency-lists/tac")
+                .contentType(APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON));
+
+        // check filter list tic found
+        mvc.perform(get("/" + VERSION + "/filters-contingency-lists/tic")
+                .contentType(APPLICATION_JSON))
+                .andExpect(status().isOk());
     }
 }
