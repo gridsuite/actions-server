@@ -12,6 +12,7 @@ spring:
         implicit-strategy: org.hibernate.boot.model.naming.ImplicitNamingStrategyJpaCompliantImpl
     properties:
       dialect: org.hibernate.dialect.PostgreSQLDialect
+    database-name: actions
 
 network-store-server:
   base-uri: http://localhost:8080

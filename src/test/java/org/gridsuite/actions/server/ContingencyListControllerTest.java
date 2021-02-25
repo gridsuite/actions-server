@@ -14,7 +14,6 @@ import com.powsybl.iidm.network.test.SvcTestCaseFactory;
 import com.powsybl.network.store.client.NetworkStoreService;
 import com.powsybl.network.store.client.PreloadingStrategy;
 import com.powsybl.network.store.iidm.impl.NetworkFactoryImpl;
-import com.zaxxer.hikari.HikariDataSource;
 import org.gridsuite.actions.server.dto.ContingencyListAttributes;
 import org.gridsuite.actions.server.entities.FiltersContingencyListEntity;
 import org.gridsuite.actions.server.entities.ScriptContingencyListEntity;
@@ -25,19 +24,16 @@ import org.gridsuite.actions.server.utils.EquipmentType;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.core.env.Environment;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.util.NestedServletException;
 
-import javax.sql.DataSource;
 import java.util.Collections;
 import java.util.Set;
 import java.util.UUID;
@@ -46,7 +42,6 @@ import static com.powsybl.network.store.model.NetworkStoreApi.VERSION;
 import static org.apache.commons.lang3.StringUtils.join;
 import static org.junit.Assert.*;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.when;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.http.MediaType.TEXT_PLAIN;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -80,9 +75,6 @@ public class ContingencyListControllerTest {
 
     @MockBean
     private NetworkStoreService networkStoreService;
-
-    @Mock
-    private Environment env;
 
     private void cleanDB() {
         scriptContingencyListRepository.deleteAll();
@@ -518,22 +510,5 @@ public class ContingencyListControllerTest {
         assertEquals("=", entity.getNominalVoltageOperator());
         assertTrue(entity.getCountries().contains("FRANCE"));
         assertTrue(entity.getCountries().contains("ITALY"));
-    }
-
-    @Test
-    public void dataSourceConfigTest() {
-        when(env.getRequiredProperty("driver")).thenReturn("postgresql");
-        when(env.getRequiredProperty("host")).thenReturn("localhost");
-        when(env.getRequiredProperty("port")).thenReturn("5432");
-        when(env.getRequiredProperty("database")).thenReturn("actions");
-        when(env.getRequiredProperty("login")).thenReturn("john");
-        when(env.getRequiredProperty("password")).thenReturn("doe");
-
-        DataSourceConfig config = new DataSourceConfig();
-        DataSource source = config.getDataSource(env);
-        if (source instanceof HikariDataSource) {
-            assertEquals("john", ((HikariDataSource) source).getUsername());
-            assertEquals("doe", ((HikariDataSource) source).getPassword());
-        }
     }
 }

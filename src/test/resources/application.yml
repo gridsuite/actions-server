@@ -1,7 +1,7 @@
 spring:
   jpa:
     database: H2
-    show-sql: false
+    show-sql: true
     hibernate:
       ddl-auto: create-drop
       naming:
@@ -9,7 +9,8 @@ spring:
         implicit-strategy: org.hibernate.boot.model.naming.ImplicitNamingStrategyJpaCompliantImpl
     properties:
       dialect: org.hibernate.dialect.H2Dialect
-      format_sql: false
+      format_sql: true
+    database-name: actions
 
 logging:
   level:

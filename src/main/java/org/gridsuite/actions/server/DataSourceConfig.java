@@ -24,18 +24,14 @@ import javax.sql.DataSource;
 public class DataSourceConfig {
     @Bean
     public DataSource getDataSource(Environment env) {
+        String url = env.getRequiredProperty("scheme") + "://" + env.getRequiredProperty("hostPort")
+                + "/" + env.getRequiredProperty("spring.jpa.database-name") + env.getProperty("query");
+
         DataSourceBuilder dataSourceBuilder = DataSourceBuilder.create();
-        String driver = env.getRequiredProperty("driver");
-        if (driver.equals("h2")) {
-            dataSourceBuilder.url(env.getRequiredProperty("url"));
-        } else if (driver.equals("postgresql")) {
-            dataSourceBuilder.url("jdbc:postgresql://" +
-                    env.getRequiredProperty("host") + ":" +
-                    env.getRequiredProperty("port") + "/" +
-                    env.getRequiredProperty("database"));
-            dataSourceBuilder.username(env.getRequiredProperty("login"));
-            dataSourceBuilder.password(env.getRequiredProperty("password"));
-        }
+        dataSourceBuilder.driverClassName(env.getRequiredProperty("driverClassName"));
+        dataSourceBuilder.url(url);
+        dataSourceBuilder.username(env.getRequiredProperty("login"));
+        dataSourceBuilder.password(env.getRequiredProperty("password"));
         return dataSourceBuilder.build();
     }
 }
