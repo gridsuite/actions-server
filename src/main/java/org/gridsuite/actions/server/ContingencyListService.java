@@ -125,7 +125,7 @@ public class ContingencyListService {
     boolean countryFilter(Connectable<?> con, FiltersContingencyList filter) {
         Set<String> countries = filter.getCountries();
         return countries.isEmpty() || con.getTerminals().stream().anyMatch(connectable ->
-            connectable.getVoltageLevel().getSubstation().getCountry().isPresent() && countries.contains(connectable.getVoltageLevel().getSubstation().getCountry().get().getName()));
+            connectable.getVoltageLevel().getSubstation().getCountry().isPresent() && countries.contains(connectable.getVoltageLevel().getSubstation().getCountry().get().name()));
     }
 
     boolean countryFilter(HvdcLine hvdcLine, FiltersContingencyList filter) {
