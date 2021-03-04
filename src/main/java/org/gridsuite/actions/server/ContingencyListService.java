@@ -52,7 +52,7 @@ public class ContingencyListService {
 
     private final PathMatcher antMatcher = new AntPathMatcher("\0");
 
-    private FiltersToGroovyScript filtersToScript = new FiltersToGroovyScript();
+    private final FiltersToGroovyScript filtersToScript = new FiltersToGroovyScript();
 
     public ContingencyListService(ScriptContingencyListRepository scriptContingencyListRepository, FiltersContingencyListRepository filtersContingencyListRepository,
                                   NetworkStoreService networkStoreService) {

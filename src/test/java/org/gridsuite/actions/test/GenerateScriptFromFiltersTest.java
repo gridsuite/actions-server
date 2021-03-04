@@ -27,21 +27,14 @@ public class GenerateScriptFromFiltersTest {
         countries.add("FR");
         countries.add("BE");
 
-        assertEquals("import org.springframework.util.AntPathMatcher\n" +
-                "import org.springframework.util.PathMatcher\n" +
-                "\n" +
-                "PathMatcher antMatcher = new AntPathMatcher(\"\\0\")\n" +
-                "\n" +
-                "noNominalV = 90.0 == -1\n" +
-                "noCountries = ['FR','BE'].isEmpty()\n" +
+        assertEquals("import org.gridsuite.actions.server.utils.FiltersUtils;\n" +
                 "\n" +
                 "for (equipment in network.generators) {\n" +
-                "  if (   (noNominalV || equipment.terminal.voltageLevel.nominalV == 90.0)\n" +
-                "         && (antMatcher.match('BRESS*', equipment.id) || (equipment.optionalName.isPresent() && antMatcher.match('OTHER*', equipment.name)))\n" +
-                "         && (noCountries || equipment.terminals.stream().anyMatch{connectable ->\n" +
-                "             connectable.voltageLevel.substation.country.isPresent() && ['FR','BE'].contains(connectable.voltageLevel.substation.country.get().name())})) {\n" +
-                "           contingency(equipment.id) { equipments equipment.id }\n" +
-                "         }\n" +
+                "  if (   (90.0 == -1 || equipment.terminal.voltageLevel.nominalV == 90.0)\n" +
+                "      && (FiltersUtils.matchID('BRESS*', equipment) || FiltersUtils.matchName('OTHER*', equipment))\n" +
+                "      && FiltersUtils.isLocatedIn(['FR','BE'], equipment)) {\n" +
+                "        contingency(equipment.id) { equipments equipment.id }\n" +
+                "      }\n" +
                 "}\n", filtersToScript.generateGroovyScriptFromFilters(new FiltersContingencyListAttributes("BRESS*",
                 "OTHER*",
                 "GENERATOR",
@@ -49,22 +42,16 @@ public class GenerateScriptFromFiltersTest {
                 "=",
                 countries)));
 
-        assertEquals("import org.springframework.util.AntPathMatcher\n" +
-                "import org.springframework.util.PathMatcher\n" +
-                "\n" +
-                "PathMatcher antMatcher = new AntPathMatcher(\"\\0\")\n" +
-                "\n" +
-                "noNominalV = -1.0 == -1\n" +
-                "noCountries = [].isEmpty()\n" +
+        assertEquals("import org.gridsuite.actions.server.utils.FiltersUtils;\n" +
                 "\n" +
                 "for (equipment in network.twoWindingsTransformers) {\n" +
-                "  if (   (noNominalV || equipment.terminal1.voltageLevel.nominalV >= -1.0\n" +
+                "  if (   (   -1.0 == -1\n" +
+                "          || equipment.terminal1.voltageLevel.nominalV >= -1.0\n" +
                 "          || equipment.terminal2.voltageLevel.nominalV >= -1.0)\n" +
-                "         && (antMatcher.match('*', equipment.id) || (equipment.optionalName.isPresent() && antMatcher.match('*', equipment.name)))\n" +
-                "         && (noCountries || equipment.terminals.stream().anyMatch{connectable ->\n" +
-                "             connectable.voltageLevel.substation.country.isPresent() && [].contains(connectable.voltageLevel.substation.country.get().name())})) {\n" +
+                "      && (FiltersUtils.matchID('*', equipment) || FiltersUtils.matchName('*', equipment))\n" +
+                "      && FiltersUtils.isLocatedIn([], equipment)) {\n" +
                 "           contingency(equipment.id) { equipments equipment.id }\n" +
-                "         }\n" +
+                "      }\n" +
                 "}\n", filtersToScript.generateGroovyScriptFromFilters(new FiltersContingencyListAttributes("*",
                 "*",
                 "TWO_WINDINGS_TRANSFORMER",
@@ -72,24 +59,15 @@ public class GenerateScriptFromFiltersTest {
                 ">=",
                 new HashSet<>())));
 
-        assertEquals("import org.springframework.util.AntPathMatcher\n" +
-                "import org.springframework.util.PathMatcher\n" +
-                "\n" +
-                "PathMatcher antMatcher = new AntPathMatcher(\"\\0\")\n" +
-                "\n" +
-                "noNominalV = -1.0 == -1\n" +
-                "noCountries = ['FR','BE'].isEmpty()\n" +
+        assertEquals("import org.gridsuite.actions.server.utils.FiltersUtils;\n" +
                 "\n" +
                 "for (equipment in network.hvdcLines) {\n" +
-                "  if (   (noNominalV || equipment.nominalV <= -1.0)\n" +
-                "         && (antMatcher.match('BAIXA*', equipment.id) || (equipment.optionalName.isPresent() && antMatcher.match('*', equipment.name)))\n" +
-                "         && (noCountries ||\n" +
-                "             equipment.converterStation1.terminals.stream().anyMatch{connectable ->\n" +
-                "                     connectable.voltageLevel.substation.country.isPresent() && ['FR','BE'].contains(connectable.voltageLevel.substation.country.get().name())} ||\n" +
-                "             equipment.converterStation2.terminals.stream().anyMatch{connectable ->\n" +
-                "                     connectable.voltageLevel.substation.country.isPresent() && ['FR','BE'].contains(connectable.voltageLevel.substation.country.get().name())})) {\n" +
+                "  if (   (-1.0 == -1 || equipment.nominalV <= -1.0)\n" +
+                "      && (FiltersUtils.matchID('BAIXA*', equipment) || FiltersUtils.matchName('*', equipment))\n" +
+                "      && (   FiltersUtils.isLocatedIn(['FR','BE'], equipment.converterStation1)\n" +
+                "          || FiltersUtils.isLocatedIn(['FR','BE'], equipment.converterStation2))) {\n" +
                 "           contingency(equipment.id) { equipments equipment.id }\n" +
-                "         }\n" +
+                "      }\n" +
                 "}\n", filtersToScript.generateGroovyScriptFromFilters(new FiltersContingencyListAttributes("BAIXA*",
                 "*",
                 "HVDC_LINE",
@@ -97,21 +75,14 @@ public class GenerateScriptFromFiltersTest {
                 "<=",
                 countries)));
 
-        assertEquals("import org.springframework.util.AntPathMatcher\n" +
-                "import org.springframework.util.PathMatcher\n" +
-                "\n" +
-                "PathMatcher antMatcher = new AntPathMatcher(\"\\0\")\n" +
-                "\n" +
-                "noNominalV = 225.0 == -1\n" +
-                "noCountries = [].isEmpty()\n" +
+        assertEquals("import org.gridsuite.actions.server.utils.FiltersUtils;\n" +
                 "\n" +
                 "for (equipment in network.danglingLines) {\n" +
-                "  if (   (noNominalV || equipment.terminal.voltageLevel.nominalV == 225.0)\n" +
-                "         && (antMatcher.match('*', equipment.id) || (equipment.optionalName.isPresent() && antMatcher.match('*', equipment.name)))\n" +
-                "         && (noCountries || equipment.terminals.stream().anyMatch{connectable ->\n" +
-                "             connectable.voltageLevel.substation.country.isPresent() && [].contains(connectable.voltageLevel.substation.country.get().name())})) {\n" +
-                "           contingency(equipment.id) { equipments equipment.id }\n" +
-                "         }\n" +
+                "  if (   (225.0 == -1 || equipment.terminal.voltageLevel.nominalV == 225.0)\n" +
+                "      && (FiltersUtils.matchID('*', equipment) || FiltersUtils.matchName('*', equipment))\n" +
+                "      && FiltersUtils.isLocatedIn([], equipment)) {\n" +
+                "        contingency(equipment.id) { equipments equipment.id }\n" +
+                "      }\n" +
                 "}\n", filtersToScript.generateGroovyScriptFromFilters(new FiltersContingencyListAttributes("*",
                 "*",
                 "DANGLING_LINE",
@@ -119,21 +90,14 @@ public class GenerateScriptFromFiltersTest {
                 "=",
                 new HashSet<>())));
 
-        assertEquals("import org.springframework.util.AntPathMatcher\n" +
-                "import org.springframework.util.PathMatcher\n" +
-                "\n" +
-                "PathMatcher antMatcher = new AntPathMatcher(\"\\0\")\n" +
-                "\n" +
-                "noNominalV = -1.0 == -1\n" +
-                "noCountries = [].isEmpty()\n" +
+        assertEquals("import org.gridsuite.actions.server.utils.FiltersUtils;\n" +
                 "\n" +
                 "for (equipment in network.staticVarCompensators) {\n" +
-                "  if (   (noNominalV || equipment.terminal.voltageLevel.nominalV == -1.0)\n" +
-                "         && (antMatcher.match('SVC*', equipment.id) || (equipment.optionalName.isPresent() && antMatcher.match('*', equipment.name)))\n" +
-                "         && (noCountries || equipment.terminals.stream().anyMatch{connectable ->\n" +
-                "             connectable.voltageLevel.substation.country.isPresent() && [].contains(connectable.voltageLevel.substation.country.get().name())})) {\n" +
-                "           contingency(equipment.id) { equipments equipment.id }\n" +
-                "         }\n" +
+                "  if (   (-1.0 == -1 || equipment.terminal.voltageLevel.nominalV == -1.0)\n" +
+                "      && (FiltersUtils.matchID('SVC*', equipment) || FiltersUtils.matchName('*', equipment))\n" +
+                "      && FiltersUtils.isLocatedIn([], equipment)) {\n" +
+                "        contingency(equipment.id) { equipments equipment.id }\n" +
+                "      }\n" +
                 "}\n", filtersToScript.generateGroovyScriptFromFilters(new FiltersContingencyListAttributes("SVC*",
                 "*",
                 "STATIC_VAR_COMPENSATOR",
@@ -141,21 +105,14 @@ public class GenerateScriptFromFiltersTest {
                 "=",
                 new HashSet<>())));
 
-        assertEquals("import org.springframework.util.AntPathMatcher\n" +
-                "import org.springframework.util.PathMatcher\n" +
-                "\n" +
-                "PathMatcher antMatcher = new AntPathMatcher(\"\\0\")\n" +
-                "\n" +
-                "noNominalV = 90.0 == -1\n" +
-                "noCountries = [].isEmpty()\n" +
+        assertEquals("import org.gridsuite.actions.server.utils.FiltersUtils;\n" +
                 "\n" +
                 "for (equipment in network.shuntCompensators) {\n" +
-                "  if (   (noNominalV || equipment.terminal.voltageLevel.nominalV < 90.0)\n" +
-                "         && (antMatcher.match('*', equipment.id) || (equipment.optionalName.isPresent() && antMatcher.match('SHUNT*', equipment.name)))\n" +
-                "         && (noCountries || equipment.terminals.stream().anyMatch{connectable ->\n" +
-                "             connectable.voltageLevel.substation.country.isPresent() && [].contains(connectable.voltageLevel.substation.country.get().name())})) {\n" +
-                "           contingency(equipment.id) { equipments equipment.id }\n" +
-                "         }\n" +
+                "  if (   (90.0 == -1 || equipment.terminal.voltageLevel.nominalV < 90.0)\n" +
+                "      && (FiltersUtils.matchID('*', equipment) || FiltersUtils.matchName('SHUNT*', equipment))\n" +
+                "      && FiltersUtils.isLocatedIn([], equipment)) {\n" +
+                "        contingency(equipment.id) { equipments equipment.id }\n" +
+                "      }\n" +
                 "}\n", filtersToScript.generateGroovyScriptFromFilters(new FiltersContingencyListAttributes("*",
                 "SHUNT*",
                 "SHUNT_COMPENSATOR",
@@ -163,22 +120,16 @@ public class GenerateScriptFromFiltersTest {
                 "<",
                 new HashSet<>())));
 
-        assertEquals("import org.springframework.util.AntPathMatcher\n" +
-                "import org.springframework.util.PathMatcher\n" +
-                "\n" +
-                "PathMatcher antMatcher = new AntPathMatcher(\"\\0\")\n" +
-                "\n" +
-                "noNominalV = 225.0 == -1\n" +
-                "noCountries = [].isEmpty()\n" +
+        assertEquals("import org.gridsuite.actions.server.utils.FiltersUtils;\n" +
                 "\n" +
                 "for (equipment in network.lines) {\n" +
-                "  if (   (noNominalV || equipment.terminal1.voltageLevel.nominalV == 225.0\n" +
+                "  if (   (   225.0 == -1\n" +
+                "          || equipment.terminal1.voltageLevel.nominalV == 225.0\n" +
                 "          || equipment.terminal2.voltageLevel.nominalV == 225.0)\n" +
-                "         && (antMatcher.match('*', equipment.id) || (equipment.optionalName.isPresent() && antMatcher.match('*', equipment.name)))\n" +
-                "         && (noCountries || equipment.terminals.stream().anyMatch{connectable ->\n" +
-                "             connectable.voltageLevel.substation.country.isPresent() && [].contains(connectable.voltageLevel.substation.country.get().name())})) {\n" +
+                "      && (FiltersUtils.matchID('*', equipment) || FiltersUtils.matchName('*', equipment))\n" +
+                "      && FiltersUtils.isLocatedIn([], equipment)) {\n" +
                 "           contingency(equipment.id) { equipments equipment.id }\n" +
-                "         }\n" +
+                "      }\n" +
                 "}\n", filtersToScript.generateGroovyScriptFromFilters(new FiltersContingencyListAttributes("*",
                 "*",
                 "LINE",
@@ -186,21 +137,14 @@ public class GenerateScriptFromFiltersTest {
                 "=",
                 new HashSet<>())));
 
-        assertEquals("import org.springframework.util.AntPathMatcher\n" +
-                "import org.springframework.util.PathMatcher\n" +
-                "\n" +
-                "PathMatcher antMatcher = new AntPathMatcher(\"\\0\")\n" +
-                "\n" +
-                "noNominalV = 63.0 == -1\n" +
-                "noCountries = ['FR','BE'].isEmpty()\n" +
+        assertEquals("import org.gridsuite.actions.server.utils.FiltersUtils;\n" +
                 "\n" +
                 "for (equipment in network.busbarSections) {\n" +
-                "  if (   (noNominalV || equipment.terminal.voltageLevel.nominalV >= 63.0)\n" +
-                "         && (antMatcher.match('BBS*', equipment.id) || (equipment.optionalName.isPresent() && antMatcher.match('BBS*', equipment.name)))\n" +
-                "         && (noCountries || equipment.terminals.stream().anyMatch{connectable ->\n" +
-                "             connectable.voltageLevel.substation.country.isPresent() && ['FR','BE'].contains(connectable.voltageLevel.substation.country.get().name())})) {\n" +
-                "           contingency(equipment.id) { equipments equipment.id }\n" +
-                "         }\n" +
+                "  if (   (63.0 == -1 || equipment.terminal.voltageLevel.nominalV >= 63.0)\n" +
+                "      && (FiltersUtils.matchID('BBS*', equipment) || FiltersUtils.matchName('BBS*', equipment))\n" +
+                "      && FiltersUtils.isLocatedIn(['FR','BE'], equipment)) {\n" +
+                "        contingency(equipment.id) { equipments equipment.id }\n" +
+                "      }\n" +
                 "}\n", filtersToScript.generateGroovyScriptFromFilters(new FiltersContingencyListAttributes("BBS*",
                 "BBS*",
                 "BUSBAR_SECTION",

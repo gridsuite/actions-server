@@ -1,16 +1,9 @@
-import org.springframework.util.AntPathMatcher
-import org.springframework.util.PathMatcher
-
-PathMatcher antMatcher = new AntPathMatcher("\0")
-
-noNominalV = <nominalV> == -1
-noCountries = <countries>.isEmpty()
+import org.gridsuite.actions.server.utils.FiltersUtils;
 
 for (equipment in network.<collectionName>) {
-  if (   (noNominalV || equipment.terminal.voltageLevel.nominalV <nominalVOperator> <nominalV>)
-         && (antMatcher.match('<equipmentId>', equipment.id) || (equipment.optionalName.isPresent() && antMatcher.match('<equipmentName>', equipment.name)))
-         && (noCountries || equipment.terminals.stream().anyMatch{connectable ->
-             connectable.voltageLevel.substation.country.isPresent() && <countries>.contains(connectable.voltageLevel.substation.country.get().name())})) {
-           contingency(equipment.id) { equipments equipment.id }
-         }
+  if (   (<nominalV> == -1 || equipment.terminal.voltageLevel.nominalV <nominalVOperator> <nominalV>)
+      && (FiltersUtils.matchID('<equipmentId>', equipment) || FiltersUtils.matchName('<equipmentName>', equipment))
+      && FiltersUtils.isLocatedIn(<countries>, equipment)) {
+        contingency(equipment.id) { equipments equipment.id }
+      }
 }
