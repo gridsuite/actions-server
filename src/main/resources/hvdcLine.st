@@ -11,9 +11,9 @@ for (equipment in network.<collectionName>) {
          && (antMatcher.match('<equipmentId>', equipment.id) || (equipment.optionalName.isPresent() && antMatcher.match('<equipmentName>', equipment.name)))
          && (noCountries ||
              equipment.converterStation1.terminals.stream().anyMatch{connectable ->
-                     connectable.voltageLevel.substation.country.isPresent() && <countries>.contains(connectable.voltageLevel.substation.country.get().name)} ||
+                     connectable.voltageLevel.substation.country.isPresent() && <countries>.contains(connectable.voltageLevel.substation.country.get().name())} ||
              equipment.converterStation2.terminals.stream().anyMatch{connectable ->
-                     connectable.voltageLevel.substation.country.isPresent() && <countries>.contains(connectable.voltageLevel.substation.country.get().name)})) {
+                     connectable.voltageLevel.substation.country.isPresent() && <countries>.contains(connectable.voltageLevel.substation.country.get().name())})) {
            contingency(equipment.id) { equipments equipment.id }
          }
 }

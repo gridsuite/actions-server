@@ -24,8 +24,8 @@ public class GenerateScriptFromFiltersTest {
         FiltersToGroovyScript filtersToScript = new FiltersToGroovyScript();
 
         LinkedHashSet<String> countries = new LinkedHashSet<>();
-        countries.add("FRANCE");
-        countries.add("BELGIUM");
+        countries.add("FR");
+        countries.add("BE");
 
         assertEquals("import org.springframework.util.AntPathMatcher\n" +
                 "import org.springframework.util.PathMatcher\n" +
@@ -33,13 +33,13 @@ public class GenerateScriptFromFiltersTest {
                 "PathMatcher antMatcher = new AntPathMatcher(\"\\0\")\n" +
                 "\n" +
                 "noNominalV = 90.0 == -1\n" +
-                "noCountries = ['FRANCE','BELGIUM'].isEmpty()\n" +
+                "noCountries = ['FR','BE'].isEmpty()\n" +
                 "\n" +
                 "for (equipment in network.generators) {\n" +
                 "  if (   (noNominalV || equipment.terminal.voltageLevel.nominalV == 90.0)\n" +
                 "         && (antMatcher.match('BRESS*', equipment.id) || (equipment.optionalName.isPresent() && antMatcher.match('OTHER*', equipment.name)))\n" +
                 "         && (noCountries || equipment.terminals.stream().anyMatch{connectable ->\n" +
-                "             connectable.voltageLevel.substation.country.isPresent() && ['FRANCE','BELGIUM'].contains(connectable.voltageLevel.substation.country.get().name)})) {\n" +
+                "             connectable.voltageLevel.substation.country.isPresent() && ['FR','BE'].contains(connectable.voltageLevel.substation.country.get().name())})) {\n" +
                 "           contingency(equipment.id) { equipments equipment.id }\n" +
                 "         }\n" +
                 "}\n", filtersToScript.generateGroovyScriptFromFilters(new FiltersContingencyListAttributes("BRESS*",
@@ -62,7 +62,7 @@ public class GenerateScriptFromFiltersTest {
                 "          || equipment.terminal2.voltageLevel.nominalV >= -1.0)\n" +
                 "         && (antMatcher.match('*', equipment.id) || (equipment.optionalName.isPresent() && antMatcher.match('*', equipment.name)))\n" +
                 "         && (noCountries || equipment.terminals.stream().anyMatch{connectable ->\n" +
-                "             connectable.voltageLevel.substation.country.isPresent() && [].contains(connectable.voltageLevel.substation.country.get().name)})) {\n" +
+                "             connectable.voltageLevel.substation.country.isPresent() && [].contains(connectable.voltageLevel.substation.country.get().name())})) {\n" +
                 "           contingency(equipment.id) { equipments equipment.id }\n" +
                 "         }\n" +
                 "}\n", filtersToScript.generateGroovyScriptFromFilters(new FiltersContingencyListAttributes("*",
@@ -78,16 +78,16 @@ public class GenerateScriptFromFiltersTest {
                 "PathMatcher antMatcher = new AntPathMatcher(\"\\0\")\n" +
                 "\n" +
                 "noNominalV = -1.0 == -1\n" +
-                "noCountries = ['FRANCE','BELGIUM'].isEmpty()\n" +
+                "noCountries = ['FR','BE'].isEmpty()\n" +
                 "\n" +
                 "for (equipment in network.hvdcLines) {\n" +
                 "  if (   (noNominalV || equipment.nominalV <= -1.0)\n" +
                 "         && (antMatcher.match('BAIXA*', equipment.id) || (equipment.optionalName.isPresent() && antMatcher.match('*', equipment.name)))\n" +
                 "         && (noCountries ||\n" +
                 "             equipment.converterStation1.terminals.stream().anyMatch{connectable ->\n" +
-                "                     connectable.voltageLevel.substation.country.isPresent() && ['FRANCE','BELGIUM'].contains(connectable.voltageLevel.substation.country.get().name)} ||\n" +
+                "                     connectable.voltageLevel.substation.country.isPresent() && ['FR','BE'].contains(connectable.voltageLevel.substation.country.get().name())} ||\n" +
                 "             equipment.converterStation2.terminals.stream().anyMatch{connectable ->\n" +
-                "                     connectable.voltageLevel.substation.country.isPresent() && ['FRANCE','BELGIUM'].contains(connectable.voltageLevel.substation.country.get().name)})) {\n" +
+                "                     connectable.voltageLevel.substation.country.isPresent() && ['FR','BE'].contains(connectable.voltageLevel.substation.country.get().name())})) {\n" +
                 "           contingency(equipment.id) { equipments equipment.id }\n" +
                 "         }\n" +
                 "}\n", filtersToScript.generateGroovyScriptFromFilters(new FiltersContingencyListAttributes("BAIXA*",
@@ -109,7 +109,7 @@ public class GenerateScriptFromFiltersTest {
                 "  if (   (noNominalV || equipment.terminal.voltageLevel.nominalV == 225.0)\n" +
                 "         && (antMatcher.match('*', equipment.id) || (equipment.optionalName.isPresent() && antMatcher.match('*', equipment.name)))\n" +
                 "         && (noCountries || equipment.terminals.stream().anyMatch{connectable ->\n" +
-                "             connectable.voltageLevel.substation.country.isPresent() && [].contains(connectable.voltageLevel.substation.country.get().name)})) {\n" +
+                "             connectable.voltageLevel.substation.country.isPresent() && [].contains(connectable.voltageLevel.substation.country.get().name())})) {\n" +
                 "           contingency(equipment.id) { equipments equipment.id }\n" +
                 "         }\n" +
                 "}\n", filtersToScript.generateGroovyScriptFromFilters(new FiltersContingencyListAttributes("*",
@@ -131,7 +131,7 @@ public class GenerateScriptFromFiltersTest {
                 "  if (   (noNominalV || equipment.terminal.voltageLevel.nominalV == -1.0)\n" +
                 "         && (antMatcher.match('SVC*', equipment.id) || (equipment.optionalName.isPresent() && antMatcher.match('*', equipment.name)))\n" +
                 "         && (noCountries || equipment.terminals.stream().anyMatch{connectable ->\n" +
-                "             connectable.voltageLevel.substation.country.isPresent() && [].contains(connectable.voltageLevel.substation.country.get().name)})) {\n" +
+                "             connectable.voltageLevel.substation.country.isPresent() && [].contains(connectable.voltageLevel.substation.country.get().name())})) {\n" +
                 "           contingency(equipment.id) { equipments equipment.id }\n" +
                 "         }\n" +
                 "}\n", filtersToScript.generateGroovyScriptFromFilters(new FiltersContingencyListAttributes("SVC*",
@@ -153,7 +153,7 @@ public class GenerateScriptFromFiltersTest {
                 "  if (   (noNominalV || equipment.terminal.voltageLevel.nominalV < 90.0)\n" +
                 "         && (antMatcher.match('*', equipment.id) || (equipment.optionalName.isPresent() && antMatcher.match('SHUNT*', equipment.name)))\n" +
                 "         && (noCountries || equipment.terminals.stream().anyMatch{connectable ->\n" +
-                "             connectable.voltageLevel.substation.country.isPresent() && [].contains(connectable.voltageLevel.substation.country.get().name)})) {\n" +
+                "             connectable.voltageLevel.substation.country.isPresent() && [].contains(connectable.voltageLevel.substation.country.get().name())})) {\n" +
                 "           contingency(equipment.id) { equipments equipment.id }\n" +
                 "         }\n" +
                 "}\n", filtersToScript.generateGroovyScriptFromFilters(new FiltersContingencyListAttributes("*",
@@ -176,7 +176,7 @@ public class GenerateScriptFromFiltersTest {
                 "          || equipment.terminal2.voltageLevel.nominalV == 225.0)\n" +
                 "         && (antMatcher.match('*', equipment.id) || (equipment.optionalName.isPresent() && antMatcher.match('*', equipment.name)))\n" +
                 "         && (noCountries || equipment.terminals.stream().anyMatch{connectable ->\n" +
-                "             connectable.voltageLevel.substation.country.isPresent() && [].contains(connectable.voltageLevel.substation.country.get().name)})) {\n" +
+                "             connectable.voltageLevel.substation.country.isPresent() && [].contains(connectable.voltageLevel.substation.country.get().name())})) {\n" +
                 "           contingency(equipment.id) { equipments equipment.id }\n" +
                 "         }\n" +
                 "}\n", filtersToScript.generateGroovyScriptFromFilters(new FiltersContingencyListAttributes("*",
@@ -192,13 +192,13 @@ public class GenerateScriptFromFiltersTest {
                 "PathMatcher antMatcher = new AntPathMatcher(\"\\0\")\n" +
                 "\n" +
                 "noNominalV = 63.0 == -1\n" +
-                "noCountries = ['FRANCE','BELGIUM'].isEmpty()\n" +
+                "noCountries = ['FR','BE'].isEmpty()\n" +
                 "\n" +
                 "for (equipment in network.busbarSections) {\n" +
                 "  if (   (noNominalV || equipment.terminal.voltageLevel.nominalV >= 63.0)\n" +
                 "         && (antMatcher.match('BBS*', equipment.id) || (equipment.optionalName.isPresent() && antMatcher.match('BBS*', equipment.name)))\n" +
                 "         && (noCountries || equipment.terminals.stream().anyMatch{connectable ->\n" +
-                "             connectable.voltageLevel.substation.country.isPresent() && ['FRANCE','BELGIUM'].contains(connectable.voltageLevel.substation.country.get().name)})) {\n" +
+                "             connectable.voltageLevel.substation.country.isPresent() && ['FR','BE'].contains(connectable.voltageLevel.substation.country.get().name())})) {\n" +
                 "           contingency(equipment.id) { equipments equipment.id }\n" +
                 "         }\n" +
                 "}\n", filtersToScript.generateGroovyScriptFromFilters(new FiltersContingencyListAttributes("BBS*",

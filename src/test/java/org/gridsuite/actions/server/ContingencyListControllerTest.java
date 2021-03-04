@@ -411,7 +411,7 @@ public class ContingencyListControllerTest extends AbstractEmbeddedCassandraSetu
                 "  \"equipmentType\": \"GENERATOR\"," +
                 "  \"nominalVoltage\": \"100\"," +
                 "  \"nominalVoltageOperator\": \">\"," +
-                "  \"countries\": [\"FRANCE\", \"BELGIUM\"]" +
+                "  \"countries\": [\"FR\", \"BE\"]" +
                 "}";
 
         // Put data
@@ -446,7 +446,7 @@ public class ContingencyListControllerTest extends AbstractEmbeddedCassandraSetu
                 "  \"equipmentType\": \"GENERATOR\"," +
                 "  \"nominalVoltage\": \"100\"," +
                 "  \"nominalVoltageOperator\": \">\"," +
-                "  \"countries\": [\"FRANCE\", \"BELGIUM\"]" +
+                "  \"countries\": [\"FR\", \"BE\"]" +
                 "}";
 
         // Put data
