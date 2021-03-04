@@ -98,7 +98,7 @@ public class ContingencyListControllerTest extends AbstractEmbeddedCassandraSetu
                 "  \"equipmentType\": \"GENERATOR\"," +
                 "  \"nominalVoltage\": \"100\"," +
                 "  \"nominalVoltageOperator\": \">\"," +
-                "  \"countries\": [\"FRANCE\", \"BELGIUM\"]" +
+                "  \"countries\": [\"FR\", \"BE\"]" +
                 "}";
 
         // Put data
@@ -244,8 +244,8 @@ public class ContingencyListControllerTest extends AbstractEmbeddedCassandraSetu
     @Test
     public void testExportContingencies1() throws Exception {
         Set<String> noCountries = Collections.emptySet();
-        Set<String> francie = Collections.singleton("FRANCE");
-        Set<String> belgium = Collections.singleton("BELGIUM");
+        Set<String> france = Collections.singleton("FR");
+        Set<String> belgium = Collections.singleton("BE");
         String lineFilters  = genContingencyFilter("*", "*", EquipmentType.LINE, -1, "=", noCountries);
         String lineFilters1 = genContingencyFilter("NHV1*", "*", EquipmentType.LINE, 100, "<", noCountries);
         String lineFilters2 = genContingencyFilter("NHV1*", "*", EquipmentType.LINE, 380, "=", noCountries);
@@ -253,7 +253,7 @@ public class ContingencyListControllerTest extends AbstractEmbeddedCassandraSetu
         String lineFilters4 = genContingencyFilter("NHV1*", "*", EquipmentType.LINE, 390, "<=", noCountries);
         String lineFilters5 = genContingencyFilter("*", "*", EquipmentType.LINE, 100, ">", noCountries);
         String lineFilters6 = genContingencyFilter("UNKNOWN", "NVH1*", EquipmentType.LINE, 100, ">", noCountries);
-        String lineFilters7 = genContingencyFilter("*", "*", EquipmentType.LINE, -1, ">", francie);
+        String lineFilters7 = genContingencyFilter("*", "*", EquipmentType.LINE, -1, ">", france);
 
         testExportContingencies("lineFilters", lineFilters, " [{\"id\":\"NHV1_NHV2_2\",\"elements\":[{\"id\":\"NHV1_NHV2_2\",\"type\":\"BRANCH\"}]},{\"id\":\"NHV1_NHV2_1\",\"elements\":[{\"id\":\"NHV1_NHV2_1\",\"type\":\"BRANCH\"}]}]", NETWORK_UUID);
         testExportContingencies("lineFilters", lineFilters1, " []", NETWORK_UUID);
@@ -268,7 +268,7 @@ public class ContingencyListControllerTest extends AbstractEmbeddedCassandraSetu
         String twtFilters1 = "{\"equipmentID\": \"NGEN_NHV1\", \"equipmentName\": \"*\", \"equipmentType\": \"TWO_WINDINGS_TRANSFORMER\", \"nominalVoltage\": \"-1\",\"nominalVoltageOperator\": \"*\"}";
         String twtFilters2 = "{\"equipmentID\": \"UNKNOWN\", \"equipmentName\": \"NGEN_NHV1\", \"equipmentType\": \"TWO_WINDINGS_TRANSFORMER\", \"nominalVoltage\": \"-1\",\"nominalVoltageOperator\": \"*\"}";
         String twtFilters3 = "{\"equipmentID\": \"*\", \"equipmentName\": \"*\", \"equipmentType\": \"TWO_WINDINGS_TRANSFORMER\", \"nominalVoltage\": \"10\",\"nominalVoltageOperator\": \">\"}";
-        String twtFilters4 = genContingencyFilter("*", "*", EquipmentType.TWO_WINDINGS_TRANSFORMER, -1, ">", francie);
+        String twtFilters4 = genContingencyFilter("*", "*", EquipmentType.TWO_WINDINGS_TRANSFORMER, -1, ">", france);
         testExportContingencies("twtFilters", twtFilters, " [{\"id\":\"NGEN_NHV1\",\"elements\":[{\"id\":\"NGEN_NHV1\",\"type\":\"BRANCH\"}]},{\"id\":\"NHV2_NLOAD\",\"elements\":[{\"id\":\"NHV2_NLOAD\",\"type\":\"BRANCH\"}]}]", NETWORK_UUID);
         testExportContingencies("twtFilters", twtFilters1, " [{\"id\":\"NGEN_NHV1\",\"elements\":[{\"id\":\"NGEN_NHV1\",\"type\":\"BRANCH\"}]}]", NETWORK_UUID);
         testExportContingencies("twtFilters", twtFilters2, " []", NETWORK_UUID);
@@ -279,7 +279,7 @@ public class ContingencyListControllerTest extends AbstractEmbeddedCassandraSetu
         String generatorFilters2 = "{\"equipmentID\": \"GEN\", \"equipmentName\": \"*\", \"equipmentType\": \"GENERATOR\", \"nominalVoltage\": \"-1\",\"nominalVoltageOperator\": \"=\"}";
         String generatorFilters3 = "{\"equipmentID\": \"UNKNOWN\", \"equipmentName\": \"GEN\", \"equipmentType\": \"GENERATOR\", \"nominalVoltage\": \"-1\",\"nominalVoltageOperator\": \"=\"}";
         String generatorFilters4 = "{\"equipmentID\": \"UNKNOWN\", \"equipmentName\": \"*\", \"equipmentType\": \"GENERATOR\", \"nominalVoltage\": \"10\",\"nominalVoltageOperator\": \"<\"}";
-        String generatorFilters5 = genContingencyFilter("*", "*", EquipmentType.GENERATOR, -1, ">", francie);
+        String generatorFilters5 = genContingencyFilter("*", "*", EquipmentType.GENERATOR, -1, ">", france);
         String generatorFilters6 = genContingencyFilter("*", "*", EquipmentType.GENERATOR, -1, ">", belgium);
         testExportContingencies("generatorFilters", generatorFilters, " [{\"id\":\"GEN\",\"elements\":[{\"id\":\"GEN\",\"type\":\"GENERATOR\"}]},{\"id\":\"GEN2\",\"elements\":[{\"id\":\"GEN2\",\"type\":\"GENERATOR\"}]}]", NETWORK_UUID);
         testExportContingencies("generatorFilters", generatorFilters2, " [{\"id\":\"GEN\",\"elements\":[{\"id\":\"GEN\",\"type\":\"GENERATOR\"}]}]", NETWORK_UUID);
@@ -292,7 +292,7 @@ public class ContingencyListControllerTest extends AbstractEmbeddedCassandraSetu
         String svcFilters2 = "{\"equipmentID\": \"SVC3\", \"equipmentName\": \"*\", \"equipmentType\": \"STATIC_VAR_COMPENSATOR\", \"nominalVoltage\": \"-1\",\"nominalVoltageOperator\": \"=\"}";
         String svcFilters3 = "{\"equipmentID\": \"UNKNOWN\", \"equipmentName\": \"SVC2*\", \"equipmentType\": \"STATIC_VAR_COMPENSATOR\", \"nominalVoltage\": \"-1\",\"nominalVoltageOperator\": \"=\"}";
         String svcFilters4 = "{\"equipmentID\": \"*\", \"equipmentName\": \"*\", \"equipmentType\": \"STATIC_VAR_COMPENSATOR\", \"nominalVoltage\": \"100\",\"nominalVoltageOperator\": \"<\"}";
-        String svcFilters5 = genContingencyFilter("*", "*", EquipmentType.STATIC_VAR_COMPENSATOR, -1, "<", francie);
+        String svcFilters5 = genContingencyFilter("*", "*", EquipmentType.STATIC_VAR_COMPENSATOR, -1, "<", france);
         String svcFilters6 = genContingencyFilter("*", "*", EquipmentType.STATIC_VAR_COMPENSATOR, -1, "<", belgium);
         testExportContingencies("svcFilters", svcFilters, " [{\"id\":\"SVC3\",\"elements\":[{\"id\":\"SVC3\",\"type\":\"STATIC_VAR_COMPENSATOR\"}]}," +
                 "{\"id\":\"SVC2\",\"elements\":[{\"id\":\"SVC2\",\"type\":\"STATIC_VAR_COMPENSATOR\"}]}]", NETWORK_UUID_3);
