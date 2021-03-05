@@ -6,6 +6,7 @@ import org.springframework.util.AntPathMatcher;
 import org.springframework.util.PathMatcher;
 
 import java.util.List;
+import java.util.Optional;
 
 public final class FiltersUtils {
     private static final PathMatcher ANT_MATCHER = new AntPathMatcher("\0");
@@ -19,7 +20,12 @@ public final class FiltersUtils {
     }
 
     public static boolean matchName(String filterName, Identifiable<?> equipment) {
-        return equipment.getOptionalName().isPresent() && ANT_MATCHER.match(filterName, (String) equipment.getOptionalName().get());
+        Optional<String> name = equipment.getOptionalName();
+        if (name.isPresent()) {
+            return ANT_MATCHER.match(filterName, name.get());
+        } else {
+            return false;
+        }
     }
 
     public static boolean isLocatedIn(List<String> filterCountries, Connectable<?> equipment) {
