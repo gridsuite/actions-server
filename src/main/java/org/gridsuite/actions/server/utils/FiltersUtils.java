@@ -29,8 +29,8 @@ public final class FiltersUtils {
     }
 
     public static boolean isLocatedIn(List<String> filterCountries, Connectable<?> equipment) {
-        return filterCountries.isEmpty() || equipment.getTerminals().stream().anyMatch(connectable ->
-                connectable.getVoltageLevel().getSubstation().getCountry().isPresent()
-                        && filterCountries.contains(connectable.getVoltageLevel().getSubstation().getCountry().get().name()));
+        return filterCountries.isEmpty() || equipment.getTerminals().stream().anyMatch(t ->
+                t.getVoltageLevel().getSubstation().getCountry().isPresent()
+                        && filterCountries.contains(t.getVoltageLevel().getSubstation().getCountry().get().name()));
     }
 }
