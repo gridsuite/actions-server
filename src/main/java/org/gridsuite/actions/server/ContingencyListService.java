@@ -52,6 +52,8 @@ public class ContingencyListService {
 
     private final PathMatcher antMatcher = new AntPathMatcher("\0");
 
+    private final FiltersToGroovyScript filtersToScript = new FiltersToGroovyScript();
+
     public ContingencyListService(ScriptContingencyListRepository scriptContingencyListRepository, FiltersContingencyListRepository filtersContingencyListRepository,
                                   NetworkStoreService networkStoreService) {
         this.scriptContingencyListRepository = scriptContingencyListRepository;
@@ -306,5 +308,32 @@ public class ContingencyListService {
             ));
             return oldFiltersContingencyListEntity;
         }).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Contingency list " + name + " not found")));
+    }
+
+    private String generateGroovyScriptFromFilters(FiltersContingencyListAttributes filtersContingencyListAttributes) {
+        return filtersToScript.generateGroovyScriptFromFilters(filtersContingencyListAttributes);
+    }
+
+    public void replaceFilterContingencyListWithScript(String name, FiltersContingencyListAttributes filtersContingencyListAttributes) {
+        Objects.requireNonNull(name);
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("Replace filter contingency list with script'{}'", sanitizeParam(name));
+        }
+
+        String script = generateGroovyScriptFromFilters(filtersContingencyListAttributes);
+
+        scriptContingencyListRepository.insert(new ScriptContingencyListEntity(name, script));
+        filtersContingencyListRepository.deleteByName(name);
+    }
+
+    void newScriptFromFiltersContingencyList(String name, FiltersContingencyListAttributes filtersContingencyListAttributes) {
+        Objects.requireNonNull(name);
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("New script from filter contingency list'{}'", sanitizeParam(name));
+        }
+
+        String script = generateGroovyScriptFromFilters(filtersContingencyListAttributes);
+
+        scriptContingencyListRepository.insert(new ScriptContingencyListEntity(name, script));
     }
 }
