@@ -416,6 +416,37 @@ public class ContingencyListControllerTest {
     }
 
     @Test
+    public void scriptContingencyListEntityTest() {
+        ScriptContingencyListEntity entity = new ScriptContingencyListEntity();
+        entity.setName("list1");
+        entity.setScript("");
+
+        assertEquals("list1", entity.getName());
+        assertEquals("", entity.getScript());
+    }
+
+    @Test
+    public void filtersContingencyListEntityTest() {
+        FiltersContingencyListEntity entity = new FiltersContingencyListEntity();
+        entity.setName("list1");
+        entity.setEquipmentId("id1");
+        entity.setEquipmentName("name1");
+        entity.setEquipmentType("LINE");
+        entity.setNominalVoltage(225.);
+        entity.setNominalVoltageOperator("=");
+        entity.setCountries(Set.of("FRANCE", "ITALY"));
+
+        assertEquals("list1", entity.getName());
+        assertEquals("id1", entity.getEquipmentId());
+        assertEquals("name1", entity.getEquipmentName());
+        assertEquals("LINE", entity.getEquipmentType());
+        assertEquals(225., entity.getNominalVoltage(), 0.1);
+        assertEquals("=", entity.getNominalVoltageOperator());
+        assertTrue(entity.getCountries().contains("FRANCE"));
+        assertTrue(entity.getCountries().contains("ITALY"));
+    }
+
+    @Test
     public void replaceFiltersWithScriptTest() throws Exception {
         String filters = "{\n" +
                 "  \"equipmentID\": \"GEN*\"," +
@@ -446,6 +477,7 @@ public class ContingencyListControllerTest {
                 .contentType(APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON));
+        cleanDB();
     }
 
     @Test
@@ -479,36 +511,6 @@ public class ContingencyListControllerTest {
         mvc.perform(get("/" + VERSION + "/filters-contingency-lists/tic")
                 .contentType(APPLICATION_JSON))
                 .andExpect(status().isOk());
-    }
-
-    @Test
-    public void scriptContingencyListEntityTest() {
-        ScriptContingencyListEntity entity = new ScriptContingencyListEntity();
-        entity.setName("list1");
-        entity.setScript("");
-
-        assertEquals("list1", entity.getName());
-        assertEquals("", entity.getScript());
-    }
-
-    @Test
-    public void filtersContingencyListEntityTest() {
-        FiltersContingencyListEntity entity = new FiltersContingencyListEntity();
-        entity.setName("list1");
-        entity.setEquipmentId("id1");
-        entity.setEquipmentName("name1");
-        entity.setEquipmentType("LINE");
-        entity.setNominalVoltage(225.);
-        entity.setNominalVoltageOperator("=");
-        entity.setCountries(Set.of("FRANCE", "ITALY"));
-
-        assertEquals("list1", entity.getName());
-        assertEquals("id1", entity.getEquipmentId());
-        assertEquals("name1", entity.getEquipmentName());
-        assertEquals("LINE", entity.getEquipmentType());
-        assertEquals(225., entity.getNominalVoltage(), 0.1);
-        assertEquals("=", entity.getNominalVoltageOperator());
-        assertTrue(entity.getCountries().contains("FRANCE"));
-        assertTrue(entity.getCountries().contains("ITALY"));
+        cleanDB();
     }
 }
