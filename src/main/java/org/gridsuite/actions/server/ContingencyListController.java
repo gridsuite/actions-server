@@ -122,19 +122,18 @@ public class ContingencyListController {
         service.renameContingencyList(name, renameContingencyListAttributes.getNewContingencyListName());
     }
 
-    @PutMapping(value = "filters-contingency-lists/{name}/replace-with-script", consumes = MediaType.APPLICATION_JSON_VALUE)
-    @ApiOperation(value = "Replace a filters contingency list with a script contingency list", response = ContingencyList.class)
+    @PutMapping(value = "filters-contingency-lists/{name}/replace-with-script")
+    @ApiOperation(value = "Replace a filters contingency list with a script contingency list")
     @ApiResponses(value = {@ApiResponse(code = 200, message = "The filters contingency list have been replaced successfully")})
-    public void replaceFilterContingencyListWithScript(@PathVariable("name") String name,
-                                                       @RequestBody(required = true) FiltersContingencyListAttributes filtersContingencyListAttributes) {
-        service.replaceFilterContingencyListWithScript(name, filtersContingencyListAttributes);
+    public void replaceFilterContingencyListWithScript(@PathVariable("name") String name) {
+        service.replaceFilterContingencyListWithScript(name);
     }
 
-    @PutMapping(value = "filters-contingency-lists/{name}/new-script", consumes = MediaType.APPLICATION_JSON_VALUE)
-    @ApiOperation(value = "Create a new script contingency list from a filters contingency list", response = ContingencyList.class)
+    @PutMapping(value = "filters-contingency-lists/{name}/new-script/{scriptName}")
+    @ApiOperation(value = "Create a new script contingency list from a filters contingency list")
     @ApiResponses(value = {@ApiResponse(code = 200, message = "The script contingency list have been created successfully")})
     public void newScriptFromFiltersContingencyList(@PathVariable("name") String name,
-                                                    @RequestBody(required = true) FiltersContingencyListAttributes filtersContingencyListAttributes) {
-        service.newScriptFromFiltersContingencyList(name, filtersContingencyListAttributes);
+                                                    @PathVariable("scriptName") String scriptName) {
+        service.newScriptFromFiltersContingencyList(name, scriptName);
     }
 }

@@ -421,9 +421,7 @@ public class ContingencyListControllerTest extends AbstractEmbeddedCassandraSetu
                 .andExpect(status().isOk());
 
         // replace with groovy script
-        mvc.perform(put("/" + VERSION + "/filters-contingency-lists/tic/replace-with-script")
-                .content(filters)
-                .contentType(APPLICATION_JSON))
+        mvc.perform(put("/" + VERSION + "/filters-contingency-lists/tic/replace-with-script"))
                 .andExpect(status().isOk());
 
         // check filter list tic not found
@@ -456,9 +454,7 @@ public class ContingencyListControllerTest extends AbstractEmbeddedCassandraSetu
                 .andExpect(status().isOk());
 
         // new script from filters
-        mvc.perform(put("/" + VERSION + "/filters-contingency-lists/tac/new-script")
-                .content(filters)
-                .contentType(APPLICATION_JSON))
+        mvc.perform(put("/" + VERSION + "/filters-contingency-lists/tic/new-script/tac"))
                 .andExpect(status().isOk());
 
         // check script tac is found
