@@ -70,6 +70,11 @@ public class ContingencyListService {
                 entity.getEquipmentType(), entity.getNominalVoltage(), entity.getNominalVoltageOperator(), entity.getCountries());
     }
 
+    private static FiltersContingencyListAttributes fromFilterContingencyListEntityAttributes(FiltersContingencyListEntity entity) {
+        return new FiltersContingencyListAttributes(entity.getEquipmentId(), entity.getEquipmentName(),
+                entity.getEquipmentType(), entity.getNominalVoltage(), entity.getNominalVoltageOperator(), entity.getCountries());
+    }
+
     private static String sanitizeParam(String param) {
         return param != null ? param.replaceAll("[\n|\r|\t]", "_") : null;
     }
@@ -314,26 +319,34 @@ public class ContingencyListService {
         return filtersToScript.generateGroovyScriptFromFilters(filtersContingencyListAttributes);
     }
 
-    public void replaceFilterContingencyListWithScript(String name, FiltersContingencyListAttributes filtersContingencyListAttributes) {
+    public void replaceFilterContingencyListWithScript(String name) {
         Objects.requireNonNull(name);
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("Replace filter contingency list with script'{}'", sanitizeParam(name));
         }
 
-        String script = generateGroovyScriptFromFilters(filtersContingencyListAttributes);
-
-        scriptContingencyListRepository.insert(new ScriptContingencyListEntity(name, script));
-        filtersContingencyListRepository.deleteByName(name);
+        Optional<FiltersContingencyListEntity> filter = filtersContingencyListRepository.findByName(name);
+        filter.ifPresentOrElse(entity -> {
+            String script = generateGroovyScriptFromFilters(fromFilterContingencyListEntityAttributes(entity));
+            scriptContingencyListRepository.insert(new ScriptContingencyListEntity(name, script));
+            filtersContingencyListRepository.deleteByName(name);
+        }, () -> {
+                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Contingency list " + name + " not found");
+            });
     }
 
-    void newScriptFromFiltersContingencyList(String name, FiltersContingencyListAttributes filtersContingencyListAttributes) {
+    void newScriptFromFiltersContingencyList(String name, String scriptName) {
         Objects.requireNonNull(name);
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("New script from filter contingency list'{}'", sanitizeParam(name));
         }
 
-        String script = generateGroovyScriptFromFilters(filtersContingencyListAttributes);
-
-        scriptContingencyListRepository.insert(new ScriptContingencyListEntity(name, script));
+        Optional<FiltersContingencyListEntity> filter = filtersContingencyListRepository.findByName(name);
+        filter.ifPresentOrElse(entity -> {
+            String script = generateGroovyScriptFromFilters(fromFilterContingencyListEntityAttributes(entity));
+            scriptContingencyListRepository.insert(new ScriptContingencyListEntity(scriptName, script));
+        }, () -> {
+                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Contingency list " + name + " not found");
+            });
     }
 }
