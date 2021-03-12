@@ -80,15 +80,15 @@ public class FiltersToGroovyScript {
         ST template = new ST(script);
 
         template.add("collectionName", equipmentsCollection);
+        template.add("nominalVDefined", filtersContingencyListAttributes.getNominalVoltage() != -1);
         template.add("nominalV", filtersContingencyListAttributes.getNominalVoltage());
         template.add("nominalVOperator", filtersContingencyListAttributes.getNominalVoltageOperator().equals("=") ?
                 "==" :
                 filtersContingencyListAttributes.getNominalVoltageOperator());
         template.add("equipmentId", filtersContingencyListAttributes.getEquipmentID());
         template.add("equipmentName", filtersContingencyListAttributes.getEquipmentName());
-        template.add("countries", filtersContingencyListAttributes.getCountries().isEmpty()
-                ? "[]"
-                : filtersContingencyListAttributes.getCountries().stream().collect(joining("','", "['", "']")));
+        template.add("emptyCountries", filtersContingencyListAttributes.getCountries().isEmpty());
+        template.add("countries", filtersContingencyListAttributes.getCountries().stream().collect(joining("','", "['", "']")));
 
         return template.render();
     }
