@@ -14,6 +14,7 @@ import com.powsybl.network.store.client.NetworkStoreService;
 import com.powsybl.network.store.client.PreloadingStrategy;
 import com.powsybl.network.store.iidm.impl.NetworkFactoryImpl;
 import org.gridsuite.actions.server.dto.*;
+import org.gridsuite.actions.server.dto.ContingencyList;
 import org.gridsuite.actions.server.entities.FiltersContingencyListEntity;
 import org.gridsuite.actions.server.entities.ScriptContingencyListEntity;
 import org.gridsuite.actions.server.repositories.FiltersContingencyListRepository;
@@ -67,12 +68,12 @@ public class ContingencyListService {
 
     private static FiltersContingencyList fromFilterContingencyListEntity(FiltersContingencyListEntity entity) {
         return new FiltersContingencyList(entity.getName(), entity.getEquipmentId(), entity.getEquipmentName(),
-                entity.getEquipmentType(), entity.getNominalVoltage(), entity.getNominalVoltageOperator(), entity.getCountries());
+                entity.getEquipmentType(), entity.getNominalVoltage(), entity.getNominalVoltageOperator(), new HashSet<>(entity.getCountries()));
     }
 
     private static FiltersContingencyListAttributes fromFilterContingencyListEntityAttributes(FiltersContingencyListEntity entity) {
         return new FiltersContingencyListAttributes(entity.getEquipmentId(), entity.getEquipmentName(),
-                entity.getEquipmentType(), entity.getNominalVoltage(), entity.getNominalVoltageOperator(), entity.getCountries());
+                entity.getEquipmentType(), entity.getNominalVoltage(), entity.getNominalVoltageOperator(), new HashSet<>(entity.getCountries()));
     }
 
     private static String sanitizeParam(String param) {
@@ -309,7 +310,7 @@ public class ContingencyListService {
                     oldFiltersContingencyListEntity.getEquipmentType(),
                 oldFiltersContingencyListEntity.getNominalVoltage(),
                 oldFiltersContingencyListEntity.getNominalVoltageOperator(),
-                oldFiltersContingencyListEntity.getCountries()
+                new HashSet<>(oldFiltersContingencyListEntity.getCountries())
             ));
             return oldFiltersContingencyListEntity;
         }).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Contingency list " + name + " not found")));
