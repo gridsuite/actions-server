@@ -47,6 +47,7 @@
         <java.version>11</java.version>
         <gridsuite-dependencies.version>5</gridsuite-dependencies.version>
         <string-template.version>4.3.1</string-template.version>
+        <jib.to.image>gridsuite/actions-server</jib.to.image>
     </properties>
 
     <build>
