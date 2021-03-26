@@ -2,9 +2,13 @@ server:
   port: 5022
 
 spring:
+  datasource:
+    url: ${dbApi}:${dbVendor}://${hostPort}/${dbName}${query}
+    username: ${login}
+    password: ${password}
+
   jpa:
     database: POSTGRESQL
-    show-sql: false
     hibernate:
       ddl-auto: validate
       naming:
@@ -12,11 +16,22 @@ spring:
         implicit-strategy: org.hibernate.boot.model.naming.ImplicitNamingStrategyJpaCompliantImpl
     properties:
       dialect: org.hibernate.dialect.PostgreSQLDialect
-    database-name: actions
+      hibernate:
+        format_sql: true
+        # Used when action: create is uncommented
+        hbm2ddl:
+          delimiter: ;
+      # Uncomment action to automatically generate the database sql schema file
+      javax:
+        persistence:
+          schema-generation:
+            scripts:
+              #action: create
+              create-target: src/main/resources/actions.sql
+              create-source: metadata
 
 network-store-server:
-  base-uri: http://localhost:8080
+  base-uri: http://localhost:8080/
 
-logging:
-  level:
-    ROOT: INFO
+dbName: actions
+dbApi: jdbc

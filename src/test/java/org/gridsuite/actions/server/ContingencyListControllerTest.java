@@ -93,6 +93,8 @@ public class ContingencyListControllerTest {
         given(networkStoreService.getNetwork(NETWORK_UUID_2, PreloadingStrategy.COLLECTION)).willReturn(network2);
         given(networkStoreService.getNetwork(NETWORK_UUID_3, PreloadingStrategy.COLLECTION)).willReturn(network3);
         given(networkStoreService.getNetwork(NETWORK_UUID_4, PreloadingStrategy.COLLECTION)).willReturn(network4);
+
+        cleanDB();
     }
 
     @Test
@@ -233,8 +235,6 @@ public class ContingencyListControllerTest {
 
         mvc.perform(delete("/" + VERSION + "/contingency-lists/tac"))
                 .andExpect(status().isNotFound());
-
-        cleanDB();
     }
 
     public StringBuilder jsonVal(String id, String val, boolean trailingComma) {
@@ -375,7 +375,6 @@ public class ContingencyListControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
                 .andExpect(content().json("[]"));
-        cleanDB();
     }
 
     @Test
@@ -389,7 +388,6 @@ public class ContingencyListControllerTest {
         }
         assertTrue(e instanceof NestedServletException);
         assertEquals("Request processing failed; nested exception is com.powsybl.commons.PowsyblException: Network '7928181c-7977-4592-ba19-88027e4254e8' not found", e.getMessage());
-
     }
 
     @Test
@@ -477,7 +475,6 @@ public class ContingencyListControllerTest {
                 .contentType(APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON));
-        cleanDB();
     }
 
     @Test
@@ -511,6 +508,5 @@ public class ContingencyListControllerTest {
         mvc.perform(get("/" + VERSION + "/filters-contingency-lists/tic")
                 .contentType(APPLICATION_JSON))
                 .andExpect(status().isOk());
-        cleanDB();
     }
 }
