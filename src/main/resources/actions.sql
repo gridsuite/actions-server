@@ -21,6 +21,6 @@
     );
 
     alter table if exists FiltersContingencyListEntity_countries 
-       add constraint FKqj7v0xk4nuafcndno4xlmnce7 
+       add constraint filtersContingencyListEntity_countries_fk
        foreign key (FiltersContingencyListEntity_name) 
        references filters_contingency_list;

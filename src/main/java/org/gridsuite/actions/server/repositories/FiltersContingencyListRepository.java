@@ -8,6 +8,7 @@ package org.gridsuite.actions.server.repositories;
 
 import org.gridsuite.actions.server.entities.FiltersContingencyListEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,6 +21,7 @@ import java.util.Optional;
 @Repository
 public interface FiltersContingencyListRepository extends JpaRepository<FiltersContingencyListEntity, String> {
 
+    @Query("SELECT entity FROM FiltersContingencyListEntity entity LEFT JOIN FETCH entity.countries WHERE entity.name = :name ")
     Optional<FiltersContingencyListEntity> findByName(String name);
 
     @Transactional
