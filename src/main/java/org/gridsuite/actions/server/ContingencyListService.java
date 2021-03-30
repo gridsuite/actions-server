@@ -23,6 +23,7 @@ import org.gridsuite.actions.server.utils.EquipmentType;
 import org.gridsuite.actions.server.utils.NominalVoltageOperator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -54,6 +55,10 @@ public class ContingencyListService {
     private final PathMatcher antMatcher = new AntPathMatcher("\0");
 
     private final FiltersToGroovyScript filtersToScript = new FiltersToGroovyScript();
+
+    // Self injection for @transactional support in internal calls to other methods of this service
+    @Autowired
+    ContingencyListService self;
 
     public ContingencyListService(ScriptContingencyListRepository scriptContingencyListRepository,
                                   FiltersContingencyListRepository filtersContingencyListRepository,
@@ -114,7 +119,7 @@ public class ContingencyListService {
 
     Optional<FiltersContingencyList> getFiltersContingencyList(String name) {
         Objects.requireNonNull(name);
-        return doGetFiltersContingencyListWithPreFetchedCountries(name).map(ContingencyListService::fromFilterContingencyListEntity);
+        return self.doGetFiltersContingencyListWithPreFetchedCountries(name).map(ContingencyListService::fromFilterContingencyListEntity);
     }
 
     private List<Contingency> toPowSyBlContingencyList(ContingencyList contingencyList, UUID networkUuid) {
@@ -308,7 +313,7 @@ public class ContingencyListService {
             LOGGER.debug("rename script contingency list '{}' to '{}'", sanitizeParam(name), sanitizeParam(newName));
         }
         Optional<ScriptContingencyListEntity> script = scriptContingencyListRepository.findByName(name);
-        Optional<FiltersContingencyListEntity> filters = doGetFiltersContingencyListWithPreFetchedCountries(name);
+        Optional<FiltersContingencyListEntity> filters = self.doGetFiltersContingencyListWithPreFetchedCountries(name);
 
         script.ifPresentOrElse(oldContingencyListEntity -> {
             scriptContingencyListRepository.deleteByName(name);
@@ -336,7 +341,7 @@ public class ContingencyListService {
             LOGGER.debug("Replace filter contingency list with script'{}'", sanitizeParam(name));
         }
 
-        Optional<FiltersContingencyListEntity> filter = doGetFiltersContingencyListWithPreFetchedCountries(name);
+        Optional<FiltersContingencyListEntity> filter = self.doGetFiltersContingencyListWithPreFetchedCountries(name);
         filter.ifPresentOrElse(entity -> {
             String script = generateGroovyScriptFromFilters(fromFilterContingencyListEntityAttributes(entity));
             scriptContingencyListRepository.save(new ScriptContingencyListEntity(name, script));
@@ -352,7 +357,7 @@ public class ContingencyListService {
             LOGGER.debug("New script from filter contingency list'{}'", sanitizeParam(name));
         }
 
-        Optional<FiltersContingencyListEntity> filter = doGetFiltersContingencyListWithPreFetchedCountries(name);
+        Optional<FiltersContingencyListEntity> filter = self.doGetFiltersContingencyListWithPreFetchedCountries(name);
         filter.ifPresentOrElse(entity -> {
             String script = generateGroovyScriptFromFilters(fromFilterContingencyListEntityAttributes(entity));
             scriptContingencyListRepository.save(new ScriptContingencyListEntity(scriptName, script));
