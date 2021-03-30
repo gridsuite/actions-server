@@ -113,8 +113,8 @@ public class ContingencyListService {
         return filtersContingencyListRepository.findByName(name).map(entity -> {
             @SuppressWarnings("unused")
             int ignoreSize = entity.getCountries().size();
-            return Optional.of(entity);
-        }).orElse(Optional.empty());
+            return entity;
+        });
     }
 
     Optional<FiltersContingencyList> getFiltersContingencyList(String name) {
