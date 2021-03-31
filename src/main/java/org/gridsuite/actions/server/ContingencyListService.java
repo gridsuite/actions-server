@@ -100,7 +100,7 @@ public class ContingencyListService {
     }
 
     List<FiltersContingencyList> getFilterContingencyLists() {
-        return filtersContingencyListRepository.findAll().stream().map(ContingencyListService::fromFilterContingencyListEntity).collect(Collectors.toList());
+        return filtersContingencyListRepository.findAllWithCountries().stream().map(ContingencyListService::fromFilterContingencyListEntity).collect(Collectors.toList());
     }
 
     Optional<ScriptContingencyList> getScriptContingencyList(String name) {
