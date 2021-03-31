@@ -109,7 +109,7 @@ public class ContingencyListService {
     }
 
     @Transactional(readOnly = true)
-    Optional<FiltersContingencyListEntity> doGetFiltersContingencyListWithPreFetchedCountries(String name) {
+    public Optional<FiltersContingencyListEntity> doGetFiltersContingencyListWithPreFetchedCountries(String name) {
         return filtersContingencyListRepository.findByName(name).map(entity -> {
             @SuppressWarnings("unused")
             int ignoreSize = entity.getCountries().size();
@@ -297,7 +297,7 @@ public class ContingencyListService {
     }
 
     @Transactional
-    void doDeleteContingencyList(String name) {
+    public void doDeleteContingencyList(String name) {
         Objects.requireNonNull(name);
         if (scriptContingencyListRepository.existsByName(name)) {
             scriptContingencyListRepository.deleteByName(name);
@@ -313,7 +313,7 @@ public class ContingencyListService {
     }
 
     @Transactional
-    void doRenameContingencyList(String name, String newName) {
+    public void doRenameContingencyList(String name, String newName) {
         Objects.requireNonNull(name);
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("rename script contingency list '{}' to '{}'", sanitizeParam(name), sanitizeParam(newName));
@@ -346,7 +346,7 @@ public class ContingencyListService {
     }
 
     @Transactional
-    void doReplaceFilterContingencyListWithScript(String name) {
+    public void doReplaceFilterContingencyListWithScript(String name) {
         Objects.requireNonNull(name);
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("Replace filter contingency list with script'{}'", sanitizeParam(name));
@@ -367,7 +367,7 @@ public class ContingencyListService {
     }
 
     @Transactional
-    void doNewScriptFromFiltersContingencyList(String name, String scriptName) {
+    public void doNewScriptFromFiltersContingencyList(String name, String scriptName) {
         Objects.requireNonNull(name);
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("New script from filter contingency list'{}'", sanitizeParam(name));
