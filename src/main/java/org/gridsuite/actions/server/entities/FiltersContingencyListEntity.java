@@ -49,7 +49,7 @@ public class FiltersContingencyListEntity {
 
     @Column(name = "country")
     @ElementCollection
-    @CollectionTable(foreignKey = @ForeignKey(name = "filtersContingencyListEntity_countries_fk"))
+    @CollectionTable(foreignKey = @ForeignKey(name = "filtersContingencyListEntity_countries_fk"), indexes = {@Index(name = "filtersContingencyListEntity_countries_idx", columnList = "FiltersContingencyListEntity_name")})
     private Set<String> countries;
 
     public FiltersContingencyListEntity(String name, FiltersContingencyListAttributes filtersContingencyListAttributes) {

@@ -19,6 +19,7 @@
         script TEXT,
         primary key (name)
     );
+create index filtersContingencyListEntity_countries_idx on FiltersContingencyListEntity_countries (FiltersContingencyListEntity_name);
 
     alter table if exists FiltersContingencyListEntity_countries 
        add constraint filtersContingencyListEntity_countries_fk 
