@@ -11,7 +11,7 @@
 
     create table FiltersContingencyListEntity_countries (
        FiltersContingencyListEntity_name varchar(255) not null,
-        countries varchar(255)
+        country varchar(255)
     );
 
     create table script_contingency_list (

@@ -47,7 +47,7 @@ public class FiltersContingencyListEntity {
     @Column(name = "nominalVoltageOperator")
     private String nominalVoltageOperator;
 
-    @Column(name = "countries")
+    @Column(name = "country")
     @ElementCollection
     @CollectionTable(foreignKey = @ForeignKey(name = "filtersContingencyListEntity_countries_fk"))
     private Set<String> countries;
