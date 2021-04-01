@@ -22,7 +22,7 @@ import java.util.Optional;
 @Repository
 public interface FiltersContingencyListRepository extends JpaRepository<FiltersContingencyListEntity, String> {
 
-    @Query("SELECT entity FROM FiltersContingencyListEntity entity LEFT JOIN entity.countries GROUP BY entity.name")
+    @Query("SELECT DISTINCT entity FROM FiltersContingencyListEntity entity LEFT JOIN FETCH entity.countries")
     List<FiltersContingencyListEntity> findAllWithCountries();
 
     Optional<FiltersContingencyListEntity> findByName(String name);
