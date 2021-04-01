@@ -7,8 +7,9 @@
 package org.gridsuite.actions.server.repositories;
 
 import org.gridsuite.actions.server.entities.ScriptContingencyListEntity;
-import org.springframework.data.cassandra.repository.CassandraRepository;
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 
@@ -17,10 +18,11 @@ import java.util.Optional;
  * @author Franck Lecuyer <franck.lecuyer at rte-france.com>
  */
 @Repository
-public interface ScriptContingencyListRepository extends CassandraRepository<ScriptContingencyListEntity, String> {
+public interface ScriptContingencyListRepository extends JpaRepository<ScriptContingencyListEntity, String> {
 
     Optional<ScriptContingencyListEntity> findByName(String name);
 
+    @Transactional
     void deleteByName(String name);
 
     boolean existsByName(String name);

@@ -6,13 +6,12 @@
  */
 package org.gridsuite.actions.server.entities;
 
-import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Getter;
+import lombok.Setter;
 import org.gridsuite.actions.server.dto.FiltersContingencyListAttributes;
-import org.springframework.data.cassandra.core.cql.PrimaryKeyType;
-import org.springframework.data.cassandra.core.mapping.PrimaryKeyColumn;
-import org.springframework.data.cassandra.core.mapping.Table;
 
+import javax.persistence.*;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -20,25 +19,37 @@ import static org.apache.commons.collections4.SetUtils.emptyIfNull;
 
 /**
  * @author Chamseddine benhamed <chamseddine.benhamed at rte-france.com>
+ * @author Franck Lecuyer <franck.lecuyer at rte-france.com>
  */
-@Getter
-@Table("filters_contingency_list")
 @NoArgsConstructor
+@Getter
+@Setter
+@Entity
+@Table(name = "filters_contingency_list")
 public class FiltersContingencyListEntity {
 
-    @PrimaryKeyColumn(type = PrimaryKeyType.PARTITIONED)
+    @Id
+    @Column(name = "name")
     private String name;
 
+    @Column(name = "equipmentId")
     private String equipmentId;
 
+    @Column(name = "equipmentName")
     private String equipmentName;
 
+    @Column(name = "equipmentType")
     private String equipmentType;
 
+    @Column(name = "nominalVoltage")
     private double nominalVoltage;
 
+    @Column(name = "nominalVoltageOperator")
     private String nominalVoltageOperator;
 
+    @Column(name = "country")
+    @ElementCollection
+    @CollectionTable(foreignKey = @ForeignKey(name = "filtersContingencyListEntity_countries_fk"), indexes = {@Index(name = "filtersContingencyListEntity_countries_idx", columnList = "FiltersContingencyListEntity_name")})
     private Set<String> countries;
 
     public FiltersContingencyListEntity(String name, FiltersContingencyListAttributes filtersContingencyListAttributes) {

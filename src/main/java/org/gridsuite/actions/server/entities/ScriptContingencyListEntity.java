@@ -7,22 +7,31 @@
 package org.gridsuite.actions.server.entities;
 
 import lombok.Getter;
-import org.springframework.data.cassandra.core.cql.PrimaryKeyType;
-import org.springframework.data.cassandra.core.mapping.PrimaryKeyColumn;
-import org.springframework.data.cassandra.core.mapping.Table;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.Table;
 import java.util.Objects;
 
 /**
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at rte-france.com>
+ * @author Franck Lecuyer <franck.lecuyer at rte-france.com>
  */
+@NoArgsConstructor
 @Getter
-@Table("script_contingency_list")
+@Setter
+@Entity
+@Table(name = "script_contingency_list")
 public class ScriptContingencyListEntity {
 
-    @PrimaryKeyColumn(type = PrimaryKeyType.PARTITIONED)
+    @Id
+    @Column(name = "name")
     private String name;
 
+    @Column(name = "script", columnDefinition = "TEXT")
     private String script;
 
     public ScriptContingencyListEntity(String name, String script) {

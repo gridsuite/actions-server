@@ -15,6 +15,9 @@ import com.powsybl.network.store.client.NetworkStoreService;
 import com.powsybl.network.store.client.PreloadingStrategy;
 import com.powsybl.network.store.iidm.impl.NetworkFactoryImpl;
 import org.gridsuite.actions.server.dto.ContingencyListAttributes;
+import org.gridsuite.actions.server.entities.FiltersContingencyListEntity;
+import org.gridsuite.actions.server.entities.ScriptContingencyListEntity;
+import org.gridsuite.actions.server.repositories.FiltersContingencyListRepository;
 import org.gridsuite.actions.server.repositories.ScriptContingencyListRepository;
 import org.gridsuite.actions.server.utils.ContingencyListType;
 import org.gridsuite.actions.server.utils.EquipmentType;
@@ -23,7 +26,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -49,9 +53,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * @author Franck Lecuyer <franck.lecuyer at rte-france.com>
  */
 @RunWith(SpringRunner.class)
-@WebMvcTest(ContingencyListController.class)
+@SpringBootTest
+@AutoConfigureMockMvc
 @ContextConfiguration(classes = {ActionsApplication.class})
-public class ContingencyListControllerTest extends AbstractEmbeddedCassandraSetup {
+public class ContingencyListControllerTest {
 
     private static final UUID NETWORK_UUID = UUID.fromString("7928181c-7977-4592-ba19-88027e4254e4");
     private static final UUID NETWORK_UUID_2 = UUID.fromString("7928181c-7977-4592-ba19-88027e4254e5");
@@ -60,16 +65,21 @@ public class ContingencyListControllerTest extends AbstractEmbeddedCassandraSetu
     private static final UUID NETWORK_UUID_5 = UUID.fromString("7928181c-7977-4592-ba19-88027e4254e8");
 
     @Autowired
+    private ScriptContingencyListRepository scriptContingencyListRepository;
+
+    @Autowired
+    private FiltersContingencyListRepository filtersContingencyListRepository;
+
+    @Autowired
     private MockMvc mvc;
-
-    @Autowired
-    private ScriptContingencyListRepository contingencyListRepository;
-
-    @Autowired
-    private ContingencyListService contingencyListService;
 
     @MockBean
     private NetworkStoreService networkStoreService;
+
+    private void cleanDB() {
+        scriptContingencyListRepository.deleteAll();
+        filtersContingencyListRepository.deleteAll();
+    }
 
     @Before
     public void setUp() {
@@ -83,6 +93,8 @@ public class ContingencyListControllerTest extends AbstractEmbeddedCassandraSetu
         given(networkStoreService.getNetwork(NETWORK_UUID_2, PreloadingStrategy.COLLECTION)).willReturn(network2);
         given(networkStoreService.getNetwork(NETWORK_UUID_3, PreloadingStrategy.COLLECTION)).willReturn(network3);
         given(networkStoreService.getNetwork(NETWORK_UUID_4, PreloadingStrategy.COLLECTION)).willReturn(network4);
+
+        cleanDB();
     }
 
     @Test
@@ -101,6 +113,24 @@ public class ContingencyListControllerTest extends AbstractEmbeddedCassandraSetu
                 "  \"countries\": [\"FR\", \"BE\"]" +
                 "}";
 
+        String filters2 = "{\n" +
+                "  \"equipmentID\": \"LINE*\"," +
+                "  \"equipmentName\": \"*\"," +
+                "  \"equipmentType\": \"LINE\"," +
+                "  \"nominalVoltage\": \"225\"," +
+                "  \"nominalVoltageOperator\": \"<=\"," +
+                "  \"countries\": [\"FR\", \"IT\", \"NL\"]" +
+                "}";
+
+        String filters3 = "{\n" +
+                "  \"equipmentID\": \"LOAD*\"," +
+                "  \"equipmentName\": \"*\"," +
+                "  \"equipmentType\": \"LOAD\"," +
+                "  \"nominalVoltage\": \"380\"," +
+                "  \"nominalVoltageOperator\": \"=\"," +
+                "  \"countries\": []" +
+                "}";
+
         // Put data
         mvc.perform(put("/" + VERSION + "/script-contingency-lists/foo")
                 .content(script)
@@ -112,36 +142,46 @@ public class ContingencyListControllerTest extends AbstractEmbeddedCassandraSetu
                 .contentType(APPLICATION_JSON))
                 .andExpect(status().isOk());
 
+        mvc.perform(put("/" + VERSION + "/filters-contingency-lists/tuc")
+                .content(filters2)
+                .contentType(APPLICATION_JSON))
+                .andExpect(status().isOk());
+
+        mvc.perform(put("/" + VERSION + "/filters-contingency-lists/toc")
+                .content(filters3)
+                .contentType(APPLICATION_JSON))
+                .andExpect(status().isOk());
+
         // Check data
         mvc.perform(get("/" + VERSION + "/contingency-lists")
                 .contentType(APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-                .andExpect(content().json("[{\"name\":\"foo\",\"type\":\"SCRIPT\"},{\"name\":\"tic\",\"type\":\"FILTERS\"}]"));
+                .andExpect(content().json("[{\"name\":\"foo\",\"type\":\"SCRIPT\"},{\"name\":\"tic\",\"type\":\"FILTERS\"},{\"name\":\"tuc\",\"type\":\"FILTERS\"},{\"name\":\"toc\",\"type\":\"FILTERS\"}]", true));
 
         mvc.perform(get("/" + VERSION + "/script-contingency-lists")
                 .contentType(APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-                .andExpect(content().json("[{\"name\":\"foo\",\"script\":\"contingency('NHV1_NHV2_1') {     equipments 'NHV1_NHV2_1'}\"}]"));
+                .andExpect(content().json("[{\"name\":\"foo\",\"script\":\"contingency('NHV1_NHV2_1') {     equipments 'NHV1_NHV2_1'}\",\"type\":\"SCRIPT\"}]", true));
 
         mvc.perform(get("/" + VERSION + "/filters-contingency-lists")
                 .contentType(APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-                .andExpect(content().json("[{\"name\":\"tic\",\"equipmentID\":\"GEN*\",\"equipmentName\":\"GEN*\",\"equipmentType\":\"GENERATOR\",\"nominalVoltage\":100.0,\"nominalVoltageOperator\":\">\",\"type\":\"FILTERS\"}]"));
+                .andExpect(content().json("[{\"name\":\"tic\",\"equipmentID\":\"GEN*\",\"equipmentName\":\"GEN*\",\"equipmentType\":\"GENERATOR\",\"nominalVoltage\":100.0,\"nominalVoltageOperator\":\">\",\"countries\":[\"BE\",\"FR\"],\"type\":\"FILTERS\"},{\"name\":\"toc\",\"equipmentID\":\"LOAD*\",\"equipmentName\":\"*\",\"equipmentType\":\"LOAD\",\"nominalVoltage\":380.0,\"nominalVoltageOperator\":\"=\",\"countries\":[],\"type\":\"FILTERS\"},{\"name\":\"tuc\",\"equipmentID\":\"LINE*\",\"equipmentName\":\"*\",\"equipmentType\":\"LINE\",\"nominalVoltage\":225.0,\"nominalVoltageOperator\":\"<=\",\"countries\":[\"IT\",\"FR\",\"NL\"],\"type\":\"FILTERS\"}]", true));
 
         mvc.perform(get("/" + VERSION + "/script-contingency-lists/foo")
                 .contentType(APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-                .andExpect(content().json("{\"name\":\"foo\",\"script\":\"contingency('NHV1_NHV2_1') {     equipments 'NHV1_NHV2_1'}\"}"));
+                .andExpect(content().json("{\"name\":\"foo\",\"script\":\"contingency('NHV1_NHV2_1') {     equipments 'NHV1_NHV2_1'}\",\"type\":\"SCRIPT\"}", true));
 
         mvc.perform(get("/" + VERSION + "/filters-contingency-lists/tic")
                 .contentType(APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-                .andExpect(content().json("{\"name\":\"tic\",\"equipmentID\":\"GEN*\",\"equipmentName\":\"GEN*\",\"equipmentType\":\"GENERATOR\",\"nominalVoltage\":100.0,\"nominalVoltageOperator\":\">\",\"type\":\"FILTERS\"}"));
+                .andExpect(content().json("{\"name\":\"tic\",\"equipmentID\":\"GEN*\",\"equipmentName\":\"GEN*\",\"equipmentType\":\"GENERATOR\",\"nominalVoltage\":100.0,\"nominalVoltageOperator\":\">\",\"countries\":[\"BE\",\"FR\"],\"type\":\"FILTERS\"}", true));
 
         // check not found
         mvc.perform(get("/" + VERSION + "/script-contingency-lists/bar")
@@ -159,19 +199,19 @@ public class ContingencyListControllerTest extends AbstractEmbeddedCassandraSetu
                 .contentType(APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-                .andExpect(content().json("[]")); // there is no network so all contingencies are invalid
+                .andExpect(content().json("[]", true)); // there is no network so all contingencies are invalid
 
         mvc.perform(get("/" + VERSION + "/contingency-lists/tic/export")
                 .contentType(APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-                .andExpect(content().json("[]")); // there is no network so all contingencies are invalid
+                .andExpect(content().json("[]", true)); // there is no network so all contingencies are invalid
 
         mvc.perform(get("/" + VERSION + "/contingency-lists/foo/export?networkUuid=" + NETWORK_UUID)
                 .contentType(APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-                .andExpect(content().json("[{\"id\":\"NHV1_NHV2_1\",\"elements\":[{\"id\":\"NHV1_NHV2_1\",\"type\":\"BRANCH\"}]}]"));
+                .andExpect(content().json("[{\"id\":\"NHV1_NHV2_1\",\"elements\":[{\"id\":\"NHV1_NHV2_1\",\"type\":\"BRANCH\"}]}]", true));
 
         // rename baz --> bar ---> baz not found
         mvc.perform(post("/" + VERSION + "/script-contingency-lists/baz/rename")
@@ -196,14 +236,14 @@ public class ContingencyListControllerTest extends AbstractEmbeddedCassandraSetu
                 .contentType(APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-                .andExpect(content().json("{\"name\":\"tac\",\"equipmentID\":\"GEN*\",\"equipmentName\":\"GEN*\",\"equipmentType\":\"GENERATOR\",\"nominalVoltage\":100.0,\"nominalVoltageOperator\":\">\",\"type\":\"FILTERS\"}"));
+                .andExpect(content().json("{\"name\":\"tac\",\"equipmentID\":\"GEN*\",\"equipmentName\":\"GEN*\",\"equipmentType\":\"GENERATOR\",\"nominalVoltage\":100.0,\"nominalVoltageOperator\":\">\",\"countries\":[\"BE\",\"FR\"],\"type\":\"FILTERS\"}", true));
 
         // check bar values
         mvc.perform(get("/" + VERSION + "/script-contingency-lists/bar")
                 .contentType(APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-                .andExpect(content().json("{\"name\":\"bar\",\"script\":\"contingency('NHV1_NHV2_1') {     equipments 'NHV1_NHV2_1'}\"}"));
+                .andExpect(content().json("{\"name\":\"bar\",\"script\":\"contingency('NHV1_NHV2_1') {     equipments 'NHV1_NHV2_1'}\",\"type\":\"SCRIPT\"}", true));
 
         // check foo not found
         mvc.perform(get("/" + VERSION + "/script-contingency-lists/foo")
@@ -301,7 +341,6 @@ public class ContingencyListControllerTest extends AbstractEmbeddedCassandraSetu
         testExportContingencies("svcFilters", svcFilters4, " []", NETWORK_UUID_3);
         testExportContingencies("svcFilters", svcFilters5, " [{\"id\":\"SVC3\",\"elements\":[{\"id\":\"SVC3\",\"type\":\"STATIC_VAR_COMPENSATOR\"}]},{\"id\":\"SVC2\",\"elements\":[{\"id\":\"SVC2\",\"type\":\"STATIC_VAR_COMPENSATOR\"}]}]", NETWORK_UUID_3);
         testExportContingencies("svcFilters", svcFilters6, " []", NETWORK_UUID_3);
-
     }
 
     @Test
@@ -377,7 +416,6 @@ public class ContingencyListControllerTest extends AbstractEmbeddedCassandraSetu
         }
         assertTrue(e instanceof NestedServletException);
         assertEquals("Request processing failed; nested exception is com.powsybl.commons.PowsyblException: Network '7928181c-7977-4592-ba19-88027e4254e8' not found", e.getMessage());
-
     }
 
     @Test
@@ -401,6 +439,37 @@ public class ContingencyListControllerTest extends AbstractEmbeddedCassandraSetu
         ContingencyListAttributes contingencyListAttributes2 = new ContingencyListAttributes();
         assertNull(contingencyListAttributes2.getName());
         assertNull(contingencyListAttributes2.getType());
+    }
+
+    @Test
+    public void scriptContingencyListEntityTest() {
+        ScriptContingencyListEntity entity = new ScriptContingencyListEntity();
+        entity.setName("list1");
+        entity.setScript("");
+
+        assertEquals("list1", entity.getName());
+        assertEquals("", entity.getScript());
+    }
+
+    @Test
+    public void filtersContingencyListEntityTest() {
+        FiltersContingencyListEntity entity = new FiltersContingencyListEntity();
+        entity.setName("list1");
+        entity.setEquipmentId("id1");
+        entity.setEquipmentName("name1");
+        entity.setEquipmentType("LINE");
+        entity.setNominalVoltage(225.);
+        entity.setNominalVoltageOperator("=");
+        entity.setCountries(Set.of("FRANCE", "ITALY"));
+
+        assertEquals("list1", entity.getName());
+        assertEquals("id1", entity.getEquipmentId());
+        assertEquals("name1", entity.getEquipmentName());
+        assertEquals("LINE", entity.getEquipmentType());
+        assertEquals(225., entity.getNominalVoltage(), 0.1);
+        assertEquals("=", entity.getNominalVoltageOperator());
+        assertTrue(entity.getCountries().contains("FRANCE"));
+        assertTrue(entity.getCountries().contains("ITALY"));
     }
 
     @Test
