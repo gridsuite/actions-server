@@ -297,7 +297,7 @@ public class ContingencyListService {
     }
 
     @Transactional
-    public void doDeleteContingencyList(String name) {
+    public void deleteContingencyList(String name) {
         Objects.requireNonNull(name);
         if (scriptContingencyListRepository.existsByName(name)) {
             scriptContingencyListRepository.deleteByName(name);
@@ -308,12 +308,8 @@ public class ContingencyListService {
         }
     }
 
-    public void deleteContingencyList(String name) {
-        self.doDeleteContingencyList(name);
-    }
-
     @Transactional
-    public void doRenameContingencyList(String name, String newName) {
+    public void renameContingencyList(String name, String newName) {
         Objects.requireNonNull(name);
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("rename script contingency list '{}' to '{}'", sanitizeParam(name), sanitizeParam(newName));
@@ -321,6 +317,7 @@ public class ContingencyListService {
         Optional<ScriptContingencyListEntity> script = scriptContingencyListRepository.findByName(name);
         Optional<FiltersContingencyListEntity> filters = self.doGetFiltersContingencyListWithPreFetchedCountries(name);
 
+        // To rename a list, we must first delete and recreate the list, because the name is the primary key
         script.ifPresentOrElse(oldContingencyListEntity -> {
             scriptContingencyListRepository.deleteByName(name);
             createScriptContingencyList(newName, oldContingencyListEntity.getScript());
@@ -337,16 +334,12 @@ public class ContingencyListService {
         }).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Contingency list " + name + " not found")));
     }
 
-    public void renameContingencyList(String name, String newName) {
-        self.doRenameContingencyList(name, newName);
-    }
-
     private String generateGroovyScriptFromFilters(FiltersContingencyListAttributes filtersContingencyListAttributes) {
         return filtersToScript.generateGroovyScriptFromFilters(filtersContingencyListAttributes);
     }
 
     @Transactional
-    public void doReplaceFilterContingencyListWithScript(String name) {
+    public void replaceFilterContingencyListWithScript(String name) {
         Objects.requireNonNull(name);
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("Replace filter contingency list with script'{}'", sanitizeParam(name));
@@ -362,12 +355,8 @@ public class ContingencyListService {
             });
     }
 
-    public void replaceFilterContingencyListWithScript(String name) {
-        self.doReplaceFilterContingencyListWithScript(name);
-    }
-
     @Transactional
-    public void doNewScriptFromFiltersContingencyList(String name, String scriptName) {
+    public void newScriptFromFiltersContingencyList(String name, String scriptName) {
         Objects.requireNonNull(name);
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("New script from filter contingency list'{}'", sanitizeParam(name));
@@ -380,9 +369,5 @@ public class ContingencyListService {
         }, () -> {
                 throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Contingency list " + name + " not found");
             });
-    }
-
-    public void newScriptFromFiltersContingencyList(String name, String scriptName) {
-        self.doNewScriptFromFiltersContingencyList(name, scriptName);
     }
 }
