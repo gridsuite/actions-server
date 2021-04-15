@@ -14,6 +14,7 @@ import com.powsybl.network.store.client.NetworkStoreService;
 import com.powsybl.network.store.client.PreloadingStrategy;
 import com.powsybl.network.store.iidm.impl.NetworkFactoryImpl;
 import org.gridsuite.actions.server.dto.*;
+import org.gridsuite.actions.server.dto.ContingencyList;
 import org.gridsuite.actions.server.entities.FiltersContingencyListEntity;
 import org.gridsuite.actions.server.entities.ScriptContingencyListEntity;
 import org.gridsuite.actions.server.repositories.FiltersContingencyListRepository;
