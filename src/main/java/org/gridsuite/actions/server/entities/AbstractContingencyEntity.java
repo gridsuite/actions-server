@@ -54,7 +54,7 @@ public abstract class AbstractContingencyEntity {
     @Column()
     private String description;
 
-    public AbstractContingencyEntity(ContingencyList attributes) {
+    protected AbstractContingencyEntity(ContingencyList attributes) {
         id = attributes.getId() == null ? UUID.randomUUID() : attributes.getId();
         name = attributes.getName();
         description = attributes.getDescription();
