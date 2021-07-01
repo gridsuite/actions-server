@@ -303,7 +303,7 @@ public class ContingencyListService {
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("Create script contingency list '{}'", filtersContingencyListAttributes.getName());
         }
-        filtersContingencyListRepository.saveAndFlush(new FiltersContingencyListEntity(filtersContingencyListAttributes));
+        filtersContingencyListRepository.save(new FiltersContingencyListEntity(filtersContingencyListAttributes));
     }
 
     @Transactional
@@ -332,7 +332,7 @@ public class ContingencyListService {
     boolean renameScriptList(UUID id, String name) {
         return scriptContingencyListRepository.findById(id).map(oldContingencyListEntity -> {
             oldContingencyListEntity.setName(name);
-            scriptContingencyListRepository.saveAndFlush(oldContingencyListEntity);
+            scriptContingencyListRepository.save(oldContingencyListEntity);
             return true;
         }).orElse(false);
     }
@@ -340,7 +340,7 @@ public class ContingencyListService {
     boolean renameFilterList(UUID id, String name) {
         return filtersContingencyListRepository.findById(id).map(oldContingencyListEntity -> {
             oldContingencyListEntity.setName(name);
-            filtersContingencyListRepository.saveAndFlush(oldContingencyListEntity);
+            filtersContingencyListRepository.save(oldContingencyListEntity);
             return true;
         }).orElse(false);
     }

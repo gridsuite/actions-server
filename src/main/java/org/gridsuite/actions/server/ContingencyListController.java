@@ -140,7 +140,7 @@ public class ContingencyListController {
     @GetMapping(value = "metadata", produces = MediaType.APPLICATION_JSON_VALUE)
     @ApiOperation(value = "Get all contingency lists", response = List.class)
     @ApiResponses(value = {@ApiResponse(code = 200, message = "contingency lists metadata"),
-        @ApiResponse(code = 404, message = "The filter does not exists")})
+        @ApiResponse(code = 404, message = "The contingency list does not exists")})
     public ResponseEntity<List<ContingencyListAttributes>> getContingencyLists(@RequestBody List<UUID> ids) {
         return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(service.getContingencyLists(ids));
     }
