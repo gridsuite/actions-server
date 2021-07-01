@@ -473,8 +473,8 @@ public class ContingencyListControllerTest {
 
         ContingencyListAttributes attributes = getMetadata(id);
         assertEquals(attributes.getId(), id);
-        assertEquals(attributes.getName(), "foo");
-        assertEquals(attributes.getDescription(), "something");
+        assertEquals("foo", attributes.getName());
+        assertEquals("something", attributes.getDescription());
     }
 
     private ContingencyListAttributes getMetadata(UUID id) throws Exception {
