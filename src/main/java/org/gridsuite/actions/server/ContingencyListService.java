@@ -70,17 +70,17 @@ public class ContingencyListService {
     }
 
     private static ScriptContingencyList fromScriptContingencyListEntity(ScriptContingencyListEntity entity) {
-        return new ScriptContingencyList(entity.getId(), entity.getName(), entity.getScript() != null ? entity.getScript() : "", entity.getDescription());
+        return new ScriptContingencyList(entity.getName(), entity.getScript() != null ? entity.getScript() : "");
     }
 
     private static FiltersContingencyList fromFilterContingencyListEntity(FiltersContingencyListEntity entity) {
-        return new FiltersContingencyList(entity.getId(), entity.getName(), entity.getEquipmentId(), entity.getEquipmentName(),
-            entity.getEquipmentType(), entity.getNominalVoltage(), entity.getNominalVoltageOperator(), entity.getCountries(), entity.getDescription());
+        return new FiltersContingencyList(entity.getName(), entity.getEquipmentId(), entity.getEquipmentName(),
+                entity.getEquipmentType(), entity.getNominalVoltage(), entity.getNominalVoltageOperator(), entity.getCountries());
     }
 
     private static FiltersContingencyListAttributes fromFilterContingencyListEntityAttributes(FiltersContingencyListEntity entity) {
-        return new FiltersContingencyListAttributes(entity.getId(), entity.getName(), entity.getEquipmentId(), entity.getEquipmentName(),
-            entity.getEquipmentType(), entity.getNominalVoltage(), entity.getNominalVoltageOperator(), entity.getCountries(), entity.getDescription());
+        return new FiltersContingencyListAttributes(entity.getEquipmentId(), entity.getEquipmentName(),
+                entity.getEquipmentType(), entity.getNominalVoltage(), entity.getNominalVoltageOperator(), entity.getCountries());
     }
 
     private static String sanitizeParam(String param) {
@@ -93,19 +93,10 @@ public class ContingencyListService {
 
     List<ContingencyListAttributes> getContingencyLists() {
         return Stream.concat(
-            scriptContingencyListRepository.findAll().stream().map(scriptContingencyListEntity ->
-                new ContingencyListAttributes(scriptContingencyListEntity.getId(), scriptContingencyListEntity.getName(), ContingencyListType.SCRIPT, scriptContingencyListEntity.getCreationDate(), scriptContingencyListEntity.getModificationDate(), scriptContingencyListEntity.getDescription())),
-            filtersContingencyListRepository.findAll().stream().map(filtersContingencyListEntity ->
-                new ContingencyListAttributes(filtersContingencyListEntity.getId(), filtersContingencyListEntity.getName(), ContingencyListType.FILTERS, filtersContingencyListEntity.getCreationDate(), filtersContingencyListEntity.getModificationDate(), filtersContingencyListEntity.getDescription()))
-        ).collect(Collectors.toList());
-    }
-
-    List<ContingencyListAttributes> getContingencyLists(List<UUID> ids) {
-        return Stream.concat(
-            scriptContingencyListRepository.findAllById(ids).stream().map(scriptContingencyListEntity ->
-                new ContingencyListAttributes(scriptContingencyListEntity.getId(), scriptContingencyListEntity.getName(), ContingencyListType.SCRIPT, scriptContingencyListEntity.getCreationDate(), scriptContingencyListEntity.getModificationDate(), scriptContingencyListEntity.getDescription())),
-            filtersContingencyListRepository.findAllById(ids).stream().map(filtersContingencyListEntity ->
-                new ContingencyListAttributes(filtersContingencyListEntity.getId(), filtersContingencyListEntity.getName(), ContingencyListType.FILTERS, filtersContingencyListEntity.getCreationDate(), filtersContingencyListEntity.getModificationDate(), filtersContingencyListEntity.getDescription()))
+                scriptContingencyListRepository.findAll().stream().map(scriptContingencyListEntity ->
+                        new ContingencyListAttributes(scriptContingencyListEntity.getName(), ContingencyListType.SCRIPT)),
+                filtersContingencyListRepository.findAll().stream().map(filtersContingencyListEntity ->
+                        new ContingencyListAttributes(filtersContingencyListEntity.getName(), ContingencyListType.FILTERS))
         ).collect(Collectors.toList());
     }
 
@@ -113,23 +104,23 @@ public class ContingencyListService {
         return filtersContingencyListRepository.findAllWithCountries().stream().map(ContingencyListService::fromFilterContingencyListEntity).collect(Collectors.toList());
     }
 
-    Optional<ScriptContingencyList> getScriptContingencyList(UUID id) {
-        Objects.requireNonNull(id);
-        return scriptContingencyListRepository.findById(id).map(ContingencyListService::fromScriptContingencyListEntity);
+    Optional<ScriptContingencyList> getScriptContingencyList(String name) {
+        Objects.requireNonNull(name);
+        return scriptContingencyListRepository.findByName(name).map(ContingencyListService::fromScriptContingencyListEntity);
     }
 
     @Transactional(readOnly = true)
-    public Optional<FiltersContingencyListEntity> doGetFiltersContingencyListWithPreFetchedCountries(UUID name) {
-        return filtersContingencyListRepository.findById(name).map(entity -> {
+    public Optional<FiltersContingencyListEntity> doGetFiltersContingencyListWithPreFetchedCountries(String name) {
+        return filtersContingencyListRepository.findByName(name).map(entity -> {
             @SuppressWarnings("unused")
             int ignoreSize = entity.getCountries().size();
             return entity;
         });
     }
 
-    public Optional<FiltersContingencyList> getFiltersContingencyList(UUID id) {
-        Objects.requireNonNull(id);
-        return self.doGetFiltersContingencyListWithPreFetchedCountries(id).map(ContingencyListService::fromFilterContingencyListEntity);
+    public Optional<FiltersContingencyList> getFiltersContingencyList(String name) {
+        Objects.requireNonNull(name);
+        return self.doGetFiltersContingencyListWithPreFetchedCountries(name).map(ContingencyListService::fromFilterContingencyListEntity);
     }
 
     private List<Contingency> toPowSyBlContingencyList(ContingencyList contingencyList, UUID networkUuid) {
@@ -158,7 +149,7 @@ public class ContingencyListService {
     boolean countryFilter(Connectable<?> con, FiltersContingencyList filter) {
         Set<String> countries = filter.getCountries();
         return countries.isEmpty() || con.getTerminals().stream().anyMatch(connectable ->
-            connectable.getVoltageLevel().getSubstation().getCountry().isPresent() && countries.contains(connectable.getVoltageLevel().getSubstation().getCountry().get().name()));
+                connectable.getVoltageLevel().getSubstation().getCountry().isPresent() && countries.contains(connectable.getVoltageLevel().getSubstation().getCountry().get().name()));
     }
 
     boolean countryFilter(HvdcLine hvdcLine, FiltersContingencyList filter) {
@@ -167,37 +158,37 @@ public class ContingencyListService {
 
     private <I extends Injection<I>> Stream<Injection<I>> getInjectionContingencyList(Stream<Injection<I>> stream, FiltersContingencyList filtersContingencyList) {
         return stream
-            .filter(injection -> matches(filtersContingencyList.getEquipmentID(), injection.getId()) || injection.getOptionalName().isPresent() && matches(filtersContingencyList.getEquipmentName(), injection.getOptionalName().get()))
-            .filter(injection -> filtersContingencyList.getNominalVoltage() == -1 || filterByVoltage(injection.getTerminal().getVoltageLevel().getNominalV(), filtersContingencyList.getNominalVoltage(), filtersContingencyList.getNominalVoltageOperator()))
-            .filter(injection -> countryFilter(injection, filtersContingencyList));
+                .filter(injection -> matches(filtersContingencyList.getEquipmentID(), injection.getId()) || injection.getOptionalName().isPresent() && matches(filtersContingencyList.getEquipmentName(), injection.getOptionalName().get()))
+                .filter(injection -> filtersContingencyList.getNominalVoltage() == -1 || filterByVoltage(injection.getTerminal().getVoltageLevel().getNominalV(), filtersContingencyList.getNominalVoltage(), filtersContingencyList.getNominalVoltageOperator()))
+                .filter(injection -> countryFilter(injection, filtersContingencyList));
     }
 
     private List<Contingency> getGeneratorContingencyList(Network network, FiltersContingencyList filtersContingencyList) {
         return getInjectionContingencyList(network.getGeneratorStream().map(gen -> gen), filtersContingencyList)
-            .map(injection -> new Contingency(injection.getId(), Collections.singletonList(new GeneratorContingency(injection.getId()))))
-            .collect(Collectors.toList());
+                .map(injection -> new Contingency(injection.getId(), Collections.singletonList(new GeneratorContingency(injection.getId()))))
+                .collect(Collectors.toList());
     }
 
     private List<Contingency> getSVCContingencyList(Network network, FiltersContingencyList filtersContingencyList) {
         return getInjectionContingencyList(network.getStaticVarCompensatorStream().map(svc -> svc), filtersContingencyList)
-            .map(injection -> new Contingency(injection.getId(), Collections.singletonList(new StaticVarCompensatorContingency(injection.getId()))))
-            .collect(Collectors.toList());
+                .map(injection -> new Contingency(injection.getId(), Collections.singletonList(new StaticVarCompensatorContingency(injection.getId()))))
+                .collect(Collectors.toList());
     }
 
     private List<Contingency> getSCContingencyList(Network network, FiltersContingencyList filtersContingencyList) {
         return getInjectionContingencyList(network.getShuntCompensatorStream().map(sc -> sc), filtersContingencyList)
-            .map(injection -> new Contingency(injection.getId(), Collections.singletonList(new ShuntCompensatorContingency(injection.getId()))))
-            .collect(Collectors.toList());
+                .map(injection -> new Contingency(injection.getId(), Collections.singletonList(new ShuntCompensatorContingency(injection.getId()))))
+                .collect(Collectors.toList());
     }
 
     private <I extends Branch<I>> List<Contingency> getBranchContingencyList(Stream<Branch<I>> stream, FiltersContingencyList filtersContingencyList) {
         return stream
-            .filter(branch -> matches(filtersContingencyList.getEquipmentID(), branch.getId()) || branch.getOptionalName().isPresent() && matches(filtersContingencyList.getEquipmentName(), branch.getOptionalName().get()))
-            .filter(branch -> filtersContingencyList.getNominalVoltage() == -1 || filterByVoltage(branch.getTerminal1().getVoltageLevel().getNominalV(), filtersContingencyList.getNominalVoltage(), filtersContingencyList.getNominalVoltageOperator())
-                || filterByVoltage(branch.getTerminal2().getVoltageLevel().getNominalV(), filtersContingencyList.getNominalVoltage(), filtersContingencyList.getNominalVoltageOperator()))
-            .filter(branch -> countryFilter(branch, filtersContingencyList))
-            .map(branch -> new Contingency(branch.getId(), Collections.singletonList(new BranchContingency(branch.getId()))))
-            .collect(Collectors.toList());
+                .filter(branch -> matches(filtersContingencyList.getEquipmentID(), branch.getId()) || branch.getOptionalName().isPresent() && matches(filtersContingencyList.getEquipmentName(), branch.getOptionalName().get()))
+                .filter(branch -> filtersContingencyList.getNominalVoltage() == -1 || filterByVoltage(branch.getTerminal1().getVoltageLevel().getNominalV(), filtersContingencyList.getNominalVoltage(), filtersContingencyList.getNominalVoltageOperator())
+                        || filterByVoltage(branch.getTerminal2().getVoltageLevel().getNominalV(), filtersContingencyList.getNominalVoltage(), filtersContingencyList.getNominalVoltageOperator()))
+                .filter(branch -> countryFilter(branch, filtersContingencyList))
+                .map(branch -> new Contingency(branch.getId(), Collections.singletonList(new BranchContingency(branch.getId()))))
+                .collect(Collectors.toList());
     }
 
     private List<Contingency> getLineContingencyList(Network network, FiltersContingencyList filtersContingencyList) {
@@ -210,23 +201,23 @@ public class ContingencyListService {
 
     private List<Contingency> getHvdcContingencyList(Network network, FiltersContingencyList filtersContingencyList) {
         return network.getHvdcLineStream()
-            .filter(hvdcLine -> matches(filtersContingencyList.getEquipmentID(), hvdcLine.getId()) || hvdcLine.getOptionalName().isPresent() && matches(filtersContingencyList.getEquipmentName(), hvdcLine.getOptionalName().get()))
-            .filter(hvdcLine -> filtersContingencyList.getNominalVoltage() == -1 || filterByVoltage(hvdcLine.getNominalV(), filtersContingencyList.getNominalVoltage(), filtersContingencyList.getNominalVoltageOperator()))
-            .filter(hvdcLine -> countryFilter(hvdcLine, filtersContingencyList))
-            .map(hvdcLine -> new Contingency(hvdcLine.getId(), Collections.singletonList(new HvdcLineContingency(hvdcLine.getId()))))
-            .collect(Collectors.toList());
+                .filter(hvdcLine -> matches(filtersContingencyList.getEquipmentID(), hvdcLine.getId()) || hvdcLine.getOptionalName().isPresent() && matches(filtersContingencyList.getEquipmentName(), hvdcLine.getOptionalName().get()))
+                .filter(hvdcLine -> filtersContingencyList.getNominalVoltage() == -1 || filterByVoltage(hvdcLine.getNominalV(), filtersContingencyList.getNominalVoltage(), filtersContingencyList.getNominalVoltageOperator()))
+                .filter(hvdcLine -> countryFilter(hvdcLine, filtersContingencyList))
+                .map(hvdcLine -> new Contingency(hvdcLine.getId(), Collections.singletonList(new HvdcLineContingency(hvdcLine.getId()))))
+                .collect(Collectors.toList());
     }
 
     private List<Contingency> getBusbarSectionContingencyList(Network network, FiltersContingencyList filtersContingencyList) {
         return getInjectionContingencyList(network.getBusbarSectionStream().map(bbs -> bbs), filtersContingencyList)
-            .map(injection -> new Contingency(injection.getId(), Collections.singletonList(new BusbarSectionContingency(injection.getId()))))
-            .collect(Collectors.toList());
+                .map(injection -> new Contingency(injection.getId(), Collections.singletonList(new BusbarSectionContingency(injection.getId()))))
+                .collect(Collectors.toList());
     }
 
     private List<Contingency> getDanglingLineContingencyList(Network network, FiltersContingencyList filtersContingencyList) {
         return getInjectionContingencyList(network.getDanglingLineStream().map(dl -> dl), filtersContingencyList)
-            .map(injection -> new Contingency(injection.getId(), Collections.singletonList(new DanglingLineContingency(injection.getId()))))
-            .collect(Collectors.toList());
+                .map(injection -> new Contingency(injection.getId(), Collections.singletonList(new DanglingLineContingency(injection.getId()))))
+                .collect(Collectors.toList());
     }
 
     private boolean matches(String pattern, String path) {
@@ -283,66 +274,65 @@ public class ContingencyListService {
         }
     }
 
-    Optional<List<Contingency>> exportContingencyList(UUID id, UUID networkUuid) {
-        Objects.requireNonNull(id);
+    Optional<List<Contingency>> exportContingencyList(String name, UUID networkUuid) {
+        Objects.requireNonNull(name);
 
-        return getScriptContingencyList(id).map(contingencyList -> toPowSyBlContingencyList(contingencyList, networkUuid))
-            .or(() -> getFiltersContingencyList(id).map(contingencyList -> toPowSyBlContingencyList(contingencyList, networkUuid)));
+        return getScriptContingencyList(name).map(contingencyList -> toPowSyBlContingencyList(contingencyList, networkUuid))
+                .or(() -> getFiltersContingencyList(name).map(contingencyList -> toPowSyBlContingencyList(contingencyList, networkUuid)));
     }
 
-    void createScriptContingencyList(ScriptContingencyList script) {
-        Objects.requireNonNull(script.getName());
+    void createScriptContingencyList(String name, String script) {
+        Objects.requireNonNull(name);
         if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("Create script contingency list '{}'", sanitizeParam(script.getName()));
+            LOGGER.debug("Create script contingency list '{}'", sanitizeParam(name));
         }
-        scriptContingencyListRepository.save(new ScriptContingencyListEntity(script));
+        scriptContingencyListRepository.save(new ScriptContingencyListEntity(name, script));
     }
 
-    public void createFilterContingencyList(FiltersContingencyListAttributes filtersContingencyListAttributes) {
-        Objects.requireNonNull(filtersContingencyListAttributes.getName());
+    public void createFilterContingencyList(String name, FiltersContingencyListAttributes filtersContingencyListAttributes) {
+        Objects.requireNonNull(name);
         if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("Create script contingency list '{}'", filtersContingencyListAttributes.getName());
+            LOGGER.debug("Create script contingency list '{}'", sanitizeParam(name));
         }
-        filtersContingencyListRepository.save(new FiltersContingencyListEntity(filtersContingencyListAttributes));
+        filtersContingencyListRepository.save(new FiltersContingencyListEntity(name, filtersContingencyListAttributes));
     }
 
     @Transactional
-    public void deleteContingencyList(UUID id) {
-        Objects.requireNonNull(id);
-        if (scriptContingencyListRepository.existsById(id)) {
-            scriptContingencyListRepository.deleteById(id);
-        } else if (filtersContingencyListRepository.existsById(id)) {
-            filtersContingencyListRepository.deleteById(id);
+    public void deleteContingencyList(String name) {
+        Objects.requireNonNull(name);
+        if (scriptContingencyListRepository.existsByName(name)) {
+            scriptContingencyListRepository.deleteByName(name);
+        } else if (filtersContingencyListRepository.existsByName(name)) {
+            filtersContingencyListRepository.deleteByName(name);
         } else {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Contingency list " + id + " not found");
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Contingency list " + name + " not found");
         }
     }
 
     @Transactional
-    public void renameContingencyList(UUID id, String newName) {
-        Objects.requireNonNull(id);
+    public void renameContingencyList(String name, String newName) {
+        Objects.requireNonNull(name);
         if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("rename script contingency list '{}' to '{}'", id, sanitizeParam(newName));
+            LOGGER.debug("rename script contingency list '{}' to '{}'", sanitizeParam(name), sanitizeParam(newName));
         }
-        if (!renameScriptList(id, newName) && !renameFilterList(id, newName)) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Contingency list " + id + " not found");
-        }
-    }
+        Optional<ScriptContingencyListEntity> script = scriptContingencyListRepository.findByName(name);
+        Optional<FiltersContingencyListEntity> filters = self.doGetFiltersContingencyListWithPreFetchedCountries(name);
 
-    boolean renameScriptList(UUID id, String name) {
-        return scriptContingencyListRepository.findById(id).map(oldContingencyListEntity -> {
-            oldContingencyListEntity.setName(name);
-            scriptContingencyListRepository.save(oldContingencyListEntity);
-            return true;
-        }).orElse(false);
-    }
-
-    boolean renameFilterList(UUID id, String name) {
-        return filtersContingencyListRepository.findById(id).map(oldContingencyListEntity -> {
-            oldContingencyListEntity.setName(name);
-            filtersContingencyListRepository.save(oldContingencyListEntity);
-            return true;
-        }).orElse(false);
+        // To rename a list, we must first delete and recreate the list, because the name is the primary key
+        script.ifPresentOrElse(oldContingencyListEntity -> {
+            scriptContingencyListRepository.deleteByName(name);
+            createScriptContingencyList(newName, oldContingencyListEntity.getScript());
+        }, () -> filters.map(oldFiltersContingencyListEntity -> {
+            filtersContingencyListRepository.deleteByName(name);
+            createFilterContingencyList(newName, new FiltersContingencyListAttributes(oldFiltersContingencyListEntity.getEquipmentId(),
+                    oldFiltersContingencyListEntity.getEquipmentName(),
+                    oldFiltersContingencyListEntity.getEquipmentType(),
+                    oldFiltersContingencyListEntity.getNominalVoltage(),
+                    oldFiltersContingencyListEntity.getNominalVoltageOperator(),
+                    oldFiltersContingencyListEntity.getCountries()
+            ));
+            return oldFiltersContingencyListEntity;
+        }).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Contingency list " + name + " not found")));
     }
 
     private String generateGroovyScriptFromFilters(FiltersContingencyListAttributes filtersContingencyListAttributes) {
@@ -350,35 +340,35 @@ public class ContingencyListService {
     }
 
     @Transactional
-    public void replaceFilterContingencyListWithScript(UUID id) {
-        Objects.requireNonNull(id);
+    public void replaceFilterContingencyListWithScript(String name) {
+        Objects.requireNonNull(name);
         if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("Replace filter contingency list with script'{}'", id);
+            LOGGER.debug("Replace filter contingency list with script'{}'", sanitizeParam(name));
         }
 
-        Optional<FiltersContingencyListEntity> filter = self.doGetFiltersContingencyListWithPreFetchedCountries(id);
+        Optional<FiltersContingencyListEntity> filter = self.doGetFiltersContingencyListWithPreFetchedCountries(name);
         filter.ifPresentOrElse(entity -> {
             String script = generateGroovyScriptFromFilters(fromFilterContingencyListEntityAttributes(entity));
-            scriptContingencyListRepository.save(new ScriptContingencyListEntity(new ScriptContingencyList(id, entity.getName(), script, entity.getDescription())));
-            filtersContingencyListRepository.deleteById(id);
+            scriptContingencyListRepository.save(new ScriptContingencyListEntity(name, script));
+            filtersContingencyListRepository.deleteByName(name);
         }, () -> {
-                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Contingency list " + id + " not found");
+                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Contingency list " + name + " not found");
             });
     }
 
     @Transactional
-    public void newScriptFromFiltersContingencyList(UUID id, String scriptName) {
-        Objects.requireNonNull(id);
+    public void newScriptFromFiltersContingencyList(String name, String scriptName) {
+        Objects.requireNonNull(name);
         if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("New script from filter contingency list'{}'", id);
+            LOGGER.debug("New script from filter contingency list'{}'", sanitizeParam(name));
         }
 
-        Optional<FiltersContingencyListEntity> filter = self.doGetFiltersContingencyListWithPreFetchedCountries(id);
+        Optional<FiltersContingencyListEntity> filter = self.doGetFiltersContingencyListWithPreFetchedCountries(name);
         filter.ifPresentOrElse(entity -> {
             String script = generateGroovyScriptFromFilters(fromFilterContingencyListEntityAttributes(entity));
-            scriptContingencyListRepository.save(new ScriptContingencyListEntity(new ScriptContingencyList(UUID.randomUUID(), scriptName, script, entity.getDescription())));
+            scriptContingencyListRepository.save(new ScriptContingencyListEntity(scriptName, script));
         }, () -> {
-                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Contingency list " + id + " not found");
+                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Contingency list " + name + " not found");
             });
     }
 }

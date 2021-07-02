@@ -13,9 +13,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.gridsuite.actions.server.utils.ContingencyListType;
 
-import java.util.Date;
-import java.util.UUID;
-
 /**
  * @author Chamseddine benhamed <chamseddine.benhamed at rte-france.com>
  */
@@ -24,23 +21,11 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @ApiModel("Contingency list attributes")
-public class ContingencyListAttributes implements ContingencyList {
-
-    @ApiModelProperty("list id")
-    private UUID id;
+public class ContingencyListAttributes {
 
     @ApiModelProperty("List name")
     private String name;
 
     @ApiModelProperty("List type")
     private ContingencyListType type;
-
-    @ApiModelProperty("Creation Date")
-    Date creationDate;
-
-    @ApiModelProperty("Modification Date")
-    Date modificationDate;
-
-    @ApiModelProperty("Description")
-    String description;
 }

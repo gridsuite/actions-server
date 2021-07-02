@@ -25,8 +25,12 @@ import static org.apache.commons.collections4.SetUtils.emptyIfNull;
 @Getter
 @Setter
 @Entity
-@Table(name = "filters_contingency_list", indexes = @Index(name = "filter_contingency_list_name_idx", columnList = "name"))
-public class FiltersContingencyListEntity extends AbstractContingencyEntity {
+@Table(name = "filters_contingency_list")
+public class FiltersContingencyListEntity {
+
+    @Id
+    @Column(name = "name")
+    private String name;
 
     @Column(name = "equipmentId")
     private String equipmentId;
@@ -45,11 +49,11 @@ public class FiltersContingencyListEntity extends AbstractContingencyEntity {
 
     @Column(name = "country")
     @ElementCollection
-    @CollectionTable(foreignKey = @ForeignKey(name = "filtersContingencyListEntity_countries_fk"), indexes = {@Index(name = "filtersContingencyListEntity_countries_idx", columnList = "FiltersContingencyListEntity_id")})
+    @CollectionTable(foreignKey = @ForeignKey(name = "filtersContingencyListEntity_countries_fk"), indexes = {@Index(name = "filtersContingencyListEntity_countries_idx", columnList = "FiltersContingencyListEntity_name")})
     private Set<String> countries;
 
-    public FiltersContingencyListEntity(FiltersContingencyListAttributes filtersContingencyListAttributes) {
-        super(filtersContingencyListAttributes);
+    public FiltersContingencyListEntity(String name, FiltersContingencyListAttributes filtersContingencyListAttributes) {
+        this.name = name;
         this.equipmentId = filtersContingencyListAttributes.getEquipmentID();
         this.equipmentName = filtersContingencyListAttributes.getEquipmentName();
         this.equipmentType = filtersContingencyListAttributes.getEquipmentType();

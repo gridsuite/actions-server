@@ -12,10 +12,8 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.gridsuite.actions.server.utils.ContingencyListType;
 
 import java.util.Set;
-import java.util.UUID;
 
 /**
  * @author Chamseddine benhamed <chamseddine.benhamed at rte-france.com>
@@ -26,13 +24,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @ApiModel("filter contingency list attributes")
-public class FiltersContingencyListAttributes implements ContingencyList {
-
-    @ApiModelProperty("list id")
-    private UUID id;
-
-    @ApiModelProperty("list name")
-    private String name;
+public class FiltersContingencyListAttributes {
 
     @ApiModelProperty("Equipment ID")
     private String equipmentID;
@@ -52,11 +44,4 @@ public class FiltersContingencyListAttributes implements ContingencyList {
     @ApiModelProperty("Countries")
     private Set<String> countries;
 
-    @ApiModelProperty("Description")
-    private String description;
-
-    @Override
-    public ContingencyListType getType() {
-        return ContingencyListType.FILTERS;
-    }
 }
