@@ -6,6 +6,8 @@
  */
 package org.gridsuite.actions.server;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.powsybl.iidm.network.Network;
 import com.powsybl.iidm.network.test.EurostagTutorialExample1Factory;
 import com.powsybl.iidm.network.test.HvdcTestNetwork;
@@ -21,6 +23,7 @@ import org.gridsuite.actions.server.repositories.FiltersContingencyListRepositor
 import org.gridsuite.actions.server.repositories.ScriptContingencyListRepository;
 import org.gridsuite.actions.server.utils.ContingencyListType;
 import org.gridsuite.actions.server.utils.EquipmentType;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -35,6 +38,8 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.util.NestedServletException;
 
 import java.util.Collections;
+import java.util.Date;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
@@ -43,7 +48,6 @@ import static org.apache.commons.lang3.StringUtils.join;
 import static org.junit.Assert.*;
 import static org.mockito.BDDMockito.given;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
-import static org.springframework.http.MediaType.TEXT_PLAIN;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -76,7 +80,8 @@ public class ContingencyListControllerTest {
     @MockBean
     private NetworkStoreService networkStoreService;
 
-    private void cleanDB() {
+    @After
+    public void cleanDB() {
         scriptContingencyListRepository.deleteAll();
         filtersContingencyListRepository.deleteAll();
     }
@@ -99,186 +104,228 @@ public class ContingencyListControllerTest {
 
     @Test
     public void test() throws Exception {
-        String script =
-                "contingency('NHV1_NHV2_1') {" +
-                        "     equipments 'NHV1_NHV2_1'" +
-                        "}";
+        UUID scriptId = UUID.fromString("98765412-1234-5678-abcd-e123456789aa");
+        UUID ticId = UUID.fromString("12345678-1234-5678-abcd-e123456789aa");
+        UUID notFoundId = UUID.fromString("abcdef01-1234-5678-abcd-e123456789aa");
+        String script = "{ \n" +
+            "\"name\" : \"foo\",\n" +
+            "\"id\" : \"" + scriptId + "\",\n" +
+            "\"script\" : \"contingency('NHV1_NHV2_1') {" +
+            "     equipments 'NHV1_NHV2_1'}\"" +
+            "}";
 
         String filters = "{\n" +
-                "  \"equipmentID\": \"GEN*\"," +
-                "  \"equipmentName\": \"GEN*\"," +
-                "  \"equipmentType\": \"GENERATOR\"," +
-                "  \"nominalVoltage\": \"100\"," +
-                "  \"nominalVoltageOperator\": \">\"," +
-                "  \"countries\": [\"FR\", \"BE\"]" +
-                "}";
+            "  \"id\" : \"" + ticId + "\",\n" +
+            "  \"name\": \"tic\"," +
+            "  \"equipmentID\": \"GEN*\"," +
+            "  \"equipmentName\": \"GEN*\"," +
+            "  \"equipmentType\": \"GENERATOR\"," +
+            "  \"nominalVoltage\": \"100\"," +
+            "  \"nominalVoltageOperator\": \">\"," +
+            "  \"countries\": [\"FR\", \"BE\"]" +
+            "}";
 
         String filters2 = "{\n" +
-                "  \"equipmentID\": \"LINE*\"," +
-                "  \"equipmentName\": \"*\"," +
-                "  \"equipmentType\": \"LINE\"," +
-                "  \"nominalVoltage\": \"225\"," +
-                "  \"nominalVoltageOperator\": \"<=\"," +
-                "  \"countries\": [\"FR\", \"IT\", \"NL\"]" +
-                "}";
+            "  \"name\": \"tuc\"," +
+            "  \"equipmentID\": \"LINE*\"," +
+            "  \"equipmentName\": \"*\"," +
+            "  \"equipmentType\": \"LINE\"," +
+            "  \"nominalVoltage\": \"225\"," +
+            "  \"nominalVoltageOperator\": \"<=\"," +
+            "  \"countries\": [\"FR\", \"IT\", \"NL\"]" +
+            "}";
 
         String filters3 = "{\n" +
-                "  \"equipmentID\": \"LOAD*\"," +
-                "  \"equipmentName\": \"*\"," +
-                "  \"equipmentType\": \"LOAD\"," +
-                "  \"nominalVoltage\": \"380\"," +
-                "  \"nominalVoltageOperator\": \"=\"," +
-                "  \"countries\": []" +
-                "}";
+            "  \"name\": \"toc\"," +
+            "  \"equipmentID\": \"LOAD*\"," +
+            "  \"equipmentName\": \"*\"," +
+            "  \"equipmentType\": \"LOAD\"," +
+            "  \"nominalVoltage\": \"380\"," +
+            "  \"nominalVoltageOperator\": \"=\"," +
+            "  \"countries\": []" +
+            "}";
 
         // Put data
-        mvc.perform(put("/" + VERSION + "/script-contingency-lists/foo")
-                .content(script)
-                .contentType(TEXT_PLAIN))
-                .andExpect(status().isOk());
+        mvc.perform(put("/" + VERSION + "/script-contingency-lists/")
+            .content(script)
+            .contentType(APPLICATION_JSON))
+            .andExpect(status().isOk());
 
-        mvc.perform(put("/" + VERSION + "/filters-contingency-lists/tic")
-                .content(filters)
-                .contentType(APPLICATION_JSON))
-                .andExpect(status().isOk());
+        mvc.perform(put("/" + VERSION + "/filters-contingency-lists/")
+            .content(filters)
+            .contentType(APPLICATION_JSON))
+            .andExpect(status().isOk());
 
-        mvc.perform(put("/" + VERSION + "/filters-contingency-lists/tuc")
-                .content(filters2)
-                .contentType(APPLICATION_JSON))
-                .andExpect(status().isOk());
+        mvc.perform(put("/" + VERSION + "/filters-contingency-lists/")
+            .content(filters2)
+            .contentType(APPLICATION_JSON))
+            .andExpect(status().isOk());
 
-        mvc.perform(put("/" + VERSION + "/filters-contingency-lists/toc")
-                .content(filters3)
-                .contentType(APPLICATION_JSON))
-                .andExpect(status().isOk());
+        mvc.perform(put("/" + VERSION + "/filters-contingency-lists/")
+            .content(filters3)
+            .contentType(APPLICATION_JSON))
+            .andExpect(status().isOk());
 
         // Check data
         mvc.perform(get("/" + VERSION + "/contingency-lists")
-                .contentType(APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-                .andExpect(content().json("[{\"name\":\"foo\",\"type\":\"SCRIPT\"},{\"name\":\"tic\",\"type\":\"FILTERS\"},{\"name\":\"tuc\",\"type\":\"FILTERS\"},{\"name\":\"toc\",\"type\":\"FILTERS\"}]", true));
+            .contentType(APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+            .andExpect(content().json("[{\"name\":\"foo\",\"type\":\"SCRIPT\"},{\"name\":\"tic\",\"type\":\"FILTERS\"},{\"name\":\"tuc\",\"type\":\"FILTERS\"},{\"name\":\"toc\",\"type\":\"FILTERS\"}]", false));
 
         mvc.perform(get("/" + VERSION + "/script-contingency-lists")
-                .contentType(APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-                .andExpect(content().json("[{\"name\":\"foo\",\"script\":\"contingency('NHV1_NHV2_1') {     equipments 'NHV1_NHV2_1'}\",\"type\":\"SCRIPT\"}]", true));
+            .contentType(APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+            .andExpect(content().json("[{\"name\":\"foo\",\"script\":\"contingency('NHV1_NHV2_1') {     equipments 'NHV1_NHV2_1'}\",\"type\":\"SCRIPT\"}]", false));
 
         mvc.perform(get("/" + VERSION + "/filters-contingency-lists")
-                .contentType(APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-                .andExpect(content().json("[{\"name\":\"tic\",\"equipmentID\":\"GEN*\",\"equipmentName\":\"GEN*\",\"equipmentType\":\"GENERATOR\",\"nominalVoltage\":100.0,\"nominalVoltageOperator\":\">\",\"countries\":[\"BE\",\"FR\"],\"type\":\"FILTERS\"},{\"name\":\"toc\",\"equipmentID\":\"LOAD*\",\"equipmentName\":\"*\",\"equipmentType\":\"LOAD\",\"nominalVoltage\":380.0,\"nominalVoltageOperator\":\"=\",\"countries\":[],\"type\":\"FILTERS\"},{\"name\":\"tuc\",\"equipmentID\":\"LINE*\",\"equipmentName\":\"*\",\"equipmentType\":\"LINE\",\"nominalVoltage\":225.0,\"nominalVoltageOperator\":\"<=\",\"countries\":[\"IT\",\"FR\",\"NL\"],\"type\":\"FILTERS\"}]", true));
+            .contentType(APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+            .andExpect(content().json("[{\"name\":\"tic\",\"equipmentID\":\"GEN*\",\"equipmentName\":\"GEN*\",\"equipmentType\":\"GENERATOR\",\"nominalVoltage\":100.0,\"nominalVoltageOperator\":\">\",\"countries\":[\"BE\",\"FR\"],\"type\":\"FILTERS\"},{\"name\":\"toc\",\"equipmentID\":\"LOAD*\",\"equipmentName\":\"*\",\"equipmentType\":\"LOAD\",\"nominalVoltage\":380.0,\"nominalVoltageOperator\":\"=\",\"countries\":[],\"type\":\"FILTERS\"},{\"name\":\"tuc\",\"equipmentID\":\"LINE*\",\"equipmentName\":\"*\",\"equipmentType\":\"LINE\",\"nominalVoltage\":225.0,\"nominalVoltageOperator\":\"<=\",\"countries\":[\"IT\",\"FR\",\"NL\"],\"type\":\"FILTERS\"}]", false));
 
-        mvc.perform(get("/" + VERSION + "/script-contingency-lists/foo")
-                .contentType(APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-                .andExpect(content().json("{\"name\":\"foo\",\"script\":\"contingency('NHV1_NHV2_1') {     equipments 'NHV1_NHV2_1'}\",\"type\":\"SCRIPT\"}", true));
+        mvc.perform(get("/" + VERSION + "/script-contingency-lists/" + scriptId)
+            .contentType(APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+            .andExpect(content().json("{\"name\":\"foo\",\"script\":\"contingency('NHV1_NHV2_1') {     equipments 'NHV1_NHV2_1'}\",\"type\":\"SCRIPT\"}", false));
 
-        mvc.perform(get("/" + VERSION + "/filters-contingency-lists/tic")
-                .contentType(APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-                .andExpect(content().json("{\"name\":\"tic\",\"equipmentID\":\"GEN*\",\"equipmentName\":\"GEN*\",\"equipmentType\":\"GENERATOR\",\"nominalVoltage\":100.0,\"nominalVoltageOperator\":\">\",\"countries\":[\"BE\",\"FR\"],\"type\":\"FILTERS\"}", true));
+        mvc.perform(get("/" + VERSION + "/filters-contingency-lists/" + ticId)
+            .contentType(APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+            .andExpect(content().json("{\"name\":\"tic\",\"equipmentID\":\"GEN*\",\"equipmentName\":\"GEN*\",\"equipmentType\":\"GENERATOR\",\"nominalVoltage\":100.0,\"nominalVoltageOperator\":\">\",\"countries\":[\"BE\",\"FR\"],\"type\":\"FILTERS\"}", false));
 
         // check not found
-        mvc.perform(get("/" + VERSION + "/script-contingency-lists/bar")
-                .contentType(APPLICATION_JSON))
-                .andExpect(status().isNotFound())
-                .andExpect(content().string(""));
+        mvc.perform(get("/" + VERSION + "/script-contingency-lists/" + notFoundId)
+            .contentType(APPLICATION_JSON))
+            .andExpect(status().isNotFound())
+            .andExpect(content().string(""));
 
-        mvc.perform(get("/" + VERSION + "/filters-contingency-lists/tac")
-                .contentType(APPLICATION_JSON))
-                .andExpect(status().isNotFound())
-                .andExpect(content().string(""));
+        mvc.perform(get("/" + VERSION + "/filters-contingency-lists/" + notFoundId)
+            .contentType(APPLICATION_JSON))
+            .andExpect(status().isNotFound())
+            .andExpect(content().string(""));
 
         // export contingencies
-        mvc.perform(get("/" + VERSION + "/contingency-lists/foo/export")
-                .contentType(APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-                .andExpect(content().json("[]", true)); // there is no network so all contingencies are invalid
+        mvc.perform(get("/" + VERSION + "/contingency-lists/" + scriptId + "/export")
+            .contentType(APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+            .andExpect(content().json("[]", true)); // there is no network so all contingencies are invalid
 
-        mvc.perform(get("/" + VERSION + "/contingency-lists/tic/export")
-                .contentType(APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-                .andExpect(content().json("[]", true)); // there is no network so all contingencies are invalid
+        mvc.perform(get("/" + VERSION + "/contingency-lists/" + ticId + "/export")
+            .contentType(APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+            .andExpect(content().json("[]", true)); // there is no network so all contingencies are invalid
 
-        mvc.perform(get("/" + VERSION + "/contingency-lists/foo/export?networkUuid=" + NETWORK_UUID)
-                .contentType(APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-                .andExpect(content().json("[{\"id\":\"NHV1_NHV2_1\",\"elements\":[{\"id\":\"NHV1_NHV2_1\",\"type\":\"LINE\"}]}]", true));
+        mvc.perform(get("/" + VERSION + "/contingency-lists/" + scriptId + "/export?networkUuid=" + NETWORK_UUID)
+            .contentType(APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+            .andExpect(content().json("[{\"id\":\"NHV1_NHV2_1\",\"elements\":[{\"id\":\"NHV1_NHV2_1\",\"type\":\"LINE\"}]}]", true));
 
         // rename baz --> bar ---> baz not found
-        mvc.perform(post("/" + VERSION + "/script-contingency-lists/baz/rename")
-                .content("{\"newContingencyListName\": \"bar\"}")
-                .contentType(APPLICATION_JSON))
-                .andExpect(status().isNotFound());
+        mvc.perform(post("/" + VERSION + "/script-contingency-lists/" + notFoundId + "/rename")
+            .content("{\"newContingencyListName\": \"bar\"}")
+            .contentType(APPLICATION_JSON))
+            .andExpect(status().isNotFound());
+
+        // rename baz --> bar ---> baz not found
+        mvc.perform(post("/" + VERSION + "/contingency-lists/" + notFoundId + "/rename")
+            .content("{\"newContingencyListName\": \"bar\"}")
+            .contentType(APPLICATION_JSON))
+            .andExpect(status().isNotFound());
 
         // rename foo --> bar
-        mvc.perform(post("/" + VERSION + "/contingency-lists/foo/rename")
-                .content("{\"newContingencyListName\": \"bar\"}")
-                .contentType(APPLICATION_JSON))
-                .andExpect(status().isOk());
+        mvc.perform(post("/" + VERSION + "/contingency-lists/" + scriptId + "/rename")
+            .content("{\"newContingencyListName\": \"bar\"}")
+            .contentType(APPLICATION_JSON))
+            .andExpect(status().isOk());
 
         // rename tic --> tac
-        mvc.perform(post("/" + VERSION + "/contingency-lists/tic/rename")
-                .content("{\"newContingencyListName\": \"tac\"}")
-                .contentType(APPLICATION_JSON))
-                .andExpect(status().isOk());
+        mvc.perform(post("/" + VERSION + "/contingency-lists/" + ticId + "/rename")
+            .content("{\"newContingencyListName\": \"tac\"}")
+            .contentType(APPLICATION_JSON))
+            .andExpect(status().isOk());
 
         // check tac values
-        mvc.perform(get("/" + VERSION + "/filters-contingency-lists/tac")
-                .contentType(APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-                .andExpect(content().json("{\"name\":\"tac\",\"equipmentID\":\"GEN*\",\"equipmentName\":\"GEN*\",\"equipmentType\":\"GENERATOR\",\"nominalVoltage\":100.0,\"nominalVoltageOperator\":\">\",\"countries\":[\"BE\",\"FR\"],\"type\":\"FILTERS\"}", true));
+        mvc.perform(get("/" + VERSION + "/filters-contingency-lists/" + ticId)
+            .contentType(APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+            .andExpect(content().json("{\"name\":\"tac\",\"equipmentID\":\"GEN*\",\"equipmentName\":\"GEN*\",\"equipmentType\":\"GENERATOR\",\"nominalVoltage\":100.0,\"nominalVoltageOperator\":\">\",\"countries\":[\"BE\",\"FR\"],\"type\":\"FILTERS\"}", false));
 
         // check bar values
-        mvc.perform(get("/" + VERSION + "/script-contingency-lists/bar")
-                .contentType(APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-                .andExpect(content().json("{\"name\":\"bar\",\"script\":\"contingency('NHV1_NHV2_1') {     equipments 'NHV1_NHV2_1'}\",\"type\":\"SCRIPT\"}", true));
-
-        // check foo not found
-        mvc.perform(get("/" + VERSION + "/script-contingency-lists/foo")
-                .contentType(APPLICATION_JSON))
-                .andExpect(status().isNotFound())
-                .andExpect(content().string(""));
+        mvc.perform(get("/" + VERSION + "/script-contingency-lists/" + scriptId)
+            .contentType(APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+            .andExpect(content().json("{\"name\":\"bar\",\"script\":\"contingency('NHV1_NHV2_1') {     equipments 'NHV1_NHV2_1'}\",\"type\":\"SCRIPT\"}", false));
 
         // delete data
-        mvc.perform(delete("/" + VERSION + "/contingency-lists/bar"))
-                .andExpect(status().isOk());
+        mvc.perform(delete("/" + VERSION + "/contingency-lists/" + scriptId))
+            .andExpect(status().isOk());
 
-        mvc.perform(delete("/" + VERSION + "/contingency-lists/tac"))
-                .andExpect(status().isOk());
+        mvc.perform(delete("/" + VERSION + "/contingency-lists/" + ticId))
+            .andExpect(status().isOk());
 
-        mvc.perform(delete("/" + VERSION + "/contingency-lists/foo"))
-                .andExpect(status().isNotFound());
+        mvc.perform(delete("/" + VERSION + "/contingency-lists/" + scriptId))
+            .andExpect(status().isNotFound());
 
-        mvc.perform(delete("/" + VERSION + "/contingency-lists/tac"))
-                .andExpect(status().isNotFound());
+        mvc.perform(delete("/" + VERSION + "/contingency-lists/" + ticId))
+            .andExpect(status().isNotFound());
     }
 
     public StringBuilder jsonVal(String id, String val, boolean trailingComma) {
         return new StringBuilder("\"").append(id).append("\": \"").append(val).append("\"").append(trailingComma ? ", " : "");
     }
 
-    public String genContingencyFilter(String id, String name, EquipmentType type,
-                                       Integer nominalVoltage, String nominalVoltageOperator, Set<String> countries) {
+    public String genContingencyFilter(UUID uuid, String id, String name, EquipmentType type,
+                                       Integer nominalVoltage, String nominalVoltageOperator, Set<String> countries, String description) {
         return "{" +
-                jsonVal("equipmentID", id, true) +
-                jsonVal("equipmentName", name, true) +
-                jsonVal("equipmentType", type.name(), true) +
-                jsonVal("nominalVoltage", "" + nominalVoltage, true) +
-                jsonVal("nominalVoltageOperator", nominalVoltageOperator, true) +
-                "\"countries\": [" + (!countries.isEmpty() ? "\"" + join(countries, "\",\"") + "\"" : "") + "]}";
+            jsonVal("id", uuid.toString(), true) +
+            jsonVal("name", "thisIsNotAnUUID_" + uuid, true) +
+            jsonVal("equipmentID", id, true) +
+            jsonVal("equipmentName", name, true) +
+            jsonVal("equipmentType", type.name(), true) +
+            jsonVal("nominalVoltage", "" + nominalVoltage, true) +
+            jsonVal("nominalVoltageOperator", nominalVoltageOperator, true) +
+            jsonVal("description", description, true) +
+            "\"countries\": [" + (!countries.isEmpty() ? "\"" + join(countries, "\",\"") + "\"" : "") + "]}";
 
+    }
+
+    ObjectMapper objectMapper = new ObjectMapper();
+
+    @Test
+    public void testDateFilter() throws Exception {
+        UUID id = UUID.randomUUID();
+        String desc = "smurf";
+        String filter = genContingencyFilter(id, "testDate", "*", EquipmentType.LINE, 11, "=", Set.of(), desc);
+
+        mvc.perform(put("/" + VERSION + "/filters-contingency-lists/")
+            .content(filter)
+            .contentType(APPLICATION_JSON))
+            .andExpect(status().isOk());
+
+        ContingencyListAttributes attributes = getMetadata(id);
+
+        assertEquals(id, attributes.getId());
+        assertEquals(desc, attributes.getDescription());
+        Date baseCreationDate = attributes.getCreationDate();
+        Date baseModificationDate = attributes.getModificationDate();
+
+        mvc.perform(put("/" + VERSION + "/filters-contingency-lists/")
+            .content(filter)
+            .contentType(APPLICATION_JSON))
+            .andExpect(status().isOk());
+
+        attributes = getMetadata(id);
+        assertEquals(baseCreationDate, attributes.getCreationDate());
+        assertTrue(baseModificationDate.getTime() < attributes.getModificationDate().getTime());
     }
 
     @Test
@@ -286,131 +333,169 @@ public class ContingencyListControllerTest {
         Set<String> noCountries = Collections.emptySet();
         Set<String> france = Collections.singleton("FR");
         Set<String> belgium = Collections.singleton("BE");
-        String lineFilters  = genContingencyFilter("*", "*", EquipmentType.LINE, -1, "=", noCountries);
-        String lineFilters1 = genContingencyFilter("NHV1*", "*", EquipmentType.LINE, 100, "<", noCountries);
-        String lineFilters2 = genContingencyFilter("NHV1*", "*", EquipmentType.LINE, 380, "=", noCountries);
-        String lineFilters3 = genContingencyFilter("NHV1*", "*", EquipmentType.LINE, 390, ">=", noCountries);
-        String lineFilters4 = genContingencyFilter("NHV1*", "*", EquipmentType.LINE, 390, "<=", noCountries);
-        String lineFilters5 = genContingencyFilter("*", "*", EquipmentType.LINE, 100, ">", noCountries);
-        String lineFilters6 = genContingencyFilter("UNKNOWN", "NVH1*", EquipmentType.LINE, 100, ">", noCountries);
-        String lineFilters7 = genContingencyFilter("*", "*", EquipmentType.LINE, -1, ">", france);
+        UUID id = UUID.randomUUID();
+        String lineFilters = genContingencyFilter(id, "*", "*", EquipmentType.LINE, -1, "=", noCountries, null);
+        String lineFilters1 = genContingencyFilter(id, "NHV1*", "*", EquipmentType.LINE, 100, "<", noCountries, null);
+        String lineFilters2 = genContingencyFilter(id, "NHV1*", "*", EquipmentType.LINE, 380, "=", noCountries, null);
+        String lineFilters3 = genContingencyFilter(id, "NHV1*", "*", EquipmentType.LINE, 390, ">=", noCountries, null);
+        String lineFilters4 = genContingencyFilter(id, "NHV1*", "*", EquipmentType.LINE, 390, "<=", noCountries, null);
+        String lineFilters5 = genContingencyFilter(id, "*", "*", EquipmentType.LINE, 100, ">", noCountries, null);
+        String lineFilters6 = genContingencyFilter(id, "UNKNOWN", "NVH1*", EquipmentType.LINE, 100, ">", noCountries, null);
+        String lineFilters7 = genContingencyFilter(id, "*", "*", EquipmentType.LINE, -1, ">", france, null);
 
-        testExportContingencies("lineFilters", lineFilters, " [{\"id\":\"NHV1_NHV2_2\",\"elements\":[{\"id\":\"NHV1_NHV2_2\",\"type\":\"BRANCH\"}]},{\"id\":\"NHV1_NHV2_1\",\"elements\":[{\"id\":\"NHV1_NHV2_1\",\"type\":\"BRANCH\"}]}]", NETWORK_UUID);
-        testExportContingencies("lineFilters", lineFilters1, " []", NETWORK_UUID);
-        testExportContingencies("lineFilters", lineFilters2, " [{\"id\":\"NHV1_NHV2_2\",\"elements\":[{\"id\":\"NHV1_NHV2_2\",\"type\":\"BRANCH\"}]},{\"id\":\"NHV1_NHV2_1\",\"elements\":[{\"id\":\"NHV1_NHV2_1\",\"type\":\"BRANCH\"}]}]", NETWORK_UUID);
-        testExportContingencies("lineFilters", lineFilters3, " []", NETWORK_UUID);
-        testExportContingencies("lineFilters", lineFilters4, " [{\"id\":\"NHV1_NHV2_2\",\"elements\":[{\"id\":\"NHV1_NHV2_2\",\"type\":\"BRANCH\"}]},{\"id\":\"NHV1_NHV2_1\",\"elements\":[{\"id\":\"NHV1_NHV2_1\",\"type\":\"BRANCH\"}]}]", NETWORK_UUID);
-        testExportContingencies("lineFilters", lineFilters5, " [{\"id\":\"NHV1_NHV2_2\",\"elements\":[{\"id\":\"NHV1_NHV2_2\",\"type\":\"BRANCH\"}]},{\"id\":\"NHV1_NHV2_1\",\"elements\":[{\"id\":\"NHV1_NHV2_1\",\"type\":\"BRANCH\"}]}]", NETWORK_UUID);
-        testExportContingencies("lineFilters", lineFilters6, " []", NETWORK_UUID);
-        testExportContingencies("lineFilters", lineFilters7, " [{\"id\":\"NHV1_NHV2_2\",\"elements\":[{\"id\":\"NHV1_NHV2_2\",\"type\":\"BRANCH\"}]},{\"id\":\"NHV1_NHV2_1\",\"elements\":[{\"id\":\"NHV1_NHV2_1\",\"type\":\"BRANCH\"}]}]", NETWORK_UUID);
+        testExportContingencies(id, lineFilters, " [{\"id\":\"NHV1_NHV2_2\",\"elements\":[{\"id\":\"NHV1_NHV2_2\",\"type\":\"BRANCH\"}]},{\"id\":\"NHV1_NHV2_1\",\"elements\":[{\"id\":\"NHV1_NHV2_1\",\"type\":\"BRANCH\"}]}]", NETWORK_UUID);
+        testExportContingencies(id, lineFilters1, " []", NETWORK_UUID);
+        testExportContingencies(id, lineFilters2, " [{\"id\":\"NHV1_NHV2_2\",\"elements\":[{\"id\":\"NHV1_NHV2_2\",\"type\":\"BRANCH\"}]},{\"id\":\"NHV1_NHV2_1\",\"elements\":[{\"id\":\"NHV1_NHV2_1\",\"type\":\"BRANCH\"}]}]", NETWORK_UUID);
+        testExportContingencies(id, lineFilters3, " []", NETWORK_UUID);
+        testExportContingencies(id, lineFilters4, " [{\"id\":\"NHV1_NHV2_2\",\"elements\":[{\"id\":\"NHV1_NHV2_2\",\"type\":\"BRANCH\"}]},{\"id\":\"NHV1_NHV2_1\",\"elements\":[{\"id\":\"NHV1_NHV2_1\",\"type\":\"BRANCH\"}]}]", NETWORK_UUID);
+        testExportContingencies(id, lineFilters5, " [{\"id\":\"NHV1_NHV2_2\",\"elements\":[{\"id\":\"NHV1_NHV2_2\",\"type\":\"BRANCH\"}]},{\"id\":\"NHV1_NHV2_1\",\"elements\":[{\"id\":\"NHV1_NHV2_1\",\"type\":\"BRANCH\"}]}]", NETWORK_UUID);
+        testExportContingencies(id, lineFilters6, " []", NETWORK_UUID);
+        testExportContingencies(id, lineFilters7, " [{\"id\":\"NHV1_NHV2_2\",\"elements\":[{\"id\":\"NHV1_NHV2_2\",\"type\":\"BRANCH\"}]},{\"id\":\"NHV1_NHV2_1\",\"elements\":[{\"id\":\"NHV1_NHV2_1\",\"type\":\"BRANCH\"}]}]", NETWORK_UUID);
 
-        String twtFilters = "{\"equipmentID\": \"*\", \"equipmentName\": \"*\", \"equipmentType\": \"TWO_WINDINGS_TRANSFORMER\", \"nominalVoltage\": \"-1\",\"nominalVoltageOperator\": \"*\"}";
-        String twtFilters1 = "{\"equipmentID\": \"NGEN_NHV1\", \"equipmentName\": \"*\", \"equipmentType\": \"TWO_WINDINGS_TRANSFORMER\", \"nominalVoltage\": \"-1\",\"nominalVoltageOperator\": \"*\"}";
-        String twtFilters2 = "{\"equipmentID\": \"UNKNOWN\", \"equipmentName\": \"NGEN_NHV1\", \"equipmentType\": \"TWO_WINDINGS_TRANSFORMER\", \"nominalVoltage\": \"-1\",\"nominalVoltageOperator\": \"*\"}";
-        String twtFilters3 = "{\"equipmentID\": \"*\", \"equipmentName\": \"*\", \"equipmentType\": \"TWO_WINDINGS_TRANSFORMER\", \"nominalVoltage\": \"10\",\"nominalVoltageOperator\": \">\"}";
-        String twtFilters4 = genContingencyFilter("*", "*", EquipmentType.TWO_WINDINGS_TRANSFORMER, -1, ">", france);
-        testExportContingencies("twtFilters", twtFilters, " [{\"id\":\"NGEN_NHV1\",\"elements\":[{\"id\":\"NGEN_NHV1\",\"type\":\"BRANCH\"}]},{\"id\":\"NHV2_NLOAD\",\"elements\":[{\"id\":\"NHV2_NLOAD\",\"type\":\"BRANCH\"}]}]", NETWORK_UUID);
-        testExportContingencies("twtFilters", twtFilters1, " [{\"id\":\"NGEN_NHV1\",\"elements\":[{\"id\":\"NGEN_NHV1\",\"type\":\"BRANCH\"}]}]", NETWORK_UUID);
-        testExportContingencies("twtFilters", twtFilters2, " []", NETWORK_UUID);
-        testExportContingencies("twtFilters", twtFilters3, " [{\"id\":\"NGEN_NHV1\",\"elements\":[{\"id\":\"NGEN_NHV1\",\"type\":\"BRANCH\"}]},{\"id\":\"NHV2_NLOAD\",\"elements\":[{\"id\":\"NHV2_NLOAD\",\"type\":\"BRANCH\"}]}]", NETWORK_UUID);
-        testExportContingencies("twtFilters", twtFilters4, " [{\"id\":\"NGEN_NHV1\",\"elements\":[{\"id\":\"NGEN_NHV1\",\"type\":\"BRANCH\"}]},{\"id\":\"NHV2_NLOAD\",\"elements\":[{\"id\":\"NHV2_NLOAD\",\"type\":\"BRANCH\"}]}]", NETWORK_UUID);
+        UUID twfilterId = UUID.randomUUID();
 
-        String generatorFilters = "{\"equipmentID\": \"*\", \"equipmentName\": \"*\", \"equipmentType\": \"GENERATOR\", \"nominalVoltage\": \"-1\",\"nominalVoltageOperator\": \"=\"}";
-        String generatorFilters2 = "{\"equipmentID\": \"GEN\", \"equipmentName\": \"*\", \"equipmentType\": \"GENERATOR\", \"nominalVoltage\": \"-1\",\"nominalVoltageOperator\": \"=\"}";
-        String generatorFilters3 = "{\"equipmentID\": \"UNKNOWN\", \"equipmentName\": \"GEN\", \"equipmentType\": \"GENERATOR\", \"nominalVoltage\": \"-1\",\"nominalVoltageOperator\": \"=\"}";
-        String generatorFilters4 = "{\"equipmentID\": \"UNKNOWN\", \"equipmentName\": \"*\", \"equipmentType\": \"GENERATOR\", \"nominalVoltage\": \"10\",\"nominalVoltageOperator\": \"<\"}";
-        String generatorFilters5 = genContingencyFilter("*", "*", EquipmentType.GENERATOR, -1, ">", france);
-        String generatorFilters6 = genContingencyFilter("*", "*", EquipmentType.GENERATOR, -1, ">", belgium);
-        testExportContingencies("generatorFilters", generatorFilters, " [{\"id\":\"GEN\",\"elements\":[{\"id\":\"GEN\",\"type\":\"GENERATOR\"}]},{\"id\":\"GEN2\",\"elements\":[{\"id\":\"GEN2\",\"type\":\"GENERATOR\"}]}]", NETWORK_UUID);
-        testExportContingencies("generatorFilters", generatorFilters2, " [{\"id\":\"GEN\",\"elements\":[{\"id\":\"GEN\",\"type\":\"GENERATOR\"}]}]", NETWORK_UUID);
-        testExportContingencies("generatorFilters", generatorFilters3, " []", NETWORK_UUID);
-        testExportContingencies("generatorFilters", generatorFilters4, " []", NETWORK_UUID);
-        testExportContingencies("generatorFilters", generatorFilters5, " [{\"id\":\"GEN\",\"elements\":[{\"id\":\"GEN\",\"type\":\"GENERATOR\"}]},{\"id\":\"GEN2\",\"elements\":[{\"id\":\"GEN2\",\"type\":\"GENERATOR\"}]}]", NETWORK_UUID);
-        testExportContingencies("generatorFilters", generatorFilters6, " []", NETWORK_UUID);
+        String twtFilters0 = String.format("{\"id\":\"%s\", \"name\":\"test_tw\", \"equipmentID\": \"*\", \"equipmentName\": \"*\", \"equipmentType\": \"TWO_WINDINGS_TRANSFORMER\", \"nominalVoltage\": \"-1\",\"nominalVoltageOperator\": \"*\"}", twfilterId);
+        String twtFilters1 = String.format("{\"id\":\"%s\", \"name\":\"test_tw\", \"equipmentID\": \"NGEN_NHV1\", \"equipmentName\": \"*\", \"equipmentType\": \"TWO_WINDINGS_TRANSFORMER\", \"nominalVoltage\": \"-1\",\"nominalVoltageOperator\": \"*\"}", twfilterId);
+        String twtFilters2 = String.format("{\"id\":\"%s\", \"name\":\"test_tw\", \"equipmentID\": \"UNKNOWN\", \"equipmentName\": \"NGEN_NHV1\", \"equipmentType\": \"TWO_WINDINGS_TRANSFORMER\", \"nominalVoltage\": \"-1\",\"nominalVoltageOperator\": \"*\"}", twfilterId);
+        String twtFilters3 = String.format("{\"id\":\"%s\", \"name\":\"test_tw\", \"equipmentID\": \"*\", \"equipmentName\": \"*\", \"equipmentType\": \"TWO_WINDINGS_TRANSFORMER\", \"nominalVoltage\": \"10\",\"nominalVoltageOperator\": \">\"}", twfilterId);
+        String twtFilters4 = genContingencyFilter(twfilterId, "*", "*", EquipmentType.TWO_WINDINGS_TRANSFORMER, -1, ">", france, null);
+        testExportContingencies(twfilterId, twtFilters0, " [{\"id\":\"NGEN_NHV1\",\"elements\":[{\"id\":\"NGEN_NHV1\",\"type\":\"BRANCH\"}]},{\"id\":\"NHV2_NLOAD\",\"elements\":[{\"id\":\"NHV2_NLOAD\",\"type\":\"BRANCH\"}]}]", NETWORK_UUID);
+        testExportContingencies(twfilterId, twtFilters1, " [{\"id\":\"NGEN_NHV1\",\"elements\":[{\"id\":\"NGEN_NHV1\",\"type\":\"BRANCH\"}]}]", NETWORK_UUID);
+        testExportContingencies(twfilterId, twtFilters2, " []", NETWORK_UUID);
+        testExportContingencies(twfilterId, twtFilters3, " [{\"id\":\"NGEN_NHV1\",\"elements\":[{\"id\":\"NGEN_NHV1\",\"type\":\"BRANCH\"}]},{\"id\":\"NHV2_NLOAD\",\"elements\":[{\"id\":\"NHV2_NLOAD\",\"type\":\"BRANCH\"}]}]", NETWORK_UUID);
+        testExportContingencies(twfilterId, twtFilters4, " [{\"id\":\"NGEN_NHV1\",\"elements\":[{\"id\":\"NGEN_NHV1\",\"type\":\"BRANCH\"}]},{\"id\":\"NHV2_NLOAD\",\"elements\":[{\"id\":\"NHV2_NLOAD\",\"type\":\"BRANCH\"}]}]", NETWORK_UUID);
 
-        String svcFilters = "{\"equipmentID\": \"*\", \"equipmentName\": \"*\", \"equipmentType\": \"STATIC_VAR_COMPENSATOR\", \"nominalVoltage\": \"-1\",\"nominalVoltageOperator\": \"=\"}";
-        String svcFilters2 = "{\"equipmentID\": \"SVC3\", \"equipmentName\": \"*\", \"equipmentType\": \"STATIC_VAR_COMPENSATOR\", \"nominalVoltage\": \"-1\",\"nominalVoltageOperator\": \"=\"}";
-        String svcFilters3 = "{\"equipmentID\": \"UNKNOWN\", \"equipmentName\": \"SVC2*\", \"equipmentType\": \"STATIC_VAR_COMPENSATOR\", \"nominalVoltage\": \"-1\",\"nominalVoltageOperator\": \"=\"}";
-        String svcFilters4 = "{\"equipmentID\": \"*\", \"equipmentName\": \"*\", \"equipmentType\": \"STATIC_VAR_COMPENSATOR\", \"nominalVoltage\": \"100\",\"nominalVoltageOperator\": \"<\"}";
-        String svcFilters5 = genContingencyFilter("*", "*", EquipmentType.STATIC_VAR_COMPENSATOR, -1, "<", france);
-        String svcFilters6 = genContingencyFilter("*", "*", EquipmentType.STATIC_VAR_COMPENSATOR, -1, "<", belgium);
-        testExportContingencies("svcFilters", svcFilters, " [{\"id\":\"SVC3\",\"elements\":[{\"id\":\"SVC3\",\"type\":\"STATIC_VAR_COMPENSATOR\"}]}," +
-                "{\"id\":\"SVC2\",\"elements\":[{\"id\":\"SVC2\",\"type\":\"STATIC_VAR_COMPENSATOR\"}]}]", NETWORK_UUID_3);
-        testExportContingencies("svcFilters", svcFilters2, " [{\"id\":\"SVC3\",\"elements\":[{\"id\":\"SVC3\",\"type\":\"STATIC_VAR_COMPENSATOR\"}]}]", NETWORK_UUID_3);
-        testExportContingencies("svcFilters", svcFilters3, " []", NETWORK_UUID_3);
-        testExportContingencies("svcFilters", svcFilters4, " []", NETWORK_UUID_3);
-        testExportContingencies("svcFilters", svcFilters5, " [{\"id\":\"SVC3\",\"elements\":[{\"id\":\"SVC3\",\"type\":\"STATIC_VAR_COMPENSATOR\"}]},{\"id\":\"SVC2\",\"elements\":[{\"id\":\"SVC2\",\"type\":\"STATIC_VAR_COMPENSATOR\"}]}]", NETWORK_UUID_3);
-        testExportContingencies("svcFilters", svcFilters6, " []", NETWORK_UUID_3);
+        UUID generatorFilterId = UUID.randomUUID();
+
+        String generatorFilters1 = String.format("{\"id\":\"%s\", \"name\":\"test_generator\", \"equipmentID\": \"*\", \"equipmentName\": \"*\", \"equipmentType\": \"GENERATOR\", \"nominalVoltage\": \"-1\",\"nominalVoltageOperator\": \"=\"}", generatorFilterId);
+        String generatorFilters2 = String.format("{\"id\":\"%s\", \"name\":\"test_generator\", \"equipmentID\": \"GEN\", \"equipmentName\": \"*\", \"equipmentType\": \"GENERATOR\", \"nominalVoltage\": \"-1\",\"nominalVoltageOperator\": \"=\"}", generatorFilterId);
+        String generatorFilters3 = String.format("{\"id\":\"%s\", \"name\":\"test_generator\", \"equipmentID\": \"UNKNOWN\", \"equipmentName\": \"GEN\", \"equipmentType\": \"GENERATOR\", \"nominalVoltage\": \"-1\",\"nominalVoltageOperator\": \"=\"}", generatorFilterId);
+        String generatorFilters4 = String.format("{\"id\":\"%s\", \"name\":\"test_generator\", \"equipmentID\": \"UNKNOWN\", \"equipmentName\": \"*\", \"equipmentType\": \"GENERATOR\", \"nominalVoltage\": \"10\",\"nominalVoltageOperator\": \"<\"}", generatorFilterId);
+        String generatorFilters5 = genContingencyFilter(generatorFilterId, "*", "*", EquipmentType.GENERATOR, -1, ">", france, null);
+        String generatorFilters6 = genContingencyFilter(generatorFilterId, "*", "*", EquipmentType.GENERATOR, -1, ">", belgium, null);
+        testExportContingencies(generatorFilterId, generatorFilters1, " [{\"id\":\"GEN\",\"elements\":[{\"id\":\"GEN\",\"type\":\"GENERATOR\"}]},{\"id\":\"GEN2\",\"elements\":[{\"id\":\"GEN2\",\"type\":\"GENERATOR\"}]}]", NETWORK_UUID);
+        testExportContingencies(generatorFilterId, generatorFilters2, " [{\"id\":\"GEN\",\"elements\":[{\"id\":\"GEN\",\"type\":\"GENERATOR\"}]}]", NETWORK_UUID);
+        testExportContingencies(generatorFilterId, generatorFilters3, " []", NETWORK_UUID);
+        testExportContingencies(generatorFilterId, generatorFilters4, " []", NETWORK_UUID);
+        testExportContingencies(generatorFilterId, generatorFilters5, " [{\"id\":\"GEN\",\"elements\":[{\"id\":\"GEN\",\"type\":\"GENERATOR\"}]},{\"id\":\"GEN2\",\"elements\":[{\"id\":\"GEN2\",\"type\":\"GENERATOR\"}]}]", NETWORK_UUID);
+        testExportContingencies(generatorFilterId, generatorFilters6, " []", NETWORK_UUID);
+
+        UUID svcFilterId = UUID.randomUUID();
+        String svcFilters1 = String.format("{\"id\":\"%s\", \"name\":\"test_scv\", \"equipmentID\": \"*\", \"equipmentName\": \"*\", \"equipmentType\": \"STATIC_VAR_COMPENSATOR\", \"nominalVoltage\": \"-1\",\"nominalVoltageOperator\": \"=\"}", svcFilterId);
+        String svcFilters2 = String.format("{\"id\":\"%s\", \"name\":\"test_scv\", \"equipmentID\": \"SVC3\", \"equipmentName\": \"*\", \"equipmentType\": \"STATIC_VAR_COMPENSATOR\", \"nominalVoltage\": \"-1\",\"nominalVoltageOperator\": \"=\"}", svcFilterId);
+        String svcFilters3 = String.format("{\"id\":\"%s\", \"name\":\"test_scv\", \"equipmentID\": \"UNKNOWN\", \"equipmentName\": \"SVC2*\", \"equipmentType\": \"STATIC_VAR_COMPENSATOR\", \"nominalVoltage\": \"-1\",\"nominalVoltageOperator\": \"=\"}", svcFilterId);
+        String svcFilters4 = String.format("{\"id\":\"%s\", \"name\":\"test_scv\", \"equipmentID\": \"*\", \"equipmentName\": \"*\", \"equipmentType\": \"STATIC_VAR_COMPENSATOR\", \"nominalVoltage\": \"100\",\"nominalVoltageOperator\": \"<\"}", svcFilterId);
+        String svcFilters5 = genContingencyFilter(svcFilterId, "*", "*", EquipmentType.STATIC_VAR_COMPENSATOR, -1, "<", france, null);
+        String svcFilters6 = genContingencyFilter(svcFilterId, "*", "*", EquipmentType.STATIC_VAR_COMPENSATOR, -1, "<", belgium, null);
+        testExportContingencies(svcFilterId, svcFilters1, " [{\"id\":\"SVC3\",\"elements\":[{\"id\":\"SVC3\",\"type\":\"STATIC_VAR_COMPENSATOR\"}]}," +
+            "{\"id\":\"SVC2\",\"elements\":[{\"id\":\"SVC2\",\"type\":\"STATIC_VAR_COMPENSATOR\"}]}]", NETWORK_UUID_3);
+        testExportContingencies(svcFilterId, svcFilters2, " [{\"id\":\"SVC3\",\"elements\":[{\"id\":\"SVC3\",\"type\":\"STATIC_VAR_COMPENSATOR\"}]}]", NETWORK_UUID_3);
+        testExportContingencies(svcFilterId, svcFilters3, " []", NETWORK_UUID_3);
+        testExportContingencies(svcFilterId, svcFilters4, " []", NETWORK_UUID_3);
+        testExportContingencies(svcFilterId, svcFilters5, " [{\"id\":\"SVC3\",\"elements\":[{\"id\":\"SVC3\",\"type\":\"STATIC_VAR_COMPENSATOR\"}]},{\"id\":\"SVC2\",\"elements\":[{\"id\":\"SVC2\",\"type\":\"STATIC_VAR_COMPENSATOR\"}]}]", NETWORK_UUID_3);
+        testExportContingencies(svcFilterId, svcFilters6, " []", NETWORK_UUID_3);
     }
 
     @Test
     public void testExportContingencies2() throws Exception {
-        String scFilters = "{\"equipmentID\": \"*\", \"equipmentName\": \"*\", \"equipmentType\": \"SHUNT_COMPENSATOR\", \"nominalVoltage\": \"-1\",\"nominalVoltageOperator\": \"=\"}";
-        String scFilters2 = "{\"equipmentID\": \"SHUNT*\", \"equipmentName\": \"*\", \"equipmentType\": \"SHUNT_COMPENSATOR\", \"nominalVoltage\": \"-1\",\"nominalVoltageOperator\": \"=\"}";
-        String scFilters3 = "{\"equipmentID\": \"UNKNOWN\", \"equipmentName\": \"SHUNT*\", \"equipmentType\": \"SHUNT_COMPENSATOR\", \"nominalVoltage\": \"-1\",\"nominalVoltageOperator\": \"=\"}";
-        String scFilters4 = "{\"equipmentID\": \"*\", \"equipmentName\": \"*\", \"equipmentType\": \"SHUNT_COMPENSATOR\", \"nominalVoltage\": \"300\",\"nominalVoltageOperator\": \"=\"}";
-        testExportContingencies("scFilters", scFilters, " [{\"id\":\"SHUNT\",\"elements\":[{\"id\":\"SHUNT\",\"type\":\"SHUNT_COMPENSATOR\"}]}]", NETWORK_UUID_4);
-        testExportContingencies("scFilters", scFilters2, " [{\"id\":\"SHUNT\",\"elements\":[{\"id\":\"SHUNT\",\"type\":\"SHUNT_COMPENSATOR\"}]}]", NETWORK_UUID_4);
-        testExportContingencies("scFilters", scFilters3, " []", NETWORK_UUID_4);
-        testExportContingencies("scFilters", scFilters4, " []", NETWORK_UUID_4);
+        UUID idFilter1 = UUID.randomUUID();
+        UUID idFilter2 = UUID.randomUUID();
+        UUID idFilter3 = UUID.randomUUID();
+        UUID idFilter4 = UUID.randomUUID();
+        String scFilters1 = String.format("{ \"id\":\"%s\", \"name\": \"test_sc\", \"equipmentID\": \"*\", \"equipmentName\": \"*\", \"equipmentType\": \"SHUNT_COMPENSATOR\", \"nominalVoltage\": \"-1\",\"nominalVoltageOperator\": \"=\"}", idFilter1);
+        String scFilters2 = String.format("{ \"id\":\"%s\", \"name\": \"test_sc\", \"equipmentID\": \"SHUNT*\", \"equipmentName\": \"*\", \"equipmentType\": \"SHUNT_COMPENSATOR\", \"nominalVoltage\": \"-1\",\"nominalVoltageOperator\": \"=\"}", idFilter2);
+        String scFilters3 = String.format("{ \"id\":\"%s\", \"name\": \"test_sc\", \"equipmentID\": \"UNKNOWN\", \"equipmentName\": \"SHUNT*\", \"equipmentType\": \"SHUNT_COMPENSATOR\", \"nominalVoltage\": \"-1\",\"nominalVoltageOperator\": \"=\"}", idFilter3);
+        String scFilters4 = String.format("{ \"id\":\"%s\", \"name\": \"test_sc\", \"equipmentID\": \"*\", \"equipmentName\": \"*\", \"equipmentType\": \"SHUNT_COMPENSATOR\", \"nominalVoltage\": \"300\",\"nominalVoltageOperator\": \"=\"}", idFilter4);
+        testExportContingencies(idFilter1, scFilters1, " [{\"id\":\"SHUNT\",\"elements\":[{\"id\":\"SHUNT\",\"type\":\"SHUNT_COMPENSATOR\"}]}]", NETWORK_UUID_4);
+        testExportContingencies(idFilter2, scFilters2, " [{\"id\":\"SHUNT\",\"elements\":[{\"id\":\"SHUNT\",\"type\":\"SHUNT_COMPENSATOR\"}]}]", NETWORK_UUID_4);
+        testExportContingencies(idFilter3, scFilters3, " []", NETWORK_UUID_4);
+        testExportContingencies(idFilter4, scFilters4, " []", NETWORK_UUID_4);
 
-        String hvdcFilters = "{\"equipmentID\": \"*\", \"equipmentName\": \"*\", \"equipmentType\": \"HVDC_LINE\", \"nominalVoltage\": \"-1\",\"nominalVoltageOperator\": \"=\"}";
-        String hvdcFilters2 = "{\"equipmentID\": \"L*\", \"equipmentName\": \"*\", \"equipmentType\": \"HVDC_LINE\", \"nominalVoltage\": \"-1\",\"nominalVoltageOperator\": \"=\"}";
-        String hvdcFilters3 = "{\"equipmentID\": \"UNKNOWN\", \"equipmentName\": \"L*\", \"equipmentType\": \"HVDC_LINE\", \"nominalVoltage\": \"-1\",\"nominalVoltageOperator\": \"=\"}";
-        String hvdcFilters4 = "{\"equipmentID\": \"*\", \"equipmentName\": \"*\", \"equipmentType\": \"HVDC_LINE\", \"nominalVoltage\": \"400\",\"nominalVoltageOperator\": \"=\"}";
-        String hvdcFilters5 = "{\"equipmentID\": \"*\", \"equipmentName\": \"*\", \"equipmentType\": \"HVDC_LINE\", \"nominalVoltage\": \"300\",\"nominalVoltageOperator\": \"<\"}";
-        testExportContingencies("hvdcFilters", hvdcFilters, " [{\"id\":\"L\",\"elements\":[{\"id\":\"L\",\"type\":\"HVDC_LINE\"}]}]", NETWORK_UUID_2);
-        testExportContingencies("hvdcFilters", hvdcFilters2, " [{\"id\":\"L\",\"elements\":[{\"id\":\"L\",\"type\":\"HVDC_LINE\"}]}]", NETWORK_UUID_2);
-        testExportContingencies("hvdcFilters", hvdcFilters3, " []", NETWORK_UUID_2);
-        testExportContingencies("hvdcFilters", hvdcFilters4, " [{\"id\":\"L\",\"elements\":[{\"id\":\"L\",\"type\":\"HVDC_LINE\"}]}]", NETWORK_UUID_2);
-        testExportContingencies("hvdcFilters", hvdcFilters5, " []", NETWORK_UUID_2);
+        UUID hvdcFilterId = UUID.randomUUID();
 
-        String bbsFilters = "{\"equipmentID\": \"*\", \"equipmentName\": \"*\", \"equipmentType\": \"BUSBAR_SECTION\", \"nominalVoltage\": \"-1\",\"nominalVoltageOperator\": \"=\"}";
-        testExportContingencies("bbsFilters", bbsFilters, " []", NETWORK_UUID);
+        String hvdcFilters1 = String.format("{\"id\":\"%s\", \"name\": \"test_hvdc\", \"equipmentID\": \"*\", \"equipmentName\": \"*\", \"equipmentType\": \"HVDC_LINE\", \"nominalVoltage\": \"-1\",\"nominalVoltageOperator\": \"=\"}", hvdcFilterId);
+        String hvdcFilters2 = String.format("{\"id\":\"%s\", \"name\": \"test_hvdc\", \"equipmentID\": \"L*\", \"equipmentName\": \"*\", \"equipmentType\": \"HVDC_LINE\", \"nominalVoltage\": \"-1\",\"nominalVoltageOperator\": \"=\"}", hvdcFilterId);
+        String hvdcFilters3 = String.format("{\"id\":\"%s\", \"name\": \"test_hvdc\", \"equipmentID\": \"UNKNOWN\", \"equipmentName\": \"L*\", \"equipmentType\": \"HVDC_LINE\", \"nominalVoltage\": \"-1\",\"nominalVoltageOperator\": \"=\"}", hvdcFilterId);
+        String hvdcFilters4 = String.format("{\"id\":\"%s\", \"name\": \"test_hvdc\", \"equipmentID\": \"*\", \"equipmentName\": \"*\", \"equipmentType\": \"HVDC_LINE\", \"nominalVoltage\": \"400\",\"nominalVoltageOperator\": \"=\"}", hvdcFilterId);
+        String hvdcFilters5 = String.format("{\"id\":\"%s\", \"name\": \"test_hvdc\", \"equipmentID\": \"*\", \"equipmentName\": \"*\", \"equipmentType\": \"HVDC_LINE\", \"nominalVoltage\": \"300\",\"nominalVoltageOperator\": \"<\"}", hvdcFilterId);
+        testExportContingencies(hvdcFilterId, hvdcFilters1, " [{\"id\":\"L\",\"elements\":[{\"id\":\"L\",\"type\":\"HVDC_LINE\"}]}]", NETWORK_UUID_2);
+        testExportContingencies(hvdcFilterId, hvdcFilters2, " [{\"id\":\"L\",\"elements\":[{\"id\":\"L\",\"type\":\"HVDC_LINE\"}]}]", NETWORK_UUID_2);
+        testExportContingencies(hvdcFilterId, hvdcFilters3, " []", NETWORK_UUID_2);
+        testExportContingencies(hvdcFilterId, hvdcFilters4, " [{\"id\":\"L\",\"elements\":[{\"id\":\"L\",\"type\":\"HVDC_LINE\"}]}]", NETWORK_UUID_2);
+        testExportContingencies(hvdcFilterId, hvdcFilters5, " []", NETWORK_UUID_2);
 
-        String dlFilters = "{\"equipmentID\": \"*\", \"equipmentName\": \"*\", \"equipmentType\": \"DANGLING_LINE\", \"nominalVoltage\": \"-1\",\"nominalVoltageOperator\": \"=\"}";
-        testExportContingencies("dlFilters", dlFilters, " []", NETWORK_UUID);
+        UUID bbsIlterId = UUID.randomUUID();
+
+        String bbsFilters = String.format("{\"id\":\"%s\", \"name\":\"test_bbs\", \"equipmentID\": \"*\", \"equipmentName\": \"*\", \"equipmentType\": \"BUSBAR_SECTION\", \"nominalVoltage\": \"-1\",\"nominalVoltageOperator\": \"=\"}", bbsIlterId);
+        testExportContingencies(bbsIlterId, bbsFilters, " []", NETWORK_UUID);
+
+        UUID dlFilterId = UUID.randomUUID();
+
+        String dlFilters = String.format("{\"id\":\"%s\", \"name\":\"test_dl\", \"equipmentID\": \"*\", \"equipmentName\": \"*\", \"equipmentType\": \"DANGLING_LINE\", \"nominalVoltage\": \"-1\",\"nominalVoltageOperator\": \"=\"}", dlFilterId);
+        testExportContingencies(dlFilterId, dlFilters, " []", NETWORK_UUID);
     }
 
-    private void testExportContingencies(String filtersName, String content, String expectedContent, UUID uuid) throws Exception {
+    private void testExportContingencies(UUID filterId, String content, String expectedContent, UUID uuid) throws Exception {
         // put the data
-        mvc.perform(put("/" + VERSION + "/filters-contingency-lists/" + filtersName)
-                .content(content)
-                .contentType(APPLICATION_JSON))
-                .andExpect(status().isOk());
+        mvc.perform(put("/" + VERSION + "/filters-contingency-lists/")
+            .content(content)
+            .contentType(APPLICATION_JSON))
+            .andExpect(status().isOk());
 
         // export contingencies
-        mvc.perform(get("/" + VERSION + "/contingency-lists/" + filtersName + "/export?networkUuid=" + uuid)
-                .contentType(APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-                .andExpect(content().json(expectedContent));
+        mvc.perform(get("/" + VERSION + "/contingency-lists/" + filterId + "/export?networkUuid=" + uuid)
+            .contentType(APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+            .andExpect(content().json(expectedContent));
 
         // delete data
-        mvc.perform(delete("/" + VERSION + "/contingency-lists/" + filtersName))
-                .andExpect(status().isOk());
+        mvc.perform(delete("/" + VERSION + "/contingency-lists/" + filterId))
+            .andExpect(status().isOk());
     }
 
     @Test
     public void emptyScriptTest() throws Exception {
-        mvc.perform(put("/" + VERSION + "/script-contingency-lists/foo")
-                .content("")
-                .contentType(TEXT_PLAIN))
-                .andExpect(status().isOk());
+        UUID id = UUID.randomUUID();
+        mvc.perform(put("/" + VERSION + "/script-contingency-lists/")
+            .content("{\"id\" : \"" + id + "\"," +
+                "\"name\" : \"foo\"," +
+                "\"script\" : \"\"," +
+                "\"description\":\"something\"}")
+            .contentType(APPLICATION_JSON))
+            .andExpect(status().isOk());
 
-        mvc.perform(get("/" + VERSION + "/contingency-lists/foo/export")
-                .contentType(APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-                .andExpect(content().json("[]"));
+        mvc.perform(get("/" + VERSION + "/contingency-lists/" + id + "/export")
+            .contentType(APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+            .andExpect(content().json("[]"));
+
+        ContingencyListAttributes attributes = getMetadata(id);
+        assertEquals(attributes.getId(), id);
+        assertEquals("foo", attributes.getName());
+        assertEquals("something", attributes.getDescription());
+    }
+
+    private ContingencyListAttributes getMetadata(UUID id) throws Exception {
+        var res = mvc.perform(get("/" + VERSION + "/metadata/")
+            .content("[\"" + id + "\"]")
+            .contentType(APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andReturn().getResponse().getContentAsString();
+        List<ContingencyListAttributes> contingencyListAttributes = objectMapper.readValue(res, new TypeReference<>() {
+        });
+        assertEquals(1, contingencyListAttributes.size());
+        return contingencyListAttributes.get(0);
     }
 
     @Test
     public void testExportContingencies3() {
         Throwable e = null;
-        String lineFilters = genContingencyFilter("*", "*", EquipmentType.LINE, -1, "=", Collections.emptySet());
+        UUID id = UUID.randomUUID();
+        String lineFilters = genContingencyFilter(id, "*", "*", EquipmentType.LINE, -1, "=", Collections.emptySet(), null);
         try {
-            testExportContingencies("lineFilters", lineFilters, " [{\"id\":\"NHV1_NHV2_2\",\"elements\":[{\"id\":\"NHV1_NHV2_2\",\"type\":\"BRANCH\"}]},{\"id\":\"NHV1_NHV2_1\",\"elements\":[{\"id\":\"NHV1_NHV2_1\",\"type\":\"BRANCH\"}]}]", NETWORK_UUID_5);
+            testExportContingencies(id, lineFilters, " [{\"id\":\"NHV1_NHV2_2\",\"elements\":[{\"id\":\"NHV1_NHV2_2\",\"type\":\"BRANCH\"}]},{\"id\":\"NHV1_NHV2_1\",\"elements\":[{\"id\":\"NHV1_NHV2_1\",\"type\":\"BRANCH\"}]}]", NETWORK_UUID_5);
         } catch (Throwable ex) {
             e = ex;
         }
@@ -421,9 +506,10 @@ public class ContingencyListControllerTest {
     @Test
     public void testExportContingencies4() {
         Throwable e = null;
-        String lineFilters = genContingencyFilter("*", "*", EquipmentType.LINE, 200, "$", Collections.emptySet());
+        UUID id = UUID.randomUUID();
+        String lineFilters = genContingencyFilter(id, "*", "*", EquipmentType.LINE, 200, "$", Collections.emptySet(), null);
         try {
-            testExportContingencies("lineFilters", lineFilters, " [{\"id\":\"NHV1_NHV2_2\",\"elements\":[{\"id\":\"NHV1_NHV2_2\",\"type\":\"BRANCH\"}]},{\"id\":\"NHV1_NHV2_1\",\"elements\":[{\"id\":\"NHV1_NHV2_1\",\"type\":\"BRANCH\"}]}]", NETWORK_UUID);
+            testExportContingencies(id, lineFilters, " [{\"id\":\"NHV1_NHV2_2\",\"elements\":[{\"id\":\"NHV1_NHV2_2\",\"type\":\"BRANCH\"}]},{\"id\":\"NHV1_NHV2_1\",\"elements\":[{\"id\":\"NHV1_NHV2_1\",\"type\":\"BRANCH\"}]}]", NETWORK_UUID);
         } catch (Throwable ex) {
             e = ex;
         }
@@ -433,10 +519,13 @@ public class ContingencyListControllerTest {
 
     @Test
     public void contingencyListAttributesTest() {
-        ContingencyListAttributes contingencyListAttributes = new ContingencyListAttributes("myList", ContingencyListType.SCRIPT);
+        UUID contingencyListAttrId = UUID.randomUUID();
+        ContingencyListAttributes contingencyListAttributes = new ContingencyListAttributes(contingencyListAttrId, "myList", ContingencyListType.SCRIPT, null, null, null);
+        assertEquals(contingencyListAttrId, contingencyListAttributes.getId());
         assertEquals("myList", contingencyListAttributes.getName());
         assertEquals(ContingencyListType.SCRIPT, contingencyListAttributes.getType());
         ContingencyListAttributes contingencyListAttributes2 = new ContingencyListAttributes();
+        assertNull(contingencyListAttributes2.getId());
         assertNull(contingencyListAttributes2.getName());
         assertNull(contingencyListAttributes2.getType());
     }
@@ -474,67 +563,75 @@ public class ContingencyListControllerTest {
 
     @Test
     public void replaceFiltersWithScriptTest() throws Exception {
+        UUID id = UUID.randomUUID();
         String filters = "{\n" +
-                "  \"equipmentID\": \"GEN*\"," +
-                "  \"equipmentName\": \"GEN*\"," +
-                "  \"equipmentType\": \"GENERATOR\"," +
-                "  \"nominalVoltage\": \"100\"," +
-                "  \"nominalVoltageOperator\": \">\"," +
-                "  \"countries\": [\"FR\", \"BE\"]" +
-                "}";
+            "  \"id\": \"" + id + "\"," +
+            "  \"name\": \"" + "willBeScript" + "\"," +
+            "  \"equipmentID\": \"GEN*\"," +
+            "  \"equipmentName\": \"GEN*\"," +
+            "  \"equipmentType\": \"GENERATOR\"," +
+            "  \"nominalVoltage\": \"100\"," +
+            "  \"nominalVoltageOperator\": \">\"," +
+            "  \"countries\": [\"FR\", \"BE\"]" +
+            "}";
 
         // Put data
-        mvc.perform(put("/" + VERSION + "/filters-contingency-lists/tic")
-                .content(filters)
-                .contentType(APPLICATION_JSON))
-                .andExpect(status().isOk());
+        mvc.perform(put("/" + VERSION + "/filters-contingency-lists/")
+            .content(filters)
+            .contentType(APPLICATION_JSON))
+            .andExpect(status().isOk());
 
         // replace with groovy script
-        mvc.perform(put("/" + VERSION + "/filters-contingency-lists/tic/replace-with-script"))
-                .andExpect(status().isOk());
+        mvc.perform(put("/" + VERSION + "/filters-contingency-lists/" + id + "/replace-with-script"))
+            .andExpect(status().isOk());
 
         // check filter list tic not found
-        mvc.perform(get("/" + VERSION + "/filters-contingency-lists/tic")
-                .contentType(APPLICATION_JSON))
-                .andExpect(status().isNotFound());
+        mvc.perform(get("/" + VERSION + "/filters-contingency-lists/" + id)
+            .contentType(APPLICATION_JSON))
+            .andExpect(status().isNotFound());
 
         // check script tic is found
-        mvc.perform(get("/" + VERSION + "/script-contingency-lists/tic")
-                .contentType(APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON));
+        mvc.perform(get("/" + VERSION + "/script-contingency-lists/" + id)
+            .contentType(APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON));
     }
 
     @Test
     public void copyFiltersToScriptTest() throws Exception {
+        UUID firstUUID = UUID.fromString("914df591-68aa-409f-bc30-847ede2a6a72");
         String filters = "{\n" +
-                "  \"equipmentID\": \"GEN*\"," +
-                "  \"equipmentName\": \"GEN*\"," +
-                "  \"equipmentType\": \"GENERATOR\"," +
-                "  \"nominalVoltage\": \"100\"," +
-                "  \"nominalVoltageOperator\": \">\"," +
-                "  \"countries\": [\"FR\", \"BE\"]" +
-                "}";
+            "  \"id\": \"" + firstUUID + "\"," +
+            "  \"name\": \"tic\"," +
+            "  \"equipmentID\": \"GEN*\"," +
+            "  \"equipmentName\": \"GEN*\"," +
+            "  \"equipmentType\": \"GENERATOR\"," +
+            "  \"nominalVoltage\": \"100\"," +
+            "  \"nominalVoltageOperator\": \">\"," +
+            "  \"countries\": [\"FR\", \"BE\"]" +
+            "}";
 
         // Put data
-        mvc.perform(put("/" + VERSION + "/filters-contingency-lists/tic")
-                .content(filters)
-                .contentType(APPLICATION_JSON))
-                .andExpect(status().isOk());
+        mvc.perform(put("/" + VERSION + "/filters-contingency-lists/")
+            .content(filters)
+            .contentType(APPLICATION_JSON))
+            .andExpect(status().isOk());
 
         // new script from filters
-        mvc.perform(put("/" + VERSION + "/filters-contingency-lists/tic/new-script/tac"))
-                .andExpect(status().isOk());
+        mvc.perform(put("/" + VERSION + "/filters-contingency-lists/" + firstUUID + "/new-script/tac"))
+            .andExpect(status().isOk());
 
         // check script tac is found
-        mvc.perform(get("/" + VERSION + "/script-contingency-lists/tac")
-                .contentType(APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON));
+        var res = mvc.perform(get("/" + VERSION + "/script-contingency-lists/")
+            .contentType(APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+            .andReturn().getResponse().getContentAsString();
+        assertTrue(res.contains("tac"));
 
         // check filter list tic found
-        mvc.perform(get("/" + VERSION + "/filters-contingency-lists/tic")
-                .contentType(APPLICATION_JSON))
-                .andExpect(status().isOk());
+        mvc.perform(get("/" + VERSION + "/filters-contingency-lists/" + firstUUID)
+            .contentType(APPLICATION_JSON))
+            .andExpect(status().isOk());
     }
 }

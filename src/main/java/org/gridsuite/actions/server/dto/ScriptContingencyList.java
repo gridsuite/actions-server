@@ -12,6 +12,8 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.gridsuite.actions.server.utils.ContingencyListType;
 
+import java.util.UUID;
+
 /**
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at rte-france.com>
  */
@@ -19,6 +21,9 @@ import org.gridsuite.actions.server.utils.ContingencyListType;
 @AllArgsConstructor
 @ApiModel("Script contingency list")
 public class ScriptContingencyList implements ContingencyList {
+
+    @ApiModelProperty("list id")
+    private UUID id;
 
     @ApiModelProperty("List name")
     private String name;
@@ -31,4 +36,8 @@ public class ScriptContingencyList implements ContingencyList {
     public ContingencyListType getType() {
         return ContingencyListType.SCRIPT;
     }
+
+    @ApiModelProperty("description")
+    private String description;
+
 }

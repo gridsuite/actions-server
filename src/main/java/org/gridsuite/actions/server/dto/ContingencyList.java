@@ -8,12 +8,18 @@ package org.gridsuite.actions.server.dto;
 
 import org.gridsuite.actions.server.utils.ContingencyListType;
 
+import java.util.UUID;
+
 /**
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at rte-france.com>
  */
 public interface ContingencyList {
 
+    UUID getId();
+
     String getName();
 
     ContingencyListType getType();
+
+    String getDescription();
 }
