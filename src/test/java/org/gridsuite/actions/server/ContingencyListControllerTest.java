@@ -146,22 +146,22 @@ public class ContingencyListControllerTest {
             "}";
 
         // Put data
-        mvc.perform(put("/" + VERSION + "/script-contingency-lists/")
+        mvc.perform(post("/" + VERSION + "/script-contingency-lists/")
             .content(script)
             .contentType(APPLICATION_JSON))
             .andExpect(status().isOk());
 
-        mvc.perform(put("/" + VERSION + "/filters-contingency-lists/")
+        mvc.perform(post("/" + VERSION + "/filters-contingency-lists/")
             .content(filters)
             .contentType(APPLICATION_JSON))
             .andExpect(status().isOk());
 
-        mvc.perform(put("/" + VERSION + "/filters-contingency-lists/")
+        mvc.perform(post("/" + VERSION + "/filters-contingency-lists/")
             .content(filters2)
             .contentType(APPLICATION_JSON))
             .andExpect(status().isOk());
 
-        mvc.perform(put("/" + VERSION + "/filters-contingency-lists/")
+        mvc.perform(post("/" + VERSION + "/filters-contingency-lists/")
             .content(filters3)
             .contentType(APPLICATION_JSON))
             .andExpect(status().isOk());
@@ -306,7 +306,7 @@ public class ContingencyListControllerTest {
         String desc = "smurf";
         String filter = genContingencyFilter(id, "testDate", "*", EquipmentType.LINE, 11, "=", Set.of(), desc);
 
-        mvc.perform(put("/" + VERSION + "/filters-contingency-lists/")
+        mvc.perform(post("/" + VERSION + "/filters-contingency-lists/")
             .content(filter)
             .contentType(APPLICATION_JSON))
             .andExpect(status().isOk());
@@ -318,7 +318,7 @@ public class ContingencyListControllerTest {
         Date baseCreationDate = attributes.getCreationDate();
         Date baseModificationDate = attributes.getModificationDate();
 
-        mvc.perform(put("/" + VERSION + "/filters-contingency-lists/")
+        mvc.perform(post("/" + VERSION + "/filters-contingency-lists/")
             .content(filter)
             .contentType(APPLICATION_JSON))
             .andExpect(status().isOk());
@@ -437,11 +437,13 @@ public class ContingencyListControllerTest {
 
     private void testExportContingencies(UUID filterId, String content, String expectedContent, UUID uuid) throws Exception {
         // put the data
-        mvc.perform(put("/" + VERSION + "/filters-contingency-lists/")
+        String res = mvc.perform(post("/" + VERSION + "/filters-contingency-lists/")
             .content(content)
             .contentType(APPLICATION_JSON))
-            .andExpect(status().isOk());
+            .andExpect(status().isOk())
+            .andReturn().getResponse().getContentAsString();
 
+        //JSONAssert.assertEquals(content, res, JSONCompareMode.LENIENT);
         // export contingencies
         mvc.perform(get("/" + VERSION + "/contingency-lists/" + filterId + "/export?networkUuid=" + uuid)
             .contentType(APPLICATION_JSON))
@@ -457,7 +459,7 @@ public class ContingencyListControllerTest {
     @Test
     public void emptyScriptTest() throws Exception {
         UUID id = UUID.randomUUID();
-        mvc.perform(put("/" + VERSION + "/script-contingency-lists/")
+        mvc.perform(post("/" + VERSION + "/script-contingency-lists/")
             .content("{\"id\" : \"" + id + "\"," +
                 "\"name\" : \"foo\"," +
                 "\"script\" : \"\"," +
@@ -576,13 +578,13 @@ public class ContingencyListControllerTest {
             "}";
 
         // Put data
-        mvc.perform(put("/" + VERSION + "/filters-contingency-lists/")
+        mvc.perform(post("/" + VERSION + "/filters-contingency-lists/")
             .content(filters)
             .contentType(APPLICATION_JSON))
             .andExpect(status().isOk());
 
         // replace with groovy script
-        mvc.perform(put("/" + VERSION + "/filters-contingency-lists/" + id + "/replace-with-script"))
+        mvc.perform(post("/" + VERSION + "/filters-contingency-lists/" + id + "/replace-with-script"))
             .andExpect(status().isOk());
 
         // check filter list tic not found
@@ -612,17 +614,17 @@ public class ContingencyListControllerTest {
             "}";
 
         // Put data
-        mvc.perform(put("/" + VERSION + "/filters-contingency-lists/")
+        mvc.perform(post("/" + VERSION + "/filters-contingency-lists/")
             .content(filters)
             .contentType(APPLICATION_JSON))
             .andExpect(status().isOk());
 
         // new script from filters
-        mvc.perform(put("/" + VERSION + "/filters-contingency-lists/" + firstUUID + "/new-script/tac"))
+        mvc.perform(post("/" + VERSION + "/filters-contingency-lists/" + firstUUID + "/new-script/tac"))
             .andExpect(status().isOk());
 
         // check script tac is found
-        var res = mvc.perform(get("/" + VERSION + "/script-contingency-lists/")
+        String res = mvc.perform(get("/" + VERSION + "/script-contingency-lists/")
             .contentType(APPLICATION_JSON))
             .andExpect(status().isOk())
             .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
