@@ -49,12 +49,23 @@ public class FiltersContingencyListEntity extends AbstractContingencyEntity {
     private Set<String> countries;
 
     public FiltersContingencyListEntity(FiltersContingencyListAttributes filtersContingencyListAttributes) {
-        super(filtersContingencyListAttributes);
+        super();
+        init(filtersContingencyListAttributes);
+    }
+
+    /* called in constructor so it is final */
+    final void init(FiltersContingencyListAttributes filtersContingencyListAttributes) {
+        super.update(filtersContingencyListAttributes);
         this.equipmentId = filtersContingencyListAttributes.getEquipmentID();
         this.equipmentName = filtersContingencyListAttributes.getEquipmentName();
         this.equipmentType = filtersContingencyListAttributes.getEquipmentType();
         this.nominalVoltage = filtersContingencyListAttributes.getNominalVoltage();
         this.nominalVoltageOperator = filtersContingencyListAttributes.getNominalVoltageOperator();
         this.countries = new HashSet<>(emptyIfNull(filtersContingencyListAttributes.getCountries()));
+    }
+
+    public FiltersContingencyListEntity update(FiltersContingencyListAttributes filtersContingencyListAttributes) {
+        init(filtersContingencyListAttributes);
+        return this;
     }
 }

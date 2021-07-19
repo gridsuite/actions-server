@@ -14,10 +14,12 @@ import io.swagger.annotations.ApiResponses;
 
 import org.gridsuite.actions.server.dto.*;
 import org.springframework.context.annotation.ComponentScan;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.persistence.EntityNotFoundException;
 import java.util.List;
 import java.util.UUID;
 
@@ -61,23 +63,23 @@ public class ContingencyListController {
     @GetMapping(value = "script-contingency-lists/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     @ApiOperation(value = "Get script contingency list by id", response = ContingencyList.class)
     @ApiResponses(value = {@ApiResponse(code = 200, message = "The script contingency list"),
-                           @ApiResponse(code = 404, message = "The script contingency list does not exists")})
+        @ApiResponse(code = 404, message = "The script contingency list does not exists")})
     public ResponseEntity<ScriptContingencyList> getScriptContingencyList(@PathVariable("id") UUID id) {
         return service.getScriptContingencyList(id).map(contingencyList -> ResponseEntity.ok()
-                                                                                     .contentType(MediaType.APPLICATION_JSON)
-                                                                                     .body(contingencyList))
-                                               .orElse(ResponseEntity.notFound().build());
+            .contentType(MediaType.APPLICATION_JSON)
+            .body(contingencyList))
+            .orElse(ResponseEntity.notFound().build());
     }
 
     @GetMapping(value = "filters-contingency-lists/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     @ApiOperation(value = "Get filters contingency list by name", response = ContingencyList.class)
     @ApiResponses(value = {@ApiResponse(code = 200, message = "The filters contingency list"),
-            @ApiResponse(code = 404, message = "The filters contingency list does not exists")})
+        @ApiResponse(code = 404, message = "The filters contingency list does not exists")})
     public ResponseEntity<FiltersContingencyList> getFilterContingencyList(@PathVariable("id") UUID id) {
         return service.getFiltersContingencyList(id).map(contingencyList -> ResponseEntity.ok()
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(contingencyList))
-                .orElse(ResponseEntity.notFound().build());
+            .contentType(MediaType.APPLICATION_JSON)
+            .body(contingencyList))
+            .orElse(ResponseEntity.notFound().build());
     }
 
     @GetMapping(value = "contingency-lists/{id}/export", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -86,9 +88,9 @@ public class ContingencyListController {
     public ResponseEntity<List<Contingency>> exportContingencyList(@PathVariable("id") UUID id,
                                                                    @RequestParam(value = "networkUuid", required = false) UUID networkUuid) {
         return service.exportContingencyList(id, networkUuid).map(contingencies -> ResponseEntity.ok()
-                                                                                                   .contentType(MediaType.APPLICATION_JSON)
-                                                                                                   .body(contingencies))
-                                                               .orElse(ResponseEntity.notFound().build());
+            .contentType(MediaType.APPLICATION_JSON)
+            .body(contingencies))
+            .orElse(ResponseEntity.notFound().build());
     }
 
     @PostMapping(value = "script-contingency-lists/", consumes = MediaType.APPLICATION_JSON_VALUE)
@@ -100,6 +102,18 @@ public class ContingencyListController {
             .body(service.createScriptContingencyList(script));
     }
 
+    @PutMapping(value = "script-contingency-lists/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
+    @ApiOperation(value = "Modify a script contingency list", response = ScriptContingencyList.class)
+    @ApiResponses(value = {@ApiResponse(code = 200, message = "The script contingency list have been created successfully")})
+    public ResponseEntity<Void> modifyScriptContingencyList(@PathVariable UUID id, @RequestBody(required = false) ScriptContingencyList script) {
+        try {
+            service.modifyScriptContingencyList(id, script);
+            return ResponseEntity.ok().build();
+        } catch (EntityNotFoundException ignored) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
     @PostMapping(value = "filters-contingency-lists/", consumes = MediaType.APPLICATION_JSON_VALUE)
     @ApiOperation(value = "Create a filters contingency list", response = FiltersContingencyList.class)
     @ApiResponses(value = {@ApiResponse(code = 200, message = "The filters contingency list have been created successfully")})
@@ -109,21 +123,28 @@ public class ContingencyListController {
             .body(service.createFilterContingencyList(filtersContingencyListAttributes));
     }
 
+    @PutMapping(value = "filters-contingency-lists/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
+    @ApiOperation(value = "Create a filters contingency list", response = FiltersContingencyList.class)
+    @ApiResponses(value = {@ApiResponse(code = 200, message = "The filters contingency list have been created successfully")})
+    public ResponseEntity<Void> modifyFilterContingencyList(@PathVariable UUID id, @RequestBody(required = true) FiltersContingencyListAttributes filtersContingencyListAttributes) {
+        try {
+            service.modifyFilterContingencyList(id, filtersContingencyListAttributes);
+            return ResponseEntity.ok().build();
+        } catch (EntityNotFoundException ignored) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
     @DeleteMapping(value = "contingency-lists/{id}")
     @ApiOperation(value = "delete the contingency list")
     @ApiResponse(code = 200, message = "The contingency list has been deleted")
     public ResponseEntity<Void> deleteContingencyList(@PathVariable("id") UUID id) {
-        service.deleteContingencyList(id);
-        return ResponseEntity.ok().build();
-    }
-
-    @PostMapping(value = "contingency-lists/{id}/rename")
-    @ApiOperation(value = "Rename contingency list by id")
-    @ApiResponses(value = { @ApiResponse(code = 200, message = "The contingency list has been renamed"),
-            @ApiResponse(code = 404, message = "The contingency list does not exists") })
-    public void renameContingencyList(@PathVariable("id") UUID id,
-            @RequestBody RenameContingencyListAttributes renameContingencyListAttributes) {
-        service.renameContingencyList(id, renameContingencyListAttributes.getNewContingencyListName());
+        try {
+            service.deleteContingencyList(id);
+            return ResponseEntity.ok().build();
+        } catch (EmptyResultDataAccessException ignored) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @PostMapping(value = "filters-contingency-lists/{id}/replace-with-script")
@@ -139,7 +160,7 @@ public class ContingencyListController {
     @ApiOperation(value = "Create a new script contingency list from a filters contingency list")
     @ApiResponses(value = {@ApiResponse(code = 200, message = "The script contingency list have been created successfully")})
     public ResponseEntity<ScriptContingencyList> newScriptFromFiltersContingencyList(@PathVariable("id") UUID id,
-                                                    @PathVariable("scriptName") String scriptName) {
+                                                                                     @PathVariable("scriptName") String scriptName) {
         return ResponseEntity.ok()
             .contentType(MediaType.APPLICATION_JSON)
             .body(service.newScriptFromFiltersContingencyList(id, scriptName));

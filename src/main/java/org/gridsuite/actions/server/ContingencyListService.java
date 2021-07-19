@@ -298,51 +298,38 @@ public class ContingencyListService {
         return fromScriptContingencyListEntity(scriptContingencyListRepository.save(new ScriptContingencyListEntity(script)));
     }
 
+    void modifyScriptContingencyList(UUID id, ScriptContingencyList script) {
+        Objects.requireNonNull(script.getName());
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("Create script contingency list '{}'", sanitizeParam(script.getName()));
+        }
+        scriptContingencyListRepository.save(scriptContingencyListRepository.getOne(id).update(script));
+    }
+
     public FiltersContingencyList createFilterContingencyList(FiltersContingencyListAttributes filtersContingencyListAttributes) {
         Objects.requireNonNull(filtersContingencyListAttributes.getName());
         if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("Create script contingency list '{}'", filtersContingencyListAttributes.getName());
+            LOGGER.debug("Create filter contingency list '{}'", filtersContingencyListAttributes.getName());
         }
         return fromFilterContingencyListEntity(filtersContingencyListRepository.save(new FiltersContingencyListEntity(filtersContingencyListAttributes)));
+    }
+
+    public void modifyFilterContingencyList(UUID id, FiltersContingencyListAttributes filtersContingencyListAttributes) {
+        Objects.requireNonNull(filtersContingencyListAttributes.getName());
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("Modify filter contingency list '{}'", filtersContingencyListAttributes.getName());
+        }
+        // throw if not found
+        filtersContingencyListRepository.save(filtersContingencyListRepository.getOne(id).update(filtersContingencyListAttributes));
     }
 
     @Transactional
     public void deleteContingencyList(UUID id) {
         Objects.requireNonNull(id);
-        if (scriptContingencyListRepository.existsById(id)) {
+        // if there is no filter contingency list by this Id, deleted count == 0
+        if (filtersContingencyListRepository.deleteFiltersContingencyListEntityById(id) == 0) {
             scriptContingencyListRepository.deleteById(id);
-        } else if (filtersContingencyListRepository.existsById(id)) {
-            filtersContingencyListRepository.deleteById(id);
-        } else {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Contingency list " + id + " not found");
         }
-    }
-
-    @Transactional
-    public void renameContingencyList(UUID id, String newName) {
-        Objects.requireNonNull(id);
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("rename script contingency list '{}' to '{}'", id, sanitizeParam(newName));
-        }
-        if (!renameScriptList(id, newName) && !renameFilterList(id, newName)) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Contingency list " + id + " not found");
-        }
-    }
-
-    boolean renameScriptList(UUID id, String name) {
-        return scriptContingencyListRepository.findById(id).map(oldContingencyListEntity -> {
-            oldContingencyListEntity.setName(name);
-            scriptContingencyListRepository.save(oldContingencyListEntity);
-            return true;
-        }).orElse(false);
-    }
-
-    boolean renameFilterList(UUID id, String name) {
-        return filtersContingencyListRepository.findById(id).map(oldContingencyListEntity -> {
-            oldContingencyListEntity.setName(name);
-            filtersContingencyListRepository.save(oldContingencyListEntity);
-            return true;
-        }).orElse(false);
     }
 
     private String generateGroovyScriptFromFilters(FiltersContingencyListAttributes filtersContingencyListAttributes) {
@@ -358,7 +345,8 @@ public class ContingencyListService {
         Optional<FiltersContingencyListEntity> filter = self.doGetFiltersContingencyListWithPreFetchedCountries(id);
         return filter.map(entity -> {
             String script = generateGroovyScriptFromFilters(fromFilterContingencyListEntityAttributes(entity));
-            var res = fromScriptContingencyListEntity(scriptContingencyListRepository.save(new ScriptContingencyListEntity(new ScriptContingencyList(id, entity.getName(), script, entity.getDescription()))));
+            var scriptContingencyListEntity = new ScriptContingencyListEntity(new ScriptContingencyList(id, entity.getName(), script, entity.getDescription()));
+            var res = fromScriptContingencyListEntity(scriptContingencyListRepository.save(scriptContingencyListEntity));
             filtersContingencyListRepository.deleteById(id);
             return res;
         }).orElseThrow(() -> {

@@ -12,7 +12,6 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 /**
@@ -24,10 +23,6 @@ public interface FiltersContingencyListRepository extends JpaRepository<FiltersC
 
     @Query("SELECT DISTINCT entity FROM FiltersContingencyListEntity entity LEFT JOIN FETCH entity.countries")
     List<FiltersContingencyListEntity> findAllWithCountries();
-
-    Optional<FiltersContingencyListEntity> findByName(String name);
-
-    boolean existsByName(String name);
 
     /* do not use deleteById which throw when id does not exists */
     Integer deleteFiltersContingencyListEntityById(UUID id);

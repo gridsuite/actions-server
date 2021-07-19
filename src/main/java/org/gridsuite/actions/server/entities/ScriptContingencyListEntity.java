@@ -31,7 +31,17 @@ public class ScriptContingencyListEntity extends AbstractContingencyEntity {
     private String script;
 
     public ScriptContingencyListEntity(ScriptContingencyList list) {
-        super(list);
+        super();
+        init(list);
+    }
+
+    protected final void init(ScriptContingencyList list) {
+        super.init(list);
         this.script = list.getScript();
+    }
+
+    public ScriptContingencyListEntity update(ScriptContingencyList list) {
+        init(list);
+        return this;
     }
 }

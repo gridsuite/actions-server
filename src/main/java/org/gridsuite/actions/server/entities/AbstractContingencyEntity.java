@@ -16,6 +16,8 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.Column;
 import javax.persistence.EntityListeners;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.MappedSuperclass;
 import javax.persistence.Temporal;
@@ -36,6 +38,7 @@ public abstract class AbstractContingencyEntity {
 
     @Id
     @Column(name = "id")
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private UUID id;
 
     @Column(name = "name")
@@ -54,9 +57,13 @@ public abstract class AbstractContingencyEntity {
     @Column()
     private String description;
 
-    protected AbstractContingencyEntity(ContingencyList attributes) {
-        id = attributes.getId() == null ? UUID.randomUUID() : attributes.getId();
+    protected final void init(ContingencyList attributes) {
         name = attributes.getName();
         description = attributes.getDescription();
     }
+
+    protected void update(ContingencyList attributes) {
+        init(attributes);
+    }
+
 }
