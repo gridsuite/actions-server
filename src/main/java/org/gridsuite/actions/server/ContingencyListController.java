@@ -104,7 +104,7 @@ public class ContingencyListController {
 
     @PutMapping(value = "script-contingency-lists/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
     @ApiOperation(value = "Modify a script contingency list", response = Void.class)
-    @ApiResponses(value = {@ApiResponse(code = 200, message = "The script contingency list have been created successfully")})
+    @ApiResponses(value = {@ApiResponse(code = 200, message = "The script contingency list have been modified successfully")})
     public ResponseEntity<Void> modifyScriptContingencyList(@PathVariable UUID id, @RequestBody(required = false) ScriptContingencyList script) {
         try {
             service.modifyScriptContingencyList(id, script);
@@ -125,7 +125,7 @@ public class ContingencyListController {
 
     @PutMapping(value = "filters-contingency-lists/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
     @ApiOperation(value = "Modify a filters contingency list", response = Void.class)
-    @ApiResponses(value = {@ApiResponse(code = 200, message = "The filters contingency list have been created successfully")})
+    @ApiResponses(value = {@ApiResponse(code = 200, message = "The filters contingency list have been modified successfully")})
     public ResponseEntity<Void> modifyFilterContingencyList(@PathVariable UUID id, @RequestBody(required = true) FiltersContingencyListAttributes filtersContingencyListAttributes) {
         try {
             service.modifyFilterContingencyList(id, filtersContingencyListAttributes);
