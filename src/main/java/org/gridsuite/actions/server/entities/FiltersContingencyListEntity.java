@@ -25,12 +25,8 @@ import static org.apache.commons.collections4.SetUtils.emptyIfNull;
 @Getter
 @Setter
 @Entity
-@Table(name = "filters_contingency_list")
-public class FiltersContingencyListEntity {
-
-    @Id
-    @Column(name = "name")
-    private String name;
+@Table(name = "filters_contingency_list", indexes = @Index(name = "filter_contingency_list_name_idx", columnList = "name"))
+public class FiltersContingencyListEntity extends AbstractContingencyEntity {
 
     @Column(name = "equipmentId")
     private String equipmentId;
@@ -49,16 +45,27 @@ public class FiltersContingencyListEntity {
 
     @Column(name = "country")
     @ElementCollection
-    @CollectionTable(foreignKey = @ForeignKey(name = "filtersContingencyListEntity_countries_fk"), indexes = {@Index(name = "filtersContingencyListEntity_countries_idx", columnList = "FiltersContingencyListEntity_name")})
+    @CollectionTable(foreignKey = @ForeignKey(name = "filtersContingencyListEntity_countries_fk"), indexes = {@Index(name = "filtersContingencyListEntity_countries_idx", columnList = "FiltersContingencyListEntity_id")})
     private Set<String> countries;
 
-    public FiltersContingencyListEntity(String name, FiltersContingencyListAttributes filtersContingencyListAttributes) {
-        this.name = name;
+    public FiltersContingencyListEntity(FiltersContingencyListAttributes filtersContingencyListAttributes) {
+        super();
+        init(filtersContingencyListAttributes);
+    }
+
+    /* called in constructor so it is final */
+    final void init(FiltersContingencyListAttributes filtersContingencyListAttributes) {
+        super.update(filtersContingencyListAttributes);
         this.equipmentId = filtersContingencyListAttributes.getEquipmentID();
         this.equipmentName = filtersContingencyListAttributes.getEquipmentName();
         this.equipmentType = filtersContingencyListAttributes.getEquipmentType();
         this.nominalVoltage = filtersContingencyListAttributes.getNominalVoltage();
         this.nominalVoltageOperator = filtersContingencyListAttributes.getNominalVoltageOperator();
         this.countries = new HashSet<>(emptyIfNull(filtersContingencyListAttributes.getCountries()));
+    }
+
+    public FiltersContingencyListEntity update(FiltersContingencyListAttributes filtersContingencyListAttributes) {
+        init(filtersContingencyListAttributes);
+        return this;
     }
 }

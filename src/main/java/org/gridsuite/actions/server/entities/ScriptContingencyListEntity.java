@@ -9,12 +9,12 @@ package org.gridsuite.actions.server.entities;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.gridsuite.actions.server.dto.ScriptContingencyList;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.Id;
+import javax.persistence.Index;
 import javax.persistence.Table;
-import java.util.Objects;
 
 /**
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at rte-france.com>
@@ -24,18 +24,24 @@ import java.util.Objects;
 @Getter
 @Setter
 @Entity
-@Table(name = "script_contingency_list")
-public class ScriptContingencyListEntity {
-
-    @Id
-    @Column(name = "name")
-    private String name;
+@Table(name = "script_contingency_list", indexes = @Index(name = "script_contingency_list_name_idx", columnList = "name"))
+public class ScriptContingencyListEntity extends AbstractContingencyEntity {
 
     @Column(name = "script", columnDefinition = "TEXT")
     private String script;
 
-    public ScriptContingencyListEntity(String name, String script) {
-        this.name = Objects.requireNonNull(name);
-        this.script = script;
+    public ScriptContingencyListEntity(ScriptContingencyList list) {
+        super();
+        init(list);
+    }
+
+    protected final void init(ScriptContingencyList list) {
+        super.init(list);
+        this.script = list.getScript();
+    }
+
+    public ScriptContingencyListEntity update(ScriptContingencyList list) {
+        init(list);
+        return this;
     }
 }

@@ -12,13 +12,14 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
+import java.util.UUID;
 
 /**
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at rte-france.com>
  * @author Franck Lecuyer <franck.lecuyer at rte-france.com>
  */
 @Repository
-public interface ScriptContingencyListRepository extends JpaRepository<ScriptContingencyListEntity, String> {
+public interface ScriptContingencyListRepository extends JpaRepository<ScriptContingencyListEntity, UUID> {
 
     Optional<ScriptContingencyListEntity> findByName(String name);
 

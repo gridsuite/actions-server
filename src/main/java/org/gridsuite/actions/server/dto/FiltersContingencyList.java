@@ -10,17 +10,23 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import org.gridsuite.actions.server.utils.ContingencyListType;
 
 import java.util.Set;
+import java.util.UUID;
 
 /**
  * @author Chamseddine benhamed <chamseddine.benhamed at rte-france.com>
  */
 @Getter
 @AllArgsConstructor
+@NoArgsConstructor
 @ApiModel("Filter contingency list")
 public class FiltersContingencyList implements ContingencyList {
+
+    @ApiModelProperty("list id")
+    private UUID id;
 
     @ApiModelProperty("List name")
     private String name;
@@ -48,4 +54,7 @@ public class FiltersContingencyList implements ContingencyList {
     public ContingencyListType getType() {
         return ContingencyListType.FILTERS;
     }
+
+    @ApiModelProperty("Description")
+    private String description;
 }
