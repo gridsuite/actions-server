@@ -31,10 +31,6 @@ spring:
               create-target: src/main/resources/actions.sql
               create-source: metadata
 
-springdoc:
-  swagger-ui:
-    path: swagger-ui.html
-
 network-store-server:
   base-uri: http://localhost:8080/
 
