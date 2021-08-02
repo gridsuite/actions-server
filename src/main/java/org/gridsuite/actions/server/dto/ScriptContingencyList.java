@@ -6,8 +6,7 @@
  */
 package org.gridsuite.actions.server.dto;
 
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -21,25 +20,24 @@ import java.util.UUID;
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
-@ApiModel("Script contingency list")
+@Schema(description = "Script contingency list")
 public class ScriptContingencyList implements ContingencyList {
 
-    @ApiModelProperty("list id")
+    @Schema(description = "list id")
     private UUID id;
 
-    @ApiModelProperty("List name")
+    @Schema(description = "List name")
     private String name;
 
-    @ApiModelProperty("Script")
+    @Schema(description = "Script")
     private String script;
 
-    @ApiModelProperty("Type")
+    @Schema(description = "Type")
     @Override
     public ContingencyListType getType() {
         return ContingencyListType.SCRIPT;
     }
 
-    @ApiModelProperty("description")
+    @Schema(description = "description")
     private String description;
-
 }

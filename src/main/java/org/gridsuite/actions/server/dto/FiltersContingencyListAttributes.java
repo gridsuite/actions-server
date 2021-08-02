@@ -6,8 +6,7 @@
  */
 package org.gridsuite.actions.server.dto;
 
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -25,34 +24,34 @@ import java.util.UUID;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@ApiModel("filter contingency list attributes")
+@Schema(description = "filter contingency list attributes")
 public class FiltersContingencyListAttributes implements ContingencyList {
 
-    @ApiModelProperty("list id")
+    @Schema(description = "list id")
     private UUID id;
 
-    @ApiModelProperty("list name")
+    @Schema(description = "list name")
     private String name;
 
-    @ApiModelProperty("Equipment ID")
+    @Schema(description = "Equipment ID")
     private String equipmentID;
 
-    @ApiModelProperty("Equipment name")
+    @Schema(description = "Equipment name")
     private String equipmentName;
 
-    @ApiModelProperty("Equipment type")
+    @Schema(description = "Equipment type")
     private String equipmentType;
 
-    @ApiModelProperty("Nominal voltage")
+    @Schema(description = "Nominal voltage")
     private double nominalVoltage;
 
-    @ApiModelProperty("Nominal voltage operator")
+    @Schema(description = "Nominal voltage operator")
     private String nominalVoltageOperator;
 
-    @ApiModelProperty("Countries")
+    @Schema(description = "Countries")
     private Set<String> countries;
 
-    @ApiModelProperty("Description")
+    @Schema(description = "Description")
     private String description;
 
     @Override
