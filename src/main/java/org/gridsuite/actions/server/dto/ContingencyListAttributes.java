@@ -6,8 +6,7 @@
  */
 package org.gridsuite.actions.server.dto;
 
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -23,24 +22,24 @@ import java.util.UUID;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-@ApiModel("Contingency list attributes")
+@Schema(description = "Contingency list attributes")
 public class ContingencyListAttributes implements ContingencyList {
 
-    @ApiModelProperty("list id")
+    @Schema(description = "list id")
     private UUID id;
 
-    @ApiModelProperty("List name")
+    @Schema(description = "List name")
     private String name;
 
-    @ApiModelProperty("List type")
+    @Schema(description = "List type")
     private ContingencyListType type;
 
-    @ApiModelProperty("Creation Date")
+    @Schema(description = "Creation Date")
     Date creationDate;
 
-    @ApiModelProperty("Modification Date")
+    @Schema(description = "Modification Date")
     Date modificationDate;
 
-    @ApiModelProperty("Description")
+    @Schema(description = "Description")
     String description;
 }
