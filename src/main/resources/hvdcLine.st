@@ -1,5 +1,3 @@
-import org.gridsuite.actions.server.utils.FiltersUtils;
-
 for (equipment in network.<collectionName>) {
   if (<if(nominalV)>(equipment.nominalV <nominalVOperator> <nominalV>)
       && <endif>

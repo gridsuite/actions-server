@@ -13,6 +13,7 @@ import com.powsybl.iidm.network.*;
 import com.powsybl.network.store.client.NetworkStoreService;
 import com.powsybl.network.store.client.PreloadingStrategy;
 import com.powsybl.network.store.iidm.impl.NetworkFactoryImpl;
+import org.codehaus.groovy.control.customizers.ImportCustomizer;
 import org.gridsuite.actions.server.dto.*;
 import org.gridsuite.actions.server.dto.ContingencyList;
 import org.gridsuite.actions.server.entities.FiltersContingencyListEntity;
@@ -146,7 +147,7 @@ public class ContingencyListService {
 
         if (contingencyList instanceof ScriptContingencyList) {
             String script = ((ScriptContingencyList) contingencyList).getScript();
-            return new ContingencyDslLoader(script).load(network);
+            return new ContingencyDslLoader(script).load(network, new ImportCustomizer().addImports("org.gridsuite.actions.server.utils.FiltersUtils"));
         } else if (contingencyList instanceof FiltersContingencyList) {
             FiltersContingencyList filtersContingencyList = (FiltersContingencyList) contingencyList;
             return getContingencies(filtersContingencyList, network);
