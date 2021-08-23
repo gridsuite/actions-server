@@ -12,7 +12,6 @@ import lombok.Setter;
 import org.gridsuite.actions.server.dto.FiltersContingencyListAttributes;
 
 import javax.persistence.*;
-import javax.swing.*;
 import java.util.HashSet;
 import java.util.Set;
 

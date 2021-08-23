@@ -321,7 +321,7 @@ public class ContingencyListService {
         Optional<ScriptContingencyListEntity> entity = scriptContingencyListRepository.findByIdAndUserIdOrIsPrivate(id, userId, false);
         if (entity.isPresent()) {
             if (!entity.get().getUserId().equals(userId)) {  // only the owner can modify the contingency list
-                throw new PowsyblException("The contingency list '" + entity.get().getName() + "' can only be modifies by it's owner");
+                throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "The contingency list '" + entity.get().getName() + "' can only be modified by it's owner");
             } else {
                 script.setUserId(entity.get().getUserId());
                 script.setPrivate(entity.get().isPrivate());
@@ -354,7 +354,7 @@ public class ContingencyListService {
         Optional<FiltersContingencyListEntity> entity = filtersContingencyListRepository.findByIdAndUserIdOrIsPrivate(id, userId, false);
         if (entity.isPresent()) {
             if (!entity.get().getUserId().equals(userId)) {  // only the owner can modify the contingency list
-                throw new PowsyblException("The contingency list '" + entity.get().getName() + "' can only be modified by it's owner");
+                throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "The contingency list '" + entity.get().getName() + "' can only be modified by it's owner");
             } else {
                 filtersContingencyListAttributes.setUserId(entity.get().getUserId());
                 filtersContingencyListAttributes.setPrivate(entity.get().isPrivate());
@@ -372,7 +372,7 @@ public class ContingencyListService {
         Optional<FiltersContingencyListEntity> fEntity = filtersContingencyListRepository.findByIdAndUserIdOrIsPrivate(id, userId, false);
         if (fEntity.isPresent()) {
             if (!fEntity.get().getUserId().equals(userId)) {
-                throw new PowsyblException("The contingency list '" + fEntity.get().getName() + "' can only be deleted by it's owner");
+                throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "The contingency list '" + fEntity.get().getName() + "' can only be deleted by it's owner");
             } else {
                 filtersContingencyListRepository.deleteById(id);
             }
@@ -380,7 +380,7 @@ public class ContingencyListService {
             Optional<ScriptContingencyListEntity> sEntity = scriptContingencyListRepository.findByIdAndUserIdOrIsPrivate(id, userId, false);
             if (sEntity.isPresent()) {
                 if (!sEntity.get().getUserId().equals(userId)) {
-                    throw new PowsyblException("The contingency list '" + sEntity.get().getName() + "' can only be deleted by it's owner");
+                    throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "The contingency list '" + sEntity.get().getName() + "' can only be deleted by it's owner");
                 } else {
                     scriptContingencyListRepository.deleteById(id);
                 }
@@ -436,7 +436,7 @@ public class ContingencyListService {
         Optional<FiltersContingencyListEntity> fEntity = filtersContingencyListRepository.findByIdAndUserIdOrIsPrivate(id, userId, false);
         if (fEntity.isPresent()) {
             if (!fEntity.get().getUserId().equals(userId)) {
-                throw new PowsyblException("The access rights of contingency list '" + fEntity.get().getName() + "' can only be modified by it's owner");
+                throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "The access rights of contingency list '" + fEntity.get().getName() + "' can only be modified by it's owner");
             } else {
                 filtersContingencyListRepository.save(fEntity.get().updateIsPrivate(toPrivate));
                 return fromFilterContingencyListEntity(fEntity.get());
@@ -445,7 +445,7 @@ public class ContingencyListService {
             Optional<ScriptContingencyListEntity> sEntity = scriptContingencyListRepository.findByIdAndUserIdOrIsPrivate(id, userId, false);
             if (sEntity.isPresent()) {
                 if (!sEntity.get().getUserId().equals(userId)) {
-                    throw new PowsyblException("The access rights of contingency list '" + sEntity.get().getName() + "' can only be modified by it's owner");
+                    throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "The access rights of contingency list '" + sEntity.get().getName() + "' can only be modified by it's owner");
                 } else {
                     scriptContingencyListRepository.save(sEntity.get().updateIsPrivate(toPrivate));
                     return fromScriptContingencyListEntity(sEntity.get());

@@ -244,8 +244,16 @@ public class ContingencyListControllerTest {
 
         // delete data
         mvc.perform(delete("/" + VERSION + "/contingency-lists/" + scriptId)
+                .header("userId", "otherUserId"))
+                .andExpect(status().isUnauthorized());
+
+        mvc.perform(delete("/" + VERSION + "/contingency-lists/" + scriptId)
                 .header("userId", "userId"))
                 .andExpect(status().isOk());
+
+        mvc.perform(delete("/" + VERSION + "/contingency-lists/" + ticId)
+                .header("userId", "otherUserId"))
+                .andExpect(status().isUnauthorized());
 
         mvc.perform(delete("/" + VERSION + "/contingency-lists/" + ticId)
                 .header("userId", "userId"))
@@ -451,6 +459,12 @@ public class ContingencyListControllerTest {
         String newFilter = genContingencyFilter("equiIdBis", "filterNameBis", EquipmentType.LINE,
                 12, "<=",
                 Collections.emptySet(), "plopBis");
+
+        mvc.perform(put("/" + VERSION + "/filters-contingency-lists/" + id)
+                .header("userId", "otherUserId")
+                .content(newFilter)
+                .contentType(APPLICATION_JSON))
+                .andExpect(status().isUnauthorized());
 
         mvc.perform(put("/" + VERSION + "/filters-contingency-lists/" + id)
                 .header("userId", "userId")
@@ -746,6 +760,10 @@ public class ContingencyListControllerTest {
         UUID firstUUID = filter1.getId();
 
         // Change access rights to private
+        mvc.perform(post("/" + VERSION + "/contingency-lists/" + firstUUID + "/private")
+                .header("userId", "otherUserId"))
+                .andExpect(status().isUnauthorized());
+
         mvc.perform(post("/" + VERSION + "/contingency-lists/" + firstUUID + "/private")
                 .header("userId", "userId"))
                 .andExpect(status().isOk());

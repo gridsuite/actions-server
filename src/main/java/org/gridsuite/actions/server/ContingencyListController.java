@@ -14,12 +14,10 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.gridsuite.actions.server.dto.*;
 import org.springframework.context.annotation.ComponentScan;
-import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import javax.persistence.EntityNotFoundException;
 import java.util.List;
 import java.util.UUID;
 
@@ -113,12 +111,8 @@ public class ContingencyListController {
     public ResponseEntity<Void> modifyScriptContingencyList(@PathVariable UUID id,
                                                             @RequestBody(required = false) ScriptContingencyList script,
                                                             @RequestHeader("userId") String headerUserId) {
-        try {
-            service.modifyScriptContingencyList(id, script, headerUserId);
-            return ResponseEntity.ok().build();
-        } catch (EntityNotFoundException ignored) {
-            return ResponseEntity.notFound().build();
-        }
+        service.modifyScriptContingencyList(id, script, headerUserId);
+        return ResponseEntity.ok().build();
     }
 
     @PostMapping(value = "filters-contingency-lists", consumes = MediaType.APPLICATION_JSON_VALUE)
@@ -138,12 +132,8 @@ public class ContingencyListController {
     public ResponseEntity<Void> modifyFilterContingencyList(@PathVariable UUID id,
                                                             @RequestBody(required = true) FiltersContingencyListAttributes filtersContingencyListAttributes,
                                                             @RequestHeader("userId") String headerUserId) {
-        try {
-            service.modifyFilterContingencyList(id, filtersContingencyListAttributes, headerUserId);
-            return ResponseEntity.ok().build();
-        } catch (EntityNotFoundException ignored) {
-            return ResponseEntity.notFound().build();
-        }
+        service.modifyFilterContingencyList(id, filtersContingencyListAttributes, headerUserId);
+        return ResponseEntity.ok().build();
     }
 
     @DeleteMapping(value = "contingency-lists/{id}")
@@ -151,12 +141,8 @@ public class ContingencyListController {
     @ApiResponse(responseCode = "200", description = "The contingency list has been deleted")
     public ResponseEntity<Void> deleteContingencyList(@PathVariable("id") UUID id,
                                                   @RequestHeader("userId") String headerUserId) {
-        try {
-            service.deleteContingencyList(id, headerUserId);
-            return ResponseEntity.ok().build();
-        } catch (EmptyResultDataAccessException ignored) {
-            return ResponseEntity.notFound().build();
-        }
+        service.deleteContingencyList(id, headerUserId);
+        return ResponseEntity.ok().build();
     }
 
     @PostMapping(value = "filters-contingency-lists/{id}/replace-with-script")
