@@ -28,6 +28,7 @@ import static javax.persistence.TemporalType.TIMESTAMP;
 
 /**
  * @author Jacques Borsenberger <jacques.borsenberger at rte-france.com>
+ * @author Franck Lecuyer <franck.lecuyer at rte-france.com>
  */
 @Getter
 @Setter
@@ -57,13 +58,20 @@ public abstract class AbstractContingencyEntity {
     @Column()
     private String description;
 
+    @Column(name = "userId", nullable = false)
+    private String userId;
+
+    @Column(name = "isPrivate", nullable = false)
+    private boolean isPrivate;
+
     protected final void init(ContingencyList attributes) {
         name = attributes.getName();
         description = attributes.getDescription();
+        userId = attributes.getUserId();
+        isPrivate = attributes.isPrivate();
     }
 
     protected void update(ContingencyList attributes) {
         init(attributes);
     }
-
 }

@@ -12,6 +12,7 @@ import lombok.Setter;
 import org.gridsuite.actions.server.dto.FiltersContingencyListAttributes;
 
 import javax.persistence.*;
+import javax.swing.*;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -66,6 +67,11 @@ public class FiltersContingencyListEntity extends AbstractContingencyEntity {
 
     public FiltersContingencyListEntity update(FiltersContingencyListAttributes filtersContingencyListAttributes) {
         init(filtersContingencyListAttributes);
+        return this;
+    }
+
+    public FiltersContingencyListEntity updateIsPrivate(boolean isPrivate) {
+        setPrivate(isPrivate);
         return this;
     }
 }

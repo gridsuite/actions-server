@@ -18,6 +18,7 @@ import java.util.UUID;
 
 /**
  * @author Chamseddine benhamed <chamseddine.benhamed at rte-france.com>
+ * @author Franck Lecuyer <franck.lecuyer at rte-france.com>
  */
 
 @Getter
@@ -53,6 +54,12 @@ public class FiltersContingencyListAttributes implements ContingencyList {
 
     @Schema(description = "Description")
     private String description;
+
+    @Schema(description = "user id")
+    private String userId;
+
+    @Schema(description = "private")
+    private boolean isPrivate;
 
     @Override
     public ContingencyListType getType() {

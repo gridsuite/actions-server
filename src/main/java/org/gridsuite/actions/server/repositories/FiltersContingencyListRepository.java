@@ -9,9 +9,11 @@ package org.gridsuite.actions.server.repositories;
 import org.gridsuite.actions.server.entities.FiltersContingencyListEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 /**
@@ -21,9 +23,14 @@ import java.util.UUID;
 @Repository
 public interface FiltersContingencyListRepository extends JpaRepository<FiltersContingencyListEntity, UUID> {
 
-    @Query("SELECT DISTINCT entity FROM FiltersContingencyListEntity entity LEFT JOIN FETCH entity.countries")
-    List<FiltersContingencyListEntity> findAllWithCountries();
+    List<FiltersContingencyListEntity> findByUserIdOrIsPrivate(@Param("userId") String userId, @Param("isPrivate") boolean isPrivate);
 
-    /* do not use deleteById which throw when id does not exists */
-    Integer deleteFiltersContingencyListEntityById(UUID id);
+    @Query(value = "SELECT * FROM filters_contingency_list f WHERE id in ?1 and (isPrivate='false' or userId=?2)", nativeQuery = true)
+    List<FiltersContingencyListEntity> findAllByUuids(List<UUID> uuids, String userId);
+
+    @Query(value = "SELECT * FROM filters_contingency_list f WHERE id=?1 and (isPrivate=?3 or userId=?2)", nativeQuery = true)
+    Optional<FiltersContingencyListEntity> findByIdAndUserIdOrIsPrivate(@Param("id") UUID id, @Param("userId") String userId, @Param("isPrivate") boolean isPrivate);
+
+    @Query("SELECT DISTINCT entity FROM FiltersContingencyListEntity entity LEFT JOIN FETCH entity.countries WHERE (entity.isPrivate=?2 or entity.userId=?1)")
+    List<FiltersContingencyListEntity> findAllWithCountriesByUserIdOrIsPrivate(@Param("userId") String userId, @Param("isPrivate") boolean isPrivate);
 }

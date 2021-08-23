@@ -10,14 +10,17 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.gridsuite.actions.server.utils.ContingencyListType;
 
 import java.util.UUID;
 
 /**
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at rte-france.com>
+ * @author Franck Lecuyer <franck.lecuyer at rte-france.com>
  */
 @Getter
+@Setter
 @AllArgsConstructor
 @NoArgsConstructor
 @Schema(description = "Script contingency list")
@@ -40,4 +43,10 @@ public class ScriptContingencyList implements ContingencyList {
 
     @Schema(description = "description")
     private String description;
+
+    @Schema(description = "user id")
+    private String userId;
+
+    @Schema(description = "private")
+    private boolean isPrivate;
 }

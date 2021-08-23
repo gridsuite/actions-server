@@ -42,7 +42,9 @@ public class GenerateScriptFromFiltersTest {
             90,
             "=",
             countries,
-            null)));
+            null,
+                "userId",
+                false)));
 
         assertEquals("import org.gridsuite.actions.server.utils.FiltersUtils;\n" +
             "\n" +
@@ -59,7 +61,9 @@ public class GenerateScriptFromFiltersTest {
                 -1,
                 ">=",
                 new HashSet<>(),
-                null
+                null,
+                "userId",
+                false
             )));
 
         assertEquals("import org.gridsuite.actions.server.utils.FiltersUtils;\n" +
@@ -76,7 +80,9 @@ public class GenerateScriptFromFiltersTest {
             -1,
             "<=",
             countries,
-            null)));
+            null,
+                "userId",
+                false)));
 
         assertEquals("import org.gridsuite.actions.server.utils.FiltersUtils;\n" +
             "\n" +
@@ -94,7 +100,9 @@ public class GenerateScriptFromFiltersTest {
             225,
             "=",
             new HashSet<>(),
-            null)));
+            null,
+                "userId",
+                false)));
 
         assertEquals("import org.gridsuite.actions.server.utils.FiltersUtils;\n" +
             "\n" +
@@ -108,7 +116,9 @@ public class GenerateScriptFromFiltersTest {
             "STATIC_VAR_COMPENSATOR",
             -1,
             "=",
-            new HashSet<>(), null)));
+            new HashSet<>(), null,
+                "userId",
+                false)));
 
         assertEquals("import org.gridsuite.actions.server.utils.FiltersUtils;\n" +
             "\n" +
@@ -123,7 +133,9 @@ public class GenerateScriptFromFiltersTest {
             "SHUNT_COMPENSATOR",
             90,
             "<",
-            new HashSet<>(), null)));
+            new HashSet<>(), null,
+                "userId",
+                false)));
 
         assertEquals("import org.gridsuite.actions.server.utils.FiltersUtils;\n" +
             "\n" +
@@ -139,7 +151,9 @@ public class GenerateScriptFromFiltersTest {
             "LINE",
             225,
             "=",
-            new HashSet<>(), null)));
+            new HashSet<>(), null,
+                "userId",
+                false)));
 
         assertEquals("import org.gridsuite.actions.server.utils.FiltersUtils;\n" +
             "\n" +
@@ -155,6 +169,8 @@ public class GenerateScriptFromFiltersTest {
             "BUSBAR_SECTION",
             63,
             ">=",
-            countries, null)));
+            countries, null,
+                "userId",
+                false)));
     }
 }

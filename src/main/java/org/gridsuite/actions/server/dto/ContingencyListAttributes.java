@@ -6,6 +6,7 @@
  */
 package org.gridsuite.actions.server.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -17,6 +18,7 @@ import java.util.UUID;
 
 /**
  * @author Chamseddine benhamed <chamseddine.benhamed at rte-france.com>
+ * @author Franck Lecuyer <franck.lecuyer at rte-france.com>
  */
 
 @Getter
@@ -42,4 +44,11 @@ public class ContingencyListAttributes implements ContingencyList {
 
     @Schema(description = "Description")
     String description;
+
+    @Schema(description = "user id")
+    private String userId;
+
+    @Schema(description = "private")
+    @JsonProperty("private")
+    private boolean isPrivate;
 }

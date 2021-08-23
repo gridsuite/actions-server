@@ -44,4 +44,9 @@ public class ScriptContingencyListEntity extends AbstractContingencyEntity {
         init(list);
         return this;
     }
+
+    public ScriptContingencyListEntity updateIsPrivate(boolean isPrivate) {
+        setPrivate(isPrivate);
+        return this;
+    }
 }

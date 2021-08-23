@@ -3,8 +3,10 @@
        id uuid not null,
         creationDate timestamp,
         description varchar(255),
+        isPrivate boolean not null,
         modificationDate timestamp,
         name varchar(255),
+        userId varchar(255) not null,
         equipmentId varchar(255),
         equipmentName varchar(255),
         equipmentType varchar(255),
@@ -22,8 +24,10 @@
        id uuid not null,
         creationDate timestamp,
         description varchar(255),
+        isPrivate boolean not null,
         modificationDate timestamp,
         name varchar(255),
+        userId varchar(255) not null,
         script TEXT,
         primary key (id)
     );

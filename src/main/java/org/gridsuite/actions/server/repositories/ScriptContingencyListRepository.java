@@ -8,9 +8,11 @@ package org.gridsuite.actions.server.repositories;
 
 import org.gridsuite.actions.server.entities.ScriptContingencyListEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
-import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -21,10 +23,11 @@ import java.util.UUID;
 @Repository
 public interface ScriptContingencyListRepository extends JpaRepository<ScriptContingencyListEntity, UUID> {
 
-    Optional<ScriptContingencyListEntity> findByName(String name);
+    List<ScriptContingencyListEntity> findByUserIdOrIsPrivate(@Param("userId") String userId, @Param("isPrivate") boolean isPrivate);
 
-    @Transactional
-    void deleteByName(String name);
+    @Query(value = "SELECT * FROM script_contingency_list s WHERE id in ?1 and (isPrivate='false' or userId=?2)", nativeQuery = true)
+    List<ScriptContingencyListEntity> findAllByUuids(List<UUID> uuids, String userId);
 
-    boolean existsByName(String name);
+    @Query(value = "SELECT * FROM script_contingency_list s WHERE id=?1 and (isPrivate=?3 or userId=?2)", nativeQuery = true)
+    Optional<ScriptContingencyListEntity> findByIdAndUserIdOrIsPrivate(@Param("id") UUID id, @Param("userId") String userId, @Param("isPrivate") boolean isPrivate);
 }
