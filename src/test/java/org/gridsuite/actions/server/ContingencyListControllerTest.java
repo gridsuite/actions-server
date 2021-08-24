@@ -228,18 +228,6 @@ public class ContingencyListControllerTest {
             .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
             .andExpect(content().json("[{\"id\":\"NHV1_NHV2_1\",\"elements\":[{\"id\":\"NHV1_NHV2_1\",\"type\":\"LINE\"}]}]", true));
 
-        // rename baz --> bar ---> baz not found
-        mvc.perform(post("/" + VERSION + "/script-contingency-lists/" + notFoundId + "/rename")
-            .content("{\"newContingencyListName\": \"bar\"}")
-            .contentType(APPLICATION_JSON))
-            .andExpect(status().isNotFound());
-
-        // rename baz --> bar ---> baz not found
-        mvc.perform(post("/" + VERSION + "/contingency-lists/" + notFoundId + "/rename")
-            .content("{\"newContingencyListName\": \"bar\"}")
-            .contentType(APPLICATION_JSON))
-            .andExpect(status().isNotFound());
-
         // delete data
         mvc.perform(delete("/" + VERSION + "/contingency-lists/" + scriptId))
             .andExpect(status().isOk());
@@ -676,5 +664,45 @@ public class ContingencyListControllerTest {
         mvc.perform(get("/" + VERSION + "/filters-contingency-lists/" + firstUUID)
             .contentType(APPLICATION_JSON))
             .andExpect(status().isOk());
+    }
+
+    @Test
+    public void renameTest() throws Exception {
+        UUID notFoundId = UUID.fromString("abcdef01-1234-5678-abcd-e123456789aa");
+
+        String script = "{ \n" +
+            "\"name\" : \"foo\",\n" +
+            "\"script\" : \"contingency('NHV1_NHV2_1') {" +
+            "     equipments 'NHV1_NHV2_1'}\"" +
+            "}";
+
+        UUID scriptId = addNewScriptFilter(script);
+
+        mvc.perform(post("/" + VERSION + "/contingency-lists/" + notFoundId + "/rename")
+                .content("{\"newContingencyListName\": \"bar\"}")
+                .contentType(APPLICATION_JSON))
+                .andExpect(status().isNotFound());
+
+        mvc.perform(post("/" + VERSION + "/contingency-lists/" + scriptId + "/rename")
+                .content("{\"newContingencyListName\": \"bar\"}")
+                .contentType(APPLICATION_JSON))
+                .andExpect(status().isOk());
+
+        ContingencyListAttributes attributes = getMetadata(scriptId);
+        assertEquals(scriptId, attributes.getId());
+        assertEquals("bar", attributes.getName());
+
+        UUID filterId = addNewFilterList(genContingencyFilter("equiId", "filterName", EquipmentType.LINE,
+                10, "=>",
+                Collections.emptySet(), "plop"));
+
+        mvc.perform(post("/" + VERSION + "/contingency-lists/" + filterId + "/rename")
+                .content("{\"newContingencyListName\": \"titi\"}")
+                .contentType(APPLICATION_JSON))
+                .andExpect(status().isOk());
+
+        attributes = getMetadata(filterId);
+        assertEquals(filterId, attributes.getId());
+        assertEquals("titi", attributes.getName());
     }
 }

@@ -369,4 +369,22 @@ public class ContingencyListService {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Contingency list " + id + " not found");
         });
     }
+
+    @Transactional
+    public void renameContingencyList(UUID id, RenameContingencyListAttributes renameAttributes) {
+        Objects.requireNonNull(id);
+
+        Optional<ScriptContingencyListEntity> scriptEntity = scriptContingencyListRepository.findById(id);
+        if (scriptEntity.isPresent()) {
+            scriptEntity.get().setName(renameAttributes.getNewContingencyListName());
+        } else {
+            Optional<FiltersContingencyListEntity> filterEntity = filtersContingencyListRepository.findById(id);
+            if (filterEntity.isPresent()) {
+                filterEntity.get().setName(renameAttributes.getNewContingencyListName());
+            } else {
+                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Contingency list " + id + " not found");
+            }
+        }
+    }
+
 }

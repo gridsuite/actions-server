@@ -72,7 +72,7 @@ public class ContingencyListController {
     }
 
     @GetMapping(value = "filters-contingency-lists/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(summary = "Get filters contingency list by name")
+    @Operation(summary = "Get filters contingency list by id")
     @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "The filters contingency list"),
         @ApiResponse(responseCode = "404", description = "The filters contingency list does not exists")})
     public ResponseEntity<FiltersContingencyList> getFilterContingencyList(@PathVariable("id") UUID id) {
@@ -172,5 +172,14 @@ public class ContingencyListController {
         @ApiResponse(responseCode = "404", description = "The contingency list does not exists")})
     public ResponseEntity<List<ContingencyListAttributes>> getContingencyLists(@RequestBody List<UUID> ids) {
         return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(service.getContingencyLists(ids));
+    }
+
+    @PostMapping(value = "contingency-lists/{id}/rename")
+    @Operation(summary = "Rename the contingency list")
+    @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "The contingency list has been renamed")})
+    public ResponseEntity<Void> renameContingencyList(@PathVariable("id") UUID id,
+                                                      @RequestBody RenameContingencyListAttributes renameAttributes) {
+        service.renameContingencyList(id, renameAttributes);
+        return ResponseEntity.ok().build();
     }
 }
