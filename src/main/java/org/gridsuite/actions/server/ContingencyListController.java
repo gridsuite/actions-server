@@ -96,10 +96,11 @@ public class ContingencyListController {
     @PostMapping(value = "script-contingency-lists/", consumes = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Create a script contingency list")
     @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "The script contingency list have been created successfully")})
-    public ResponseEntity<ScriptContingencyList> createScriptContingencyList(@RequestBody(required = false) ScriptContingencyList script) {
+    public ResponseEntity<ScriptContingencyList> createScriptContingencyList(@RequestParam(required = false, value = "id") UUID id,
+                                                                             @RequestBody(required = false) ScriptContingencyList script) {
         return ResponseEntity.ok()
             .contentType(MediaType.APPLICATION_JSON)
-            .body(service.createScriptContingencyList(script));
+            .body(service.createScriptContingencyList(id, script));
     }
 
     @PutMapping(value = "script-contingency-lists/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
@@ -117,10 +118,11 @@ public class ContingencyListController {
     @PostMapping(value = "filters-contingency-lists/", consumes = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Create a filters contingency list")
     @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "The filters contingency list have been created successfully")})
-    public ResponseEntity<FiltersContingencyList> createFilterContingencyList(@RequestBody(required = true) FiltersContingencyListAttributes filtersContingencyListAttributes) {
+    public ResponseEntity<FiltersContingencyList> createFilterContingencyList(@RequestParam(required = false, value = "id") UUID id,
+                                                                              @RequestBody(required = true) FiltersContingencyListAttributes filtersContingencyListAttributes) {
         return ResponseEntity.ok()
             .contentType(MediaType.APPLICATION_JSON)
-            .body(service.createFilterContingencyList(filtersContingencyListAttributes));
+            .body(service.createFilterContingencyList(id, filtersContingencyListAttributes));
     }
 
     @PutMapping(value = "filters-contingency-lists/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
@@ -160,10 +162,11 @@ public class ContingencyListController {
     @Operation(summary = "Create a new script contingency list from a filters contingency list")
     @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "The script contingency list have been created successfully")})
     public ResponseEntity<ScriptContingencyList> newScriptFromFiltersContingencyList(@PathVariable("id") UUID id,
+                                                                                     @RequestParam(required = false, value = "newId") UUID newId,
                                                                                      @PathVariable("scriptName") String scriptName) {
         return ResponseEntity.ok()
             .contentType(MediaType.APPLICATION_JSON)
-            .body(service.newScriptFromFiltersContingencyList(id, scriptName));
+            .body(service.newScriptFromFiltersContingencyList(id, scriptName, newId));
     }
 
     @GetMapping(value = "metadata", produces = MediaType.APPLICATION_JSON_VALUE)

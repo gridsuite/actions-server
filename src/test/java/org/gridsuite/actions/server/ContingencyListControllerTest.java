@@ -616,6 +616,7 @@ public class ContingencyListControllerTest {
 
         // Put data
         UUID id = addNewFilterList(filters);
+
         // replace with groovy script
         String res = mvc.perform(post("/" + VERSION + "/filters-contingency-lists/" + id + "/replace-with-script"))
             .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
@@ -648,6 +649,7 @@ public class ContingencyListControllerTest {
 
         // Put data
         UUID firstUUID = addNewFilterList(filters);
+
         // new script from filters
         mvc.perform(post("/" + VERSION + "/filters-contingency-lists/" + firstUUID + "/new-script/tac"))
             .andExpect(status().isOk());
