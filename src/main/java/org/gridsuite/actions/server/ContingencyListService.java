@@ -383,11 +383,11 @@ public class ContingencyListService {
 
         Optional<ScriptContingencyListEntity> scriptEntity = scriptContingencyListRepository.findById(id);
         if (scriptEntity.isPresent()) {
-            scriptEntity.get().setName(renameAttributes.getNewContingencyListName());
+            scriptEntity.get().setName(renameAttributes.getNewElementName());
         } else {
             Optional<FiltersContingencyListEntity> filterEntity = filtersContingencyListRepository.findById(id);
             if (filterEntity.isPresent()) {
-                filterEntity.get().setName(renameAttributes.getNewContingencyListName());
+                filterEntity.get().setName(renameAttributes.getNewElementName());
             } else {
                 throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Contingency list " + id + " not found");
             }

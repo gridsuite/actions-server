@@ -93,7 +93,7 @@ public class ContingencyListController {
             .orElse(ResponseEntity.notFound().build());
     }
 
-    @PostMapping(value = "script-contingency-lists/", consumes = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = "script-contingency-lists", consumes = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Create a script contingency list")
     @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "The script contingency list have been created successfully")})
     public ResponseEntity<ScriptContingencyList> createScriptContingencyList(@RequestParam(required = false, value = "id") UUID id,
@@ -115,7 +115,7 @@ public class ContingencyListController {
         }
     }
 
-    @PostMapping(value = "filters-contingency-lists/", consumes = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = "filters-contingency-lists", consumes = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Create a filters contingency list")
     @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "The filters contingency list have been created successfully")})
     public ResponseEntity<FiltersContingencyList> createFilterContingencyList(@RequestParam(required = false, value = "id") UUID id,

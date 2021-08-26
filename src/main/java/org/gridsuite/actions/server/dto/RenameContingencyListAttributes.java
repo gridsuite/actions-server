@@ -22,5 +22,5 @@ import lombok.Setter;
 public class RenameContingencyListAttributes {
 
     @Schema(description = "New contingency list name")
-    private String newContingencyListName;
+    private String newElementName;
 }

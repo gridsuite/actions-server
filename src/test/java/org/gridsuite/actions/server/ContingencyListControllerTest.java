@@ -113,133 +113,133 @@ public class ContingencyListControllerTest {
     public void test() throws Exception {
         UUID notFoundId = UUID.fromString("abcdef01-1234-5678-abcd-e123456789aa");
         String script = "{ \n" +
-            "\"name\" : \"foo\",\n" +
-            "\"script\" : \"contingency('NHV1_NHV2_1') {" +
-            "     equipments 'NHV1_NHV2_1'}\"" +
-            "}";
+                "\"name\" : \"foo\",\n" +
+                "\"script\" : \"contingency('NHV1_NHV2_1') {" +
+                "     equipments 'NHV1_NHV2_1'}\"" +
+                "}";
 
         String filters = "{\n" +
-            "  \"name\": \"tic\"," +
-            "  \"equipmentID\": \"GEN*\"," +
-            "  \"equipmentName\": \"GEN*\"," +
-            "  \"equipmentType\": \"GENERATOR\"," +
-            "  \"nominalVoltage\": \"100\"," +
-            "  \"nominalVoltageOperator\": \">\"," +
-            "  \"countries\": [\"FR\", \"BE\"]" +
-            "}";
+                "  \"name\": \"tic\"," +
+                "  \"equipmentID\": \"GEN*\"," +
+                "  \"equipmentName\": \"GEN*\"," +
+                "  \"equipmentType\": \"GENERATOR\"," +
+                "  \"nominalVoltage\": \"100\"," +
+                "  \"nominalVoltageOperator\": \">\"," +
+                "  \"countries\": [\"FR\", \"BE\"]" +
+                "}";
 
         String filters2 = "{\n" +
-            "  \"name\": \"tuc\"," +
-            "  \"equipmentID\": \"LINE*\"," +
-            "  \"equipmentName\": \"*\"," +
-            "  \"equipmentType\": \"LINE\"," +
-            "  \"nominalVoltage\": \"225\"," +
-            "  \"nominalVoltageOperator\": \"<=\"," +
-            "  \"countries\": [\"FR\", \"IT\", \"NL\"]" +
-            "}";
+                "  \"name\": \"tuc\"," +
+                "  \"equipmentID\": \"LINE*\"," +
+                "  \"equipmentName\": \"*\"," +
+                "  \"equipmentType\": \"LINE\"," +
+                "  \"nominalVoltage\": \"225\"," +
+                "  \"nominalVoltageOperator\": \"<=\"," +
+                "  \"countries\": [\"FR\", \"IT\", \"NL\"]" +
+                "}";
 
         String filters3 = "{\n" +
-            "  \"name\": \"toc\"," +
-            "  \"equipmentID\": \"LOAD*\"," +
-            "  \"equipmentName\": \"*\"," +
-            "  \"equipmentType\": \"LOAD\"," +
-            "  \"nominalVoltage\": \"380\"," +
-            "  \"nominalVoltageOperator\": \"=\"," +
-            "  \"countries\": []" +
-            "}";
+                "  \"name\": \"toc\"," +
+                "  \"equipmentID\": \"LOAD*\"," +
+                "  \"equipmentName\": \"*\"," +
+                "  \"equipmentType\": \"LOAD\"," +
+                "  \"nominalVoltage\": \"380\"," +
+                "  \"nominalVoltageOperator\": \"=\"," +
+                "  \"countries\": []" +
+                "}";
 
         UUID scriptId = addNewScriptFilter(script);
 
         String res = mvc.perform(post("/" + VERSION + "/filters-contingency-lists/")
-            .content(filters)
-            .contentType(APPLICATION_JSON))
-            .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
+                .content(filters)
+                .contentType(APPLICATION_JSON))
+                .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
 
         UUID ticId = objectMapper.readValue(res, FiltersContingencyList.class).getId();
 
         mvc.perform(post("/" + VERSION + "/filters-contingency-lists/")
-            .content(filters2)
-            .contentType(APPLICATION_JSON))
-            .andExpect(status().isOk());
+                .content(filters2)
+                .contentType(APPLICATION_JSON))
+                .andExpect(status().isOk());
 
         mvc.perform(post("/" + VERSION + "/filters-contingency-lists/")
-            .content(filters3)
-            .contentType(APPLICATION_JSON))
-            .andExpect(status().isOk());
+                .content(filters3)
+                .contentType(APPLICATION_JSON))
+                .andExpect(status().isOk());
 
         // Check data
         mvc.perform(get("/" + VERSION + "/contingency-lists")
-            .contentType(APPLICATION_JSON))
-            .andExpect(status().isOk())
-            .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-            .andExpect(content().json("[{\"name\":\"foo\",\"type\":\"SCRIPT\"},{\"name\":\"tic\",\"type\":\"FILTERS\"},{\"name\":\"tuc\",\"type\":\"FILTERS\"},{\"name\":\"toc\",\"type\":\"FILTERS\"}]", false));
+                .contentType(APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+                .andExpect(content().json("[{\"name\":\"foo\",\"type\":\"SCRIPT\"},{\"name\":\"tic\",\"type\":\"FILTERS\"},{\"name\":\"tuc\",\"type\":\"FILTERS\"},{\"name\":\"toc\",\"type\":\"FILTERS\"}]", false));
 
         mvc.perform(get("/" + VERSION + "/script-contingency-lists")
-            .contentType(APPLICATION_JSON))
-            .andExpect(status().isOk())
-            .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-            .andExpect(content().json("[{\"name\":\"foo\",\"script\":\"contingency('NHV1_NHV2_1') {     equipments 'NHV1_NHV2_1'}\",\"type\":\"SCRIPT\"}]", false));
+                .contentType(APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+                .andExpect(content().json("[{\"name\":\"foo\",\"script\":\"contingency('NHV1_NHV2_1') {     equipments 'NHV1_NHV2_1'}\",\"type\":\"SCRIPT\"}]", false));
 
         mvc.perform(get("/" + VERSION + "/filters-contingency-lists")
-            .contentType(APPLICATION_JSON))
-            .andExpect(status().isOk())
-            .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-            .andExpect(content().json("[{\"name\":\"tic\",\"equipmentID\":\"GEN*\",\"equipmentName\":\"GEN*\",\"equipmentType\":\"GENERATOR\",\"nominalVoltage\":100.0,\"nominalVoltageOperator\":\">\",\"countries\":[\"BE\",\"FR\"],\"type\":\"FILTERS\"},{\"name\":\"toc\",\"equipmentID\":\"LOAD*\",\"equipmentName\":\"*\",\"equipmentType\":\"LOAD\",\"nominalVoltage\":380.0,\"nominalVoltageOperator\":\"=\",\"countries\":[],\"type\":\"FILTERS\"},{\"name\":\"tuc\",\"equipmentID\":\"LINE*\",\"equipmentName\":\"*\",\"equipmentType\":\"LINE\",\"nominalVoltage\":225.0,\"nominalVoltageOperator\":\"<=\",\"countries\":[\"IT\",\"FR\",\"NL\"],\"type\":\"FILTERS\"}]", false));
+                .contentType(APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+                .andExpect(content().json("[{\"name\":\"tic\",\"equipmentID\":\"GEN*\",\"equipmentName\":\"GEN*\",\"equipmentType\":\"GENERATOR\",\"nominalVoltage\":100.0,\"nominalVoltageOperator\":\">\",\"countries\":[\"BE\",\"FR\"],\"type\":\"FILTERS\"},{\"name\":\"toc\",\"equipmentID\":\"LOAD*\",\"equipmentName\":\"*\",\"equipmentType\":\"LOAD\",\"nominalVoltage\":380.0,\"nominalVoltageOperator\":\"=\",\"countries\":[],\"type\":\"FILTERS\"},{\"name\":\"tuc\",\"equipmentID\":\"LINE*\",\"equipmentName\":\"*\",\"equipmentType\":\"LINE\",\"nominalVoltage\":225.0,\"nominalVoltageOperator\":\"<=\",\"countries\":[\"IT\",\"FR\",\"NL\"],\"type\":\"FILTERS\"}]", false));
 
         mvc.perform(get("/" + VERSION + "/script-contingency-lists/" + scriptId)
-            .contentType(APPLICATION_JSON))
-            .andExpect(status().isOk())
-            .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-            .andExpect(content().json("{\"name\":\"foo\",\"script\":\"contingency('NHV1_NHV2_1') {     equipments 'NHV1_NHV2_1'}\",\"type\":\"SCRIPT\"}", false));
+                .contentType(APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+                .andExpect(content().json("{\"name\":\"foo\",\"script\":\"contingency('NHV1_NHV2_1') {     equipments 'NHV1_NHV2_1'}\",\"type\":\"SCRIPT\"}", false));
 
         mvc.perform(get("/" + VERSION + "/filters-contingency-lists/" + ticId)
-            .contentType(APPLICATION_JSON))
-            .andExpect(status().isOk())
-            .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-            .andExpect(content().json("{\"name\":\"tic\",\"equipmentID\":\"GEN*\",\"equipmentName\":\"GEN*\",\"equipmentType\":\"GENERATOR\",\"nominalVoltage\":100.0,\"nominalVoltageOperator\":\">\",\"countries\":[\"BE\",\"FR\"],\"type\":\"FILTERS\"}", false));
+                .contentType(APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+                .andExpect(content().json("{\"name\":\"tic\",\"equipmentID\":\"GEN*\",\"equipmentName\":\"GEN*\",\"equipmentType\":\"GENERATOR\",\"nominalVoltage\":100.0,\"nominalVoltageOperator\":\">\",\"countries\":[\"BE\",\"FR\"],\"type\":\"FILTERS\"}", false));
 
         // check not found
         mvc.perform(get("/" + VERSION + "/script-contingency-lists/" + notFoundId)
-            .contentType(APPLICATION_JSON))
-            .andExpect(status().isNotFound())
-            .andExpect(content().string(""));
+                .contentType(APPLICATION_JSON))
+                .andExpect(status().isNotFound())
+                .andExpect(content().string(""));
 
         mvc.perform(get("/" + VERSION + "/filters-contingency-lists/" + notFoundId)
-            .contentType(APPLICATION_JSON))
-            .andExpect(status().isNotFound())
-            .andExpect(content().string(""));
+                .contentType(APPLICATION_JSON))
+                .andExpect(status().isNotFound())
+                .andExpect(content().string(""));
 
         // export contingencies
         mvc.perform(get("/" + VERSION + "/contingency-lists/" + scriptId + "/export")
-            .contentType(APPLICATION_JSON))
-            .andExpect(status().isOk())
-            .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-            .andExpect(content().json("[]", true)); // there is no network so all contingencies are invalid
+                .contentType(APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+                .andExpect(content().json("[]", true)); // there is no network so all contingencies are invalid
 
         mvc.perform(get("/" + VERSION + "/contingency-lists/" + ticId + "/export")
-            .contentType(APPLICATION_JSON))
-            .andExpect(status().isOk())
-            .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-            .andExpect(content().json("[]", true)); // there is no network so all contingencies are invalid
+                .contentType(APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+                .andExpect(content().json("[]", true)); // there is no network so all contingencies are invalid
 
         mvc.perform(get("/" + VERSION + "/contingency-lists/" + scriptId + "/export?networkUuid=" + NETWORK_UUID)
-            .contentType(APPLICATION_JSON))
-            .andExpect(status().isOk())
-            .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-            .andExpect(content().json("[{\"id\":\"NHV1_NHV2_1\",\"elements\":[{\"id\":\"NHV1_NHV2_1\",\"type\":\"LINE\"}]}]", true));
+                .contentType(APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+                .andExpect(content().json("[{\"id\":\"NHV1_NHV2_1\",\"elements\":[{\"id\":\"NHV1_NHV2_1\",\"type\":\"LINE\"}]}]", true));
 
         // delete data
         mvc.perform(delete("/" + VERSION + "/contingency-lists/" + scriptId))
-            .andExpect(status().isOk());
+                .andExpect(status().isOk());
 
         mvc.perform(delete("/" + VERSION + "/contingency-lists/" + ticId))
-            .andExpect(status().isOk());
+                .andExpect(status().isOk());
 
         mvc.perform(delete("/" + VERSION + "/contingency-lists/" + scriptId))
-            .andExpect(status().isNotFound());
+                .andExpect(status().isNotFound());
 
         mvc.perform(delete("/" + VERSION + "/contingency-lists/" + ticId))
-            .andExpect(status().isNotFound());
+                .andExpect(status().isNotFound());
     }
 
     public StringBuilder jsonVal(String id, String val, boolean trailingComma) {
@@ -253,14 +253,14 @@ public class ContingencyListControllerTest {
     public String genContingencyFilter(String equipmentId, String name, EquipmentType type,
                                        Integer nominalVoltage, String nominalVoltageOperator, Set<String> countries, String description) {
         return "{" +
-            jsonVal("name", name, true) +
-            jsonVal("equipmentID", equipmentId, true) +
-            jsonVal("equipmentName", name, true) +
-            jsonVal("equipmentType", type.name(), true) +
-            jsonVal("nominalVoltage", "" + nominalVoltage, true) +
-            jsonVal("nominalVoltageOperator", nominalVoltageOperator, true) +
-            jsonVal("description", description, true) +
-            "\"countries\": [" + (!countries.isEmpty() ? "\"" + join(countries, "\",\"") + "\"" : "") + "]}";
+                jsonVal("name", name, true) +
+                jsonVal("equipmentID", equipmentId, true) +
+                jsonVal("equipmentName", name, true) +
+                jsonVal("equipmentType", type.name(), true) +
+                jsonVal("nominalVoltage", "" + nominalVoltage, true) +
+                jsonVal("nominalVoltageOperator", nominalVoltageOperator, true) +
+                jsonVal("description", description, true) +
+                "\"countries\": [" + (!countries.isEmpty() ? "\"" + join(countries, "\",\"") + "\"" : "") + "]}";
 
     }
 
@@ -280,9 +280,9 @@ public class ContingencyListControllerTest {
         Date baseModificationDate = attributes.getModificationDate();
 
         mvc.perform(put("/" + VERSION + "/filters-contingency-lists/" + id)
-            .content(filter)
-            .contentType(APPLICATION_JSON))
-            .andExpect(status().isOk());
+                .content(filter)
+                .contentType(APPLICATION_JSON))
+                .andExpect(status().isOk());
 
         attributes = getMetadata(id);
         assertEquals(baseCreationDate, attributes.getCreationDate());
@@ -291,9 +291,9 @@ public class ContingencyListControllerTest {
 
     private UUID addNewFilterList(String filter) throws Exception {
         String res = mvc.perform(post("/" + VERSION + "/filters-contingency-lists/")
-            .content(filter)
-            .contentType(APPLICATION_JSON))
-            .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
+                .content(filter)
+                .contentType(APPLICATION_JSON))
+                .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
 
         FiltersContingencyList list = objectMapper.readValue(res, FiltersContingencyList.class);
         FiltersContingencyList original = objectMapper.readValue(filter, FiltersContingencyList.class);
@@ -303,9 +303,20 @@ public class ContingencyListControllerTest {
 
     private UUID addNewScriptFilter(String filter) throws Exception {
         String res = mvc.perform(post("/" + VERSION + "/script-contingency-lists/")
-            .content(filter)
-            .contentType(APPLICATION_JSON))
-            .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
+                .content(filter)
+                .contentType(APPLICATION_JSON))
+                .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
+
+        ScriptContingencyList list = objectMapper.readValue(res, ScriptContingencyList.class);
+        compareScriptList(objectMapper.readValue(filter, ScriptContingencyList.class), list);
+        return list.getId();
+    }
+
+    private UUID addNewScriptFilterWithId(String filter, UUID id) throws Exception {
+        String res = mvc.perform(post("/" + VERSION + "/script-contingency-lists?id=" + id)
+                .content(filter)
+                .contentType(APPLICATION_JSON))
+                .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
 
         ScriptContingencyList list = objectMapper.readValue(res, ScriptContingencyList.class);
         compareScriptList(objectMapper.readValue(filter, ScriptContingencyList.class), list);
@@ -368,7 +379,7 @@ public class ContingencyListControllerTest {
         String svcFilters5 = genContingencyFilter("*", "*", EquipmentType.STATIC_VAR_COMPENSATOR, -1, "<", france, null);
         String svcFilters6 = genContingencyFilter("*", "*", EquipmentType.STATIC_VAR_COMPENSATOR, -1, "<", belgium, null);
         testExportContingencies(svcFilters1, " [{\"id\":\"SVC3\",\"elements\":[{\"id\":\"SVC3\",\"type\":\"STATIC_VAR_COMPENSATOR\"}]}," +
-            "{\"id\":\"SVC2\",\"elements\":[{\"id\":\"SVC2\",\"type\":\"STATIC_VAR_COMPENSATOR\"}]}]", NETWORK_UUID_3);
+                "{\"id\":\"SVC2\",\"elements\":[{\"id\":\"SVC2\",\"type\":\"STATIC_VAR_COMPENSATOR\"}]}]", NETWORK_UUID_3);
         testExportContingencies(svcFilters2, " [{\"id\":\"SVC3\",\"elements\":[{\"id\":\"SVC3\",\"type\":\"STATIC_VAR_COMPENSATOR\"}]}]", NETWORK_UUID_3);
         testExportContingencies(svcFilters3, " []", NETWORK_UUID_3);
         testExportContingencies(svcFilters4, " []", NETWORK_UUID_3);
@@ -423,61 +434,61 @@ public class ContingencyListControllerTest {
     @Test
     public void modifyFilterList() throws Exception {
         UUID id = addNewFilterList(genContingencyFilter("equiId", "filterName", EquipmentType.LINE,
-            10, "=>",
-            Collections.emptySet(), "plop"));
+                10, "=>",
+                Collections.emptySet(), "plop"));
 
         String newFilter = genContingencyFilter("equiIdBis", "filterNameBis", EquipmentType.LINE,
-            12, "<=",
-            Collections.emptySet(), "plopBis");
+                12, "<=",
+                Collections.emptySet(), "plopBis");
 
         mvc.perform(put("/" + VERSION + "/filters-contingency-lists/" + id)
-            .content(newFilter)
-            .contentType(APPLICATION_JSON))
-            .andExpect(status().isOk());
+                .content(newFilter)
+                .contentType(APPLICATION_JSON))
+                .andExpect(status().isOk());
 
         String res = mvc.perform(get("/" + VERSION + "/filters-contingency-lists/" + id)
-            .contentType(APPLICATION_JSON))
-            .andReturn().getResponse().getContentAsString();
+                .contentType(APPLICATION_JSON))
+                .andReturn().getResponse().getContentAsString();
 
         compareFilterList(objectMapper.readValue(newFilter, FiltersContingencyList.class),
-            objectMapper.readValue(res, FiltersContingencyList.class));
+                objectMapper.readValue(res, FiltersContingencyList.class));
 
         mvc.perform(put("/" + VERSION + "/filters-contingency-lists/" + UUID.randomUUID())
-            .content(newFilter)
-            .contentType(APPLICATION_JSON))
-            .andExpect(status().isNotFound());
+                .content(newFilter)
+                .contentType(APPLICATION_JSON))
+                .andExpect(status().isNotFound());
     }
 
     @Test
     public void modifyScriptFilter() throws Exception {
         UUID id = addNewScriptFilter("{ \n" +
-            "\"name\" : \"foo\",\n" +
-            "\"script\" : \"contingency('NHV1_NHV2_1') {" +
-            "     equipments 'NHV1_NHV2_1'}\"" +
-            "}");
+                "\"name\" : \"foo\",\n" +
+                "\"script\" : \"contingency('NHV1_NHV2_1') {" +
+                "     equipments 'NHV1_NHV2_1'}\"" +
+                "}");
 
         String newFilter = "{\n" +
-            "\"name\" : \"bar\",\n" +
-            "\"script\" : \"contingency('NHV1_NHV2_2') {" +
-            "     equipments 'NHV1_NHV2_2'}\"" +
-            "}";
+                "\"name\" : \"bar\",\n" +
+                "\"script\" : \"contingency('NHV1_NHV2_2') {" +
+                "     equipments 'NHV1_NHV2_2'}\"" +
+                "}";
 
         mvc.perform(put("/" + VERSION + "/script-contingency-lists/" + id)
-            .content(newFilter)
-            .contentType(APPLICATION_JSON))
-            .andExpect(status().isOk());
+                .content(newFilter)
+                .contentType(APPLICATION_JSON))
+                .andExpect(status().isOk());
 
         String res = mvc.perform(get("/" + VERSION + "/script-contingency-lists/" + id)
-            .contentType(APPLICATION_JSON))
-            .andReturn().getResponse().getContentAsString();
+                .contentType(APPLICATION_JSON))
+                .andReturn().getResponse().getContentAsString();
 
         compareScriptList(objectMapper.readValue(newFilter, ScriptContingencyList.class),
-            objectMapper.readValue(res, ScriptContingencyList.class));
+                objectMapper.readValue(res, ScriptContingencyList.class));
 
         mvc.perform(put("/" + VERSION + "/script-contingency-lists/" + UUID.randomUUID())
-            .content(newFilter)
-            .contentType(APPLICATION_JSON))
-            .andExpect(status().isNotFound());
+                .content(newFilter)
+                .contentType(APPLICATION_JSON))
+                .andExpect(status().isNotFound());
     }
 
     private void compareScriptList(ScriptContingencyList expected, ScriptContingencyList current) {
@@ -491,27 +502,27 @@ public class ContingencyListControllerTest {
         UUID filterId = addNewFilterList(content);
 
         mvc.perform(get("/" + VERSION + "/contingency-lists/" + filterId + "/export?networkUuid=" + networkId)
-            .contentType(APPLICATION_JSON))
-            .andExpect(status().isOk())
-            .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-            .andExpect(content().json(expectedContent));
+                .contentType(APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+                .andExpect(content().json(expectedContent));
         // delete data
         mvc.perform(delete("/" + VERSION + "/contingency-lists/" + filterId))
-            .andExpect(status().isOk());
+                .andExpect(status().isOk());
     }
 
     @Test
     public void emptyScriptTest() throws Exception {
         UUID id = addNewScriptFilter("{" +
-            "\"name\" : \"foo\"," +
-            "\"script\" : \"\"," +
-            "\"description\":\"something\"}");
+                "\"name\" : \"foo\"," +
+                "\"script\" : \"\"," +
+                "\"description\":\"something\"}");
 
         mvc.perform(get("/" + VERSION + "/contingency-lists/" + id + "/export")
-            .contentType(APPLICATION_JSON))
-            .andExpect(status().isOk())
-            .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-            .andExpect(content().json("[]"));
+                .contentType(APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+                .andExpect(content().json("[]"));
 
         ContingencyListAttributes attributes = getMetadata(id);
         assertEquals(attributes.getId(), id);
@@ -521,10 +532,10 @@ public class ContingencyListControllerTest {
 
     private ContingencyListAttributes getMetadata(UUID id) throws Exception {
         var res = mvc.perform(get("/" + VERSION + "/metadata/")
-            .content("[\"" + id + "\"]")
-            .contentType(APPLICATION_JSON))
-            .andExpect(status().isOk())
-            .andReturn().getResponse().getContentAsString();
+                .content("[\"" + id + "\"]")
+                .contentType(APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString();
         List<ContingencyListAttributes> contingencyListAttributes = objectMapper.readValue(res, new TypeReference<>() {
         });
         assertEquals(1, contingencyListAttributes.size());
@@ -605,67 +616,67 @@ public class ContingencyListControllerTest {
     @Test
     public void replaceFiltersWithScriptTest() throws Exception {
         String filters = "{\n" +
-            "  \"name\": \"" + "willBeScript" + "\"," +
-            "  \"equipmentID\": \"GEN*\"," +
-            "  \"equipmentName\": \"GEN*\"," +
-            "  \"equipmentType\": \"GENERATOR\"," +
-            "  \"nominalVoltage\": \"100\"," +
-            "  \"nominalVoltageOperator\": \">\"," +
-            "  \"countries\": [\"FR\", \"BE\"]" +
-            "}";
+                "  \"name\": \"" + "willBeScript" + "\"," +
+                "  \"equipmentID\": \"GEN*\"," +
+                "  \"equipmentName\": \"GEN*\"," +
+                "  \"equipmentType\": \"GENERATOR\"," +
+                "  \"nominalVoltage\": \"100\"," +
+                "  \"nominalVoltageOperator\": \">\"," +
+                "  \"countries\": [\"FR\", \"BE\"]" +
+                "}";
 
         // Put data
         UUID id = addNewFilterList(filters);
 
         // replace with groovy script
         String res = mvc.perform(post("/" + VERSION + "/filters-contingency-lists/" + id + "/replace-with-script"))
-            .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
+                .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
 
         UUID newId = objectMapper.readValue(res, ScriptContingencyList.class).getId();
 
         // check filter list tic not found
         mvc.perform(get("/" + VERSION + "/filters-contingency-lists/" + id)
-            .contentType(APPLICATION_JSON))
-            .andExpect(status().isNotFound());
+                .contentType(APPLICATION_JSON))
+                .andExpect(status().isNotFound());
 
         // check script tic is found
         mvc.perform(get("/" + VERSION + "/script-contingency-lists/" + newId)
-            .contentType(APPLICATION_JSON))
-            .andExpect(status().isOk())
-            .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON));
+                .contentType(APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON));
     }
 
     @Test
     public void copyFiltersToScriptTest() throws Exception {
         String filters = new StringJoiner(",\n", "{\n", "\n}")
-            .add("  \"name\": \"tic\"")
-            .add("  \"equipmentID\": \"GEN*\"")
-            .add("  \"equipmentName\": \"GEN*\"")
-            .add("  \"equipmentType\": \"GENERATOR\"")
-            .add("  \"nominalVoltage\": \"100\"")
-            .add("  \"nominalVoltageOperator\": \">\"")
-            .add("  \"countries\": [\"FR\", \"BE\"]")
-            .toString();
+                .add("  \"name\": \"tic\"")
+                .add("  \"equipmentID\": \"GEN*\"")
+                .add("  \"equipmentName\": \"GEN*\"")
+                .add("  \"equipmentType\": \"GENERATOR\"")
+                .add("  \"nominalVoltage\": \"100\"")
+                .add("  \"nominalVoltageOperator\": \">\"")
+                .add("  \"countries\": [\"FR\", \"BE\"]")
+                .toString();
 
         // Put data
         UUID firstUUID = addNewFilterList(filters);
 
         // new script from filters
         mvc.perform(post("/" + VERSION + "/filters-contingency-lists/" + firstUUID + "/new-script/tac"))
-            .andExpect(status().isOk());
+                .andExpect(status().isOk());
 
         // check script tac is found
         String res = mvc.perform(get("/" + VERSION + "/script-contingency-lists/")
-            .contentType(APPLICATION_JSON))
-            .andExpect(status().isOk())
-            .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-            .andReturn().getResponse().getContentAsString();
+                .contentType(APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+                .andReturn().getResponse().getContentAsString();
         assertTrue(res.contains("tac"));
 
         // check filter list tic found
         mvc.perform(get("/" + VERSION + "/filters-contingency-lists/" + firstUUID)
-            .contentType(APPLICATION_JSON))
-            .andExpect(status().isOk());
+                .contentType(APPLICATION_JSON))
+                .andExpect(status().isOk());
     }
 
     @Test
@@ -673,20 +684,20 @@ public class ContingencyListControllerTest {
         UUID notFoundId = UUID.fromString("abcdef01-1234-5678-abcd-e123456789aa");
 
         String script = "{ \n" +
-            "\"name\" : \"foo\",\n" +
-            "\"script\" : \"contingency('NHV1_NHV2_1') {" +
-            "     equipments 'NHV1_NHV2_1'}\"" +
-            "}";
+                "\"name\" : \"foo\",\n" +
+                "\"script\" : \"contingency('NHV1_NHV2_1') {" +
+                "     equipments 'NHV1_NHV2_1'}\"" +
+                "}";
 
         UUID scriptId = addNewScriptFilter(script);
 
         mvc.perform(post("/" + VERSION + "/contingency-lists/" + notFoundId + "/rename")
-                .content("{\"newContingencyListName\": \"bar\"}")
+                .content("{\"newElementName\": \"bar\"}")
                 .contentType(APPLICATION_JSON))
                 .andExpect(status().isNotFound());
 
         mvc.perform(post("/" + VERSION + "/contingency-lists/" + scriptId + "/rename")
-                .content("{\"newContingencyListName\": \"bar\"}")
+                .content("{\"newElementName\": \"bar\"}")
                 .contentType(APPLICATION_JSON))
                 .andExpect(status().isOk());
 
@@ -699,12 +710,26 @@ public class ContingencyListControllerTest {
                 Collections.emptySet(), "plop"));
 
         mvc.perform(post("/" + VERSION + "/contingency-lists/" + filterId + "/rename")
-                .content("{\"newContingencyListName\": \"titi\"}")
+                .content("{\"newElementName\": \"titi\"}")
                 .contentType(APPLICATION_JSON))
                 .andExpect(status().isOk());
 
         attributes = getMetadata(filterId);
         assertEquals(filterId, attributes.getId());
         assertEquals("titi", attributes.getName());
+    }
+
+    @Test
+    public void addScriptWithFilterTest() throws Exception {
+        UUID id = UUID.fromString("abcdef01-1234-5678-abcd-e123456789aa");
+
+        String script = "{ \n" +
+                "\"name\" : \"foo\",\n" +
+                "\"script\" : \"contingency('NHV1_NHV2_1') {" +
+                "     equipments 'NHV1_NHV2_1'}\"" +
+                "}";
+
+        UUID scriptId = addNewScriptFilterWithId(script, id);
+        assertEquals(scriptId, id);
     }
 }
