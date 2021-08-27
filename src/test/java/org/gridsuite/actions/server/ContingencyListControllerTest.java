@@ -531,9 +531,8 @@ public class ContingencyListControllerTest {
     }
 
     private ContingencyListAttributes getMetadata(UUID id) throws Exception {
-        var res = mvc.perform(get("/" + VERSION + "/metadata/")
-                .content("[\"" + id + "\"]")
-                .contentType(APPLICATION_JSON))
+        var res = mvc.perform(get("/" + VERSION + "/contingency-lists/metadata/")
+                .header("ids", id))
                 .andExpect(status().isOk())
                 .andReturn().getResponse().getContentAsString();
         List<ContingencyListAttributes> contingencyListAttributes = objectMapper.readValue(res, new TypeReference<>() {
