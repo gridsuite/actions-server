@@ -147,7 +147,10 @@ public class ContingencyListService {
 
         if (contingencyList instanceof ScriptContingencyList) {
             String script = ((ScriptContingencyList) contingencyList).getScript();
-            return new ContingencyDslLoader(script).load(network, new ImportCustomizer().addImports("org.gridsuite.actions.server.utils.FiltersUtils"));
+            ImportCustomizer customizer = new ImportCustomizer();
+            customizer.addImports("org.gridsuite.actions.server.utils.FiltersUtils");
+            customizer.addStaticStars("org.gridsuite.actions.server.utils.FiltersUtils");
+            return new ContingencyDslLoader(script).load(network, customizer);
         } else if (contingencyList instanceof FiltersContingencyList) {
             FiltersContingencyList filtersContingencyList = (FiltersContingencyList) contingencyList;
             return getContingencies(filtersContingencyList, network);
