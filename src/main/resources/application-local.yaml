@@ -1,0 +1,6 @@
+server:
+  port: 5022
+
+network-store-server:
+  base-uri: http://localhost:8080/
+
