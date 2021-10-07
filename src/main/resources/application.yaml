@@ -1,8 +1,10 @@
 server:
-  port: 5022
   forward-headers-strategy: framework
 
 spring:
+  profiles:
+    active: default,local
+
   datasource:
     url: ${dbUrl}
     username: ${login}
@@ -30,9 +32,6 @@ spring:
               #action: create
               create-target: src/main/resources/actions.sql
               create-source: metadata
-
-network-store-server:
-  base-uri: http://localhost:8080/
 
 # this structure is shared among all microservices, if you change it, change it everywhere.
 # customQuery allows a microservice to set query parameters specific to itself.
