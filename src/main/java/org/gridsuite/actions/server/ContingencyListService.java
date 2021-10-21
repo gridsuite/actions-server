@@ -84,10 +84,6 @@ public class ContingencyListService {
             entity.getEquipmentType(), entity.getNominalVoltage(), entity.getNominalVoltageOperator(), entity.getCountries());
     }
 
-    private static String sanitizeParam(String param) {
-        return param != null ? param.replaceAll("[\n|\r|\t]", "_") : null;
-    }
-
     List<ScriptContingencyList> getScriptContingencyLists() {
         return scriptContingencyListRepository.findAll().stream().map(ContingencyListService::fromScriptContingencyListEntity).collect(Collectors.toList());
     }
