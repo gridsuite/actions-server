@@ -45,7 +45,7 @@ public class FiltersContingencyListEntity extends AbstractContingencyEntity {
 
     @Column(name = "country")
     @ElementCollection
-    @CollectionTable(foreignKey = @ForeignKey(name = "filtersContingencyListEntity_countries_fk"), indexes = {@Index(name = "filtersContingencyListEntity_countries_idx", columnList = "FiltersContingencyListEntity_id")})
+    @CollectionTable(name = "filter_contingency_list_countries", foreignKey = @ForeignKey(name = "filtersContingencyListEntity_countries_fk"), indexes = {@Index(name = "filtersContingencyListEntity_countries_idx", columnList = "FiltersContingencyListEntity_id")})
     private Set<String> countries;
 
     public FiltersContingencyListEntity(FiltersContingencyListAttributes filtersContingencyListAttributes) {
