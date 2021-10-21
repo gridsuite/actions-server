@@ -28,9 +28,6 @@ public class ContingencyListAttributes implements ContingencyList {
     @Schema(description = "list id")
     private UUID id;
 
-    @Schema(description = "List name")
-    private String name;
-
     @Schema(description = "List type")
     private ContingencyListType type;
 
@@ -39,7 +36,4 @@ public class ContingencyListAttributes implements ContingencyList {
 
     @Schema(description = "Modification Date")
     Date modificationDate;
-
-    @Schema(description = "Description")
-    String description;
 }

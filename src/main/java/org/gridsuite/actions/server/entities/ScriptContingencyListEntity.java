@@ -13,7 +13,6 @@ import org.gridsuite.actions.server.dto.ScriptContingencyList;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.Index;
 import javax.persistence.Table;
 
 /**
@@ -24,7 +23,7 @@ import javax.persistence.Table;
 @Getter
 @Setter
 @Entity
-@Table(name = "script_contingency_list", indexes = @Index(name = "script_contingency_list_name_idx", columnList = "name"))
+@Table(name = "script_contingency_list")
 public class ScriptContingencyListEntity extends AbstractContingencyEntity {
 
     @Column(name = "script", columnDefinition = "TEXT")
@@ -36,7 +35,6 @@ public class ScriptContingencyListEntity extends AbstractContingencyEntity {
     }
 
     protected final void init(ScriptContingencyList list) {
-        super.init(list);
         this.script = list.getScript();
     }
 
