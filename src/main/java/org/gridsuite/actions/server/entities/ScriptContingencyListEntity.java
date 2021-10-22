@@ -14,6 +14,7 @@ import org.gridsuite.actions.server.dto.ScriptContingencyList;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Index;
+import javax.persistence.Lob;
 import javax.persistence.Table;
 
 /**
@@ -27,6 +28,7 @@ import javax.persistence.Table;
 @Table(name = "script_contingency_list", indexes = @Index(name = "script_contingency_list_name_idx", columnList = "name"))
 public class ScriptContingencyListEntity extends AbstractContingencyEntity {
 
+    @Lob
     @Column(name = "script", columnDefinition = "TEXT")
     private String script;
 
