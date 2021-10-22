@@ -7,7 +7,9 @@
 package org.gridsuite.actions.server.utils;
 
 import com.powsybl.iidm.network.Connectable;
+import com.powsybl.iidm.network.Country;
 import com.powsybl.iidm.network.Identifiable;
+import com.powsybl.iidm.network.Substation;
 import org.springframework.util.AntPathMatcher;
 import org.springframework.util.PathMatcher;
 
@@ -34,8 +36,9 @@ public final class FiltersUtils {
     }
 
     public static boolean isLocatedIn(List<String> filterCountries, Connectable<?> equipment) {
-        return filterCountries.isEmpty() || equipment.getTerminals().stream().anyMatch(t ->
-                t.getVoltageLevel().getSubstation().getCountry().isPresent()
-                        && filterCountries.contains(t.getVoltageLevel().getSubstation().getCountry().get().name()));
+        return filterCountries.isEmpty() || equipment.getTerminals().stream().anyMatch(t -> {
+            Optional<Country> country = t.getVoltageLevel().getSubstation().flatMap(Substation::getCountry);
+            return country.map(c -> filterCountries.contains(c.name())).orElse(false);
+        });
     }
 }
