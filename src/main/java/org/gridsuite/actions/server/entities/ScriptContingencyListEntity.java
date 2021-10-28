@@ -27,7 +27,7 @@ import javax.persistence.Table;
 @Table(name = "script_contingency_list", indexes = @Index(name = "script_contingency_list_name_idx", columnList = "name"))
 public class ScriptContingencyListEntity extends AbstractContingencyEntity {
 
-    @Column(name = "script", columnDefinition = "TEXT")
+    @Column(name = "script", columnDefinition = "CLOB")
     private String script;
 
     public ScriptContingencyListEntity(ScriptContingencyList list) {
