@@ -133,7 +133,7 @@ public class ContingencyListService {
         return self.doGetFiltersContingencyListWithPreFetchedCountries(id).map(ContingencyListService::fromFilterContingencyListEntity);
     }
 
-    private List<Contingency> toPowSyBlContingencyList(ContingencyList contingencyList, UUID networkUuid) {
+    private List<Contingency> toPowSyBlContingencyList(ContingencyList contingencyList, UUID networkUuid, String variantId) {
         Network network;
         if (networkUuid == null) {
             // use an empty network, script might not have need to network
@@ -142,6 +142,9 @@ public class ContingencyListService {
             network = networkStoreService.getNetwork(networkUuid, PreloadingStrategy.COLLECTION);
             if (network == null) {
                 throw new PowsyblException("Network '" + networkUuid + "' not found");
+            }
+            if (variantId != null) {
+                network.getVariantManager().setWorkingVariant(variantId);
             }
         }
 
@@ -289,11 +292,11 @@ public class ContingencyListService {
         }
     }
 
-    Optional<List<Contingency>> exportContingencyList(UUID id, UUID networkUuid) {
+    Optional<List<Contingency>> exportContingencyList(UUID id, UUID networkUuid, String variantId) {
         Objects.requireNonNull(id);
 
-        return getScriptContingencyList(id).map(contingencyList -> toPowSyBlContingencyList(contingencyList, networkUuid))
-            .or(() -> getFiltersContingencyList(id).map(contingencyList -> toPowSyBlContingencyList(contingencyList, networkUuid)));
+        return getScriptContingencyList(id).map(contingencyList -> toPowSyBlContingencyList(contingencyList, networkUuid, variantId))
+            .or(() -> getFiltersContingencyList(id).map(contingencyList -> toPowSyBlContingencyList(contingencyList, networkUuid, variantId)));
     }
 
     ScriptContingencyList createScriptContingencyList(UUID id, ScriptContingencyList script) {

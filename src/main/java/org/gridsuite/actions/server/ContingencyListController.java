@@ -86,8 +86,9 @@ public class ContingencyListController {
     @Operation(summary = "Export a contingency list to PowSyBl JSON format")
     @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "The contingency list on PowSyBl JSON format")})
     public ResponseEntity<List<Contingency>> exportContingencyList(@PathVariable("id") UUID id,
-                                                                   @RequestParam(value = "networkUuid", required = false) UUID networkUuid) {
-        return service.exportContingencyList(id, networkUuid).map(contingencies -> ResponseEntity.ok()
+                                                                   @RequestParam(value = "networkUuid", required = false) UUID networkUuid,
+                                                                   @RequestParam(value = "variantId", required = false) String variantId) {
+        return service.exportContingencyList(id, networkUuid, variantId).map(contingencies -> ResponseEntity.ok()
             .contentType(MediaType.APPLICATION_JSON)
             .body(contingencies))
             .orElse(ResponseEntity.notFound().build());
