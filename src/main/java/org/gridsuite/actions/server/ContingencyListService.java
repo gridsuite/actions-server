@@ -13,6 +13,7 @@ import com.powsybl.iidm.network.*;
 import com.powsybl.network.store.client.NetworkStoreService;
 import com.powsybl.network.store.client.PreloadingStrategy;
 import com.powsybl.network.store.iidm.impl.NetworkFactoryImpl;
+import com.powsybl.ws.commons.LogUtils;
 import org.codehaus.groovy.control.customizers.ImportCustomizer;
 import org.gridsuite.actions.server.dto.*;
 import org.gridsuite.actions.server.dto.ContingencyList;
@@ -82,10 +83,6 @@ public class ContingencyListService {
     private static FiltersContingencyListAttributes fromFilterContingencyListEntityAttributes(FiltersContingencyListEntity entity) {
         return new FiltersContingencyListAttributes(entity.getId(), entity.getName(), entity.getEquipmentId(), entity.getEquipmentName(),
             entity.getEquipmentType(), entity.getNominalVoltage(), entity.getNominalVoltageOperator(), entity.getCountries(), entity.getDescription());
-    }
-
-    private static String sanitizeParam(String param) {
-        return param != null ? param.replaceAll("[\n|\r|\t]", "_") : null;
     }
 
     List<ScriptContingencyList> getScriptContingencyLists() {
@@ -299,7 +296,7 @@ public class ContingencyListService {
     ScriptContingencyList createScriptContingencyList(UUID id, ScriptContingencyList script) {
         Objects.requireNonNull(script.getName());
         if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("Create script contingency list '{}'", sanitizeParam(script.getName()));
+            LOGGER.debug("Create script contingency list '{}'", LogUtils.sanitizeParam(script.getName()));
         }
         ScriptContingencyListEntity entity = new ScriptContingencyListEntity(script);
         entity.setId(id == null ? UUID.randomUUID() : id);
@@ -309,7 +306,7 @@ public class ContingencyListService {
     void modifyScriptContingencyList(UUID id, ScriptContingencyList script) {
         Objects.requireNonNull(script.getName());
         if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("Create script contingency list '{}'", sanitizeParam(script.getName()));
+            LOGGER.debug("Create script contingency list '{}'", LogUtils.sanitizeParam(script.getName()));
         }
         scriptContingencyListRepository.save(scriptContingencyListRepository.getOne(id).update(script));
     }
