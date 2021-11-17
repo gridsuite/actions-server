@@ -27,9 +27,6 @@ public class FiltersContingencyList implements ContingencyList {
     @Schema(description = "list id")
     private UUID id;
 
-    @Schema(description = "List name")
-    private String name;
-
     @Schema(description = "Equipment ID")
     private String equipmentID;
 
@@ -53,7 +50,4 @@ public class FiltersContingencyList implements ContingencyList {
     public ContingencyListType getType() {
         return ContingencyListType.FILTERS;
     }
-
-    @Schema(description = "Description")
-    private String description;
 }

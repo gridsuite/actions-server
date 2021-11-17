@@ -17,9 +17,5 @@ public interface ContingencyList {
 
     UUID getId();
 
-    String getName();
-
     ContingencyListType getType();
-
-    String getDescription();
 }

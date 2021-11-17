@@ -30,9 +30,6 @@ public class FiltersContingencyListAttributes implements ContingencyList {
     @Schema(description = "list id")
     private UUID id;
 
-    @Schema(description = "list name")
-    private String name;
-
     @Schema(description = "Equipment ID")
     private String equipmentID;
 
@@ -50,9 +47,6 @@ public class FiltersContingencyListAttributes implements ContingencyList {
 
     @Schema(description = "Countries")
     private Set<String> countries;
-
-    @Schema(description = "Description")
-    private String description;
 
     @Override
     public ContingencyListType getType() {

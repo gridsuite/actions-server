@@ -34,13 +34,12 @@ public class GenerateScriptFromFiltersTest {
                 "     ) {\n" +
                 "        contingency(equipment.id) { equipments equipment.id }\n" +
                 "  }\n" +
-                "}\n", filtersToScript.generateGroovyScriptFromFilters(new FiltersContingencyListAttributes(null, null, "BRESS*",
+                "}\n", filtersToScript.generateGroovyScriptFromFilters(new FiltersContingencyListAttributes(null, "BRESS*",
             "OTHER*",
             "GENERATOR",
             90,
             "=",
-            countries,
-            null)));
+            countries)));
 
         assertEquals("for (equipment in network.twoWindingsTransformers) {\n" +
             "  if ((matchID('*', equipment) || matchName('*', equipment))\n" +
@@ -48,14 +47,13 @@ public class GenerateScriptFromFiltersTest {
             "           contingency(equipment.id) { equipments equipment.id }\n" +
             "  }\n" +
             "}\n", filtersToScript.generateGroovyScriptFromFilters(
-            new FiltersContingencyListAttributes(null, null,
+            new FiltersContingencyListAttributes(null,
                 "*",
                 "*",
                 "TWO_WINDINGS_TRANSFORMER",
                 -1,
                 ">=",
-                new HashSet<>(),
-                null
+                new HashSet<>()
             )));
 
         assertEquals("for (equipment in network.hvdcLines) {\n" +
@@ -64,13 +62,12 @@ public class GenerateScriptFromFiltersTest {
             "          || isLocatedIn(['FR','BE'], equipment.converterStation2))) {\n" +
             "           contingency(equipment.id) { equipments equipment.id }\n" +
             "  }\n" +
-            "}\n", filtersToScript.generateGroovyScriptFromFilters(new FiltersContingencyListAttributes(null, null, "BAIXA*",
+            "}\n", filtersToScript.generateGroovyScriptFromFilters(new FiltersContingencyListAttributes(null, "BAIXA*",
             "*",
             "HVDC_LINE",
             -1,
             "<=",
-            countries,
-            null)));
+            countries)));
 
         assertEquals("for (equipment in network.danglingLines) {\n" +
             "  if ((equipment.terminal.voltageLevel.nominalV == 225.0)\n" +
@@ -79,26 +76,25 @@ public class GenerateScriptFromFiltersTest {
             "        contingency(equipment.id) { equipments equipment.id }\n" +
             "  }\n" +
             "}\n", filtersToScript.generateGroovyScriptFromFilters(new FiltersContingencyListAttributes(
-            null, null,
+            null,
             "*",
             "*",
             "DANGLING_LINE",
             225,
             "=",
-            new HashSet<>(),
-            null)));
+            new HashSet<>())));
 
         assertEquals("for (equipment in network.staticVarCompensators) {\n" +
             "  if ((matchID('SVC*', equipment) || matchName('*', equipment))\n" +
             "     ) {\n" +
             "        contingency(equipment.id) { equipments equipment.id }\n" +
             "  }\n" +
-            "}\n", filtersToScript.generateGroovyScriptFromFilters(new FiltersContingencyListAttributes(null, null, "SVC*",
+            "}\n", filtersToScript.generateGroovyScriptFromFilters(new FiltersContingencyListAttributes(null, "SVC*",
             "*",
             "STATIC_VAR_COMPENSATOR",
             -1,
             "=",
-            new HashSet<>(), null)));
+            new HashSet<>())));
 
         assertEquals("for (equipment in network.shuntCompensators) {\n" +
             "  if ((equipment.terminal.voltageLevel.nominalV < 90.0)\n" +
@@ -106,12 +102,12 @@ public class GenerateScriptFromFiltersTest {
             "     ) {\n" +
             "        contingency(equipment.id) { equipments equipment.id }\n" +
             "  }\n" +
-            "}\n", filtersToScript.generateGroovyScriptFromFilters(new FiltersContingencyListAttributes(null, null, "*",
+            "}\n", filtersToScript.generateGroovyScriptFromFilters(new FiltersContingencyListAttributes(null, "*",
             "SHUNT*",
             "SHUNT_COMPENSATOR",
             90,
             "<",
-            new HashSet<>(), null)));
+            new HashSet<>())));
 
         assertEquals("for (equipment in network.lines) {\n" +
             "  if ((equipment.terminal1.voltageLevel.nominalV == 225.0\n" +
@@ -120,12 +116,12 @@ public class GenerateScriptFromFiltersTest {
             "     ) {\n" +
             "           contingency(equipment.id) { equipments equipment.id }\n" +
             "  }\n" +
-            "}\n", filtersToScript.generateGroovyScriptFromFilters(new FiltersContingencyListAttributes(null, null, "*",
+            "}\n", filtersToScript.generateGroovyScriptFromFilters(new FiltersContingencyListAttributes(null, "*",
             "*",
             "LINE",
             225,
             "=",
-            new HashSet<>(), null)));
+            new HashSet<>())));
 
         assertEquals("for (equipment in network.busbarSections) {\n" +
             "  if ((equipment.terminal.voltageLevel.nominalV >= 63.0)\n" +
@@ -134,11 +130,11 @@ public class GenerateScriptFromFiltersTest {
             "     ) {\n" +
             "        contingency(equipment.id) { equipments equipment.id }\n" +
             "  }\n" +
-            "}\n", filtersToScript.generateGroovyScriptFromFilters(new FiltersContingencyListAttributes(null, null, "BBS*",
+            "}\n", filtersToScript.generateGroovyScriptFromFilters(new FiltersContingencyListAttributes(null, "BBS*",
             "BBS*",
             "BUSBAR_SECTION",
             63,
             ">=",
-            countries, null)));
+            countries)));
     }
 }
