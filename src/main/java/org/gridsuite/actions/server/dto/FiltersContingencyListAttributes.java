@@ -50,6 +50,6 @@ public class FiltersContingencyListAttributes implements ContingencyList {
 
     @Override
     public ContingencyListType getType() {
-        return ContingencyListType.FILTERS;
+        return ContingencyListType.FORM;
     }
 }

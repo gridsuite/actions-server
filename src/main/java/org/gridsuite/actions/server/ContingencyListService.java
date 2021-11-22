@@ -93,7 +93,7 @@ public class ContingencyListService {
             scriptContingencyListRepository.findAll().stream().map(scriptContingencyListEntity ->
                 new ContingencyListAttributes(scriptContingencyListEntity.getId(), ContingencyListType.SCRIPT, scriptContingencyListEntity.getCreationDate(), scriptContingencyListEntity.getModificationDate())),
             filtersContingencyListRepository.findAll().stream().map(filtersContingencyListEntity ->
-                new ContingencyListAttributes(filtersContingencyListEntity.getId(), ContingencyListType.FILTERS, filtersContingencyListEntity.getCreationDate(), filtersContingencyListEntity.getModificationDate()))
+                new ContingencyListAttributes(filtersContingencyListEntity.getId(), ContingencyListType.FORM, filtersContingencyListEntity.getCreationDate(), filtersContingencyListEntity.getModificationDate()))
         ).collect(Collectors.toList());
     }
 
@@ -102,7 +102,7 @@ public class ContingencyListService {
             scriptContingencyListRepository.findAllById(ids).stream().map(scriptContingencyListEntity ->
                 new ContingencyListAttributes(scriptContingencyListEntity.getId(), ContingencyListType.SCRIPT, scriptContingencyListEntity.getCreationDate(), scriptContingencyListEntity.getModificationDate())),
             filtersContingencyListRepository.findAllById(ids).stream().map(filtersContingencyListEntity ->
-                new ContingencyListAttributes(filtersContingencyListEntity.getId(), ContingencyListType.FILTERS, filtersContingencyListEntity.getCreationDate(), filtersContingencyListEntity.getModificationDate()))
+                new ContingencyListAttributes(filtersContingencyListEntity.getId(), ContingencyListType.FORM, filtersContingencyListEntity.getCreationDate(), filtersContingencyListEntity.getModificationDate()))
         ).collect(Collectors.toList());
     }
 

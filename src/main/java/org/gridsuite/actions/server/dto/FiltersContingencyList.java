@@ -48,6 +48,6 @@ public class FiltersContingencyList implements ContingencyList {
     @Schema(description = "Type")
     @Override
     public ContingencyListType getType() {
-        return ContingencyListType.FILTERS;
+        return ContingencyListType.FORM;
     }
 }
