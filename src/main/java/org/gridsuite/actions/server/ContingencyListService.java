@@ -13,7 +13,6 @@ import com.powsybl.iidm.network.*;
 import com.powsybl.network.store.client.NetworkStoreService;
 import com.powsybl.network.store.client.PreloadingStrategy;
 import com.powsybl.network.store.iidm.impl.NetworkFactoryImpl;
-import com.powsybl.ws.commons.LogUtils;
 import org.codehaus.groovy.control.customizers.ImportCustomizer;
 import org.gridsuite.actions.server.dto.*;
 import org.gridsuite.actions.server.dto.ContingencyList;
@@ -298,7 +297,7 @@ public class ContingencyListService {
 
     ScriptContingencyList createScriptContingencyList(UUID id, ScriptContingencyList script) {
         if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("Create script contingency list '{}'", LogUtils.sanitizeParam(script.getName()));
+            LOGGER.debug("Create script contingency list '{}'", script.getId());
         }
         ScriptContingencyListEntity entity = new ScriptContingencyListEntity(script);
         entity.setId(id == null ? UUID.randomUUID() : id);
@@ -307,8 +306,11 @@ public class ContingencyListService {
 
     void modifyScriptContingencyList(UUID id, ScriptContingencyList script) {
         if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("Create script contingency list '{}'", LogUtils.sanitizeParam(script.getName()));
+            LOGGER.debug("Create script contingency list '{}'", script.getId());
         }
+        scriptContingencyListRepository.save(scriptContingencyListRepository.getOne(id).update(script));
+    }
+
     public FiltersContingencyList createFilterContingencyList(UUID id, FiltersContingencyListAttributes filtersContingencyListAttributes) {
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("Create filter contingency list '{}'", filtersContingencyListAttributes.getId());
