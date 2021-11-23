@@ -9,7 +9,6 @@ package org.gridsuite.actions.server.entities;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.gridsuite.actions.server.dto.ContingencyList;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -38,9 +37,6 @@ public abstract class AbstractContingencyEntity {
     @Column(name = "id")
     private UUID id;
 
-    @Column(name = "name")
-    private String name;
-
     @CreatedDate
     @Temporal(TIMESTAMP)
     @Column(name = "creationDate", updatable = false)
@@ -50,17 +46,4 @@ public abstract class AbstractContingencyEntity {
     @Temporal(TIMESTAMP)
     @Column(name = "modificationDate")
     private Date modificationDate;
-
-    @Column()
-    private String description;
-
-    protected final void init(ContingencyList attributes) {
-        name = attributes.getName();
-        description = attributes.getDescription();
-    }
-
-    protected void update(ContingencyList attributes) {
-        init(attributes);
-    }
-
 }

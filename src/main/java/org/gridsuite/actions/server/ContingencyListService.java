@@ -72,17 +72,17 @@ public class ContingencyListService {
     }
 
     private static ScriptContingencyList fromScriptContingencyListEntity(ScriptContingencyListEntity entity) {
-        return new ScriptContingencyList(entity.getId(), entity.getName(), entity.getScript() != null ? entity.getScript() : "", entity.getDescription());
+        return new ScriptContingencyList(entity.getId(), entity.getScript() != null ? entity.getScript() : "");
     }
 
     private static FiltersContingencyList fromFilterContingencyListEntity(FiltersContingencyListEntity entity) {
-        return new FiltersContingencyList(entity.getId(), entity.getName(), entity.getEquipmentId(), entity.getEquipmentName(),
-            entity.getEquipmentType(), entity.getNominalVoltage(), entity.getNominalVoltageOperator(), entity.getCountries(), entity.getDescription());
+        return new FiltersContingencyList(entity.getId(), entity.getEquipmentId(), entity.getEquipmentName(),
+            entity.getEquipmentType(), entity.getNominalVoltage(), entity.getNominalVoltageOperator(), entity.getCountries());
     }
 
     private static FiltersContingencyListAttributes fromFilterContingencyListEntityAttributes(FiltersContingencyListEntity entity) {
-        return new FiltersContingencyListAttributes(entity.getId(), entity.getName(), entity.getEquipmentId(), entity.getEquipmentName(),
-            entity.getEquipmentType(), entity.getNominalVoltage(), entity.getNominalVoltageOperator(), entity.getCountries(), entity.getDescription());
+        return new FiltersContingencyListAttributes(entity.getId(), entity.getEquipmentId(), entity.getEquipmentName(),
+            entity.getEquipmentType(), entity.getNominalVoltage(), entity.getNominalVoltageOperator(), entity.getCountries());
     }
 
     List<ScriptContingencyList> getScriptContingencyLists() {
@@ -92,18 +92,18 @@ public class ContingencyListService {
     List<ContingencyListAttributes> getContingencyLists() {
         return Stream.concat(
             scriptContingencyListRepository.findAll().stream().map(scriptContingencyListEntity ->
-                new ContingencyListAttributes(scriptContingencyListEntity.getId(), scriptContingencyListEntity.getName(), ContingencyListType.SCRIPT, scriptContingencyListEntity.getCreationDate(), scriptContingencyListEntity.getModificationDate(), scriptContingencyListEntity.getDescription())),
+                new ContingencyListAttributes(scriptContingencyListEntity.getId(), ContingencyListType.SCRIPT, scriptContingencyListEntity.getCreationDate(), scriptContingencyListEntity.getModificationDate())),
             filtersContingencyListRepository.findAll().stream().map(filtersContingencyListEntity ->
-                new ContingencyListAttributes(filtersContingencyListEntity.getId(), filtersContingencyListEntity.getName(), ContingencyListType.FILTERS, filtersContingencyListEntity.getCreationDate(), filtersContingencyListEntity.getModificationDate(), filtersContingencyListEntity.getDescription()))
+                new ContingencyListAttributes(filtersContingencyListEntity.getId(), ContingencyListType.FILTERS, filtersContingencyListEntity.getCreationDate(), filtersContingencyListEntity.getModificationDate()))
         ).collect(Collectors.toList());
     }
 
     List<ContingencyListAttributes> getContingencyLists(List<UUID> ids) {
         return Stream.concat(
             scriptContingencyListRepository.findAllById(ids).stream().map(scriptContingencyListEntity ->
-                new ContingencyListAttributes(scriptContingencyListEntity.getId(), scriptContingencyListEntity.getName(), ContingencyListType.SCRIPT, scriptContingencyListEntity.getCreationDate(), scriptContingencyListEntity.getModificationDate(), scriptContingencyListEntity.getDescription())),
+                new ContingencyListAttributes(scriptContingencyListEntity.getId(), ContingencyListType.SCRIPT, scriptContingencyListEntity.getCreationDate(), scriptContingencyListEntity.getModificationDate())),
             filtersContingencyListRepository.findAllById(ids).stream().map(filtersContingencyListEntity ->
-                new ContingencyListAttributes(filtersContingencyListEntity.getId(), filtersContingencyListEntity.getName(), ContingencyListType.FILTERS, filtersContingencyListEntity.getCreationDate(), filtersContingencyListEntity.getModificationDate(), filtersContingencyListEntity.getDescription()))
+                new ContingencyListAttributes(filtersContingencyListEntity.getId(), ContingencyListType.FILTERS, filtersContingencyListEntity.getCreationDate(), filtersContingencyListEntity.getModificationDate()))
         ).collect(Collectors.toList());
     }
 
@@ -130,7 +130,7 @@ public class ContingencyListService {
         return self.doGetFiltersContingencyListWithPreFetchedCountries(id).map(ContingencyListService::fromFilterContingencyListEntity);
     }
 
-    private List<Contingency> toPowSyBlContingencyList(ContingencyList contingencyList, UUID networkUuid) {
+    private List<Contingency> toPowSyBlContingencyList(ContingencyList contingencyList, UUID networkUuid, String variantId) {
         Network network;
         if (networkUuid == null) {
             // use an empty network, script might not have need to network
@@ -139,6 +139,9 @@ public class ContingencyListService {
             network = networkStoreService.getNetwork(networkUuid, PreloadingStrategy.COLLECTION);
             if (network == null) {
                 throw new PowsyblException("Network '" + networkUuid + "' not found");
+            }
+            if (variantId != null) {
+                network.getVariantManager().setWorkingVariant(variantId);
             }
         }
 
@@ -286,15 +289,14 @@ public class ContingencyListService {
         }
     }
 
-    Optional<List<Contingency>> exportContingencyList(UUID id, UUID networkUuid) {
+    Optional<List<Contingency>> exportContingencyList(UUID id, UUID networkUuid, String variantId) {
         Objects.requireNonNull(id);
 
-        return getScriptContingencyList(id).map(contingencyList -> toPowSyBlContingencyList(contingencyList, networkUuid))
-            .or(() -> getFiltersContingencyList(id).map(contingencyList -> toPowSyBlContingencyList(contingencyList, networkUuid)));
+        return getScriptContingencyList(id).map(contingencyList -> toPowSyBlContingencyList(contingencyList, networkUuid, variantId))
+            .or(() -> getFiltersContingencyList(id).map(contingencyList -> toPowSyBlContingencyList(contingencyList, networkUuid, variantId)));
     }
 
     ScriptContingencyList createScriptContingencyList(UUID id, ScriptContingencyList script) {
-        Objects.requireNonNull(script.getName());
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("Create script contingency list '{}'", LogUtils.sanitizeParam(script.getName()));
         }
@@ -304,17 +306,12 @@ public class ContingencyListService {
     }
 
     void modifyScriptContingencyList(UUID id, ScriptContingencyList script) {
-        Objects.requireNonNull(script.getName());
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("Create script contingency list '{}'", LogUtils.sanitizeParam(script.getName()));
         }
-        scriptContingencyListRepository.save(scriptContingencyListRepository.getOne(id).update(script));
-    }
-
     public FiltersContingencyList createFilterContingencyList(UUID id, FiltersContingencyListAttributes filtersContingencyListAttributes) {
-        Objects.requireNonNull(filtersContingencyListAttributes.getName());
         if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("Create filter contingency list '{}'", filtersContingencyListAttributes.getName());
+            LOGGER.debug("Create filter contingency list '{}'", filtersContingencyListAttributes.getId());
         }
         FiltersContingencyListEntity entity = new FiltersContingencyListEntity(filtersContingencyListAttributes);
         entity.setId(id == null ? UUID.randomUUID() : id);
@@ -322,9 +319,8 @@ public class ContingencyListService {
     }
 
     public void modifyFilterContingencyList(UUID id, FiltersContingencyListAttributes filtersContingencyListAttributes) {
-        Objects.requireNonNull(filtersContingencyListAttributes.getName());
         if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("Modify filter contingency list '{}'", filtersContingencyListAttributes.getName());
+            LOGGER.debug("Modify filter contingency list '{}'", filtersContingencyListAttributes.getId());
         }
         // throw if not found
         filtersContingencyListRepository.save(filtersContingencyListRepository.getOne(id).update(filtersContingencyListAttributes));
@@ -352,7 +348,7 @@ public class ContingencyListService {
         Optional<FiltersContingencyListEntity> filter = self.doGetFiltersContingencyListWithPreFetchedCountries(id);
         return filter.map(entity -> {
             String script = generateGroovyScriptFromFilters(fromFilterContingencyListEntityAttributes(entity));
-            var scriptContingencyListEntity = new ScriptContingencyListEntity(new ScriptContingencyList(id, entity.getName(), script, entity.getDescription()));
+            var scriptContingencyListEntity = new ScriptContingencyListEntity(new ScriptContingencyList(id, script));
             scriptContingencyListEntity.setId(id);
             var res = fromScriptContingencyListEntity(scriptContingencyListRepository.save(scriptContingencyListEntity));
             filtersContingencyListRepository.deleteById(id);
@@ -363,7 +359,7 @@ public class ContingencyListService {
     }
 
     @Transactional
-    public ScriptContingencyList newScriptFromFiltersContingencyList(UUID id, String scriptName, UUID newId) {
+    public ScriptContingencyList newScriptFromFiltersContingencyList(UUID id, UUID newId) {
         Objects.requireNonNull(id);
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("New script from filter contingency list'{}'", id);
@@ -372,29 +368,11 @@ public class ContingencyListService {
         Optional<FiltersContingencyListEntity> filter = self.doGetFiltersContingencyListWithPreFetchedCountries(id);
         return filter.map(entity -> {
             String script = generateGroovyScriptFromFilters(fromFilterContingencyListEntityAttributes(entity));
-            ScriptContingencyListEntity scriptEntity = new ScriptContingencyListEntity(new ScriptContingencyList(null, scriptName, script, entity.getDescription()));
+            ScriptContingencyListEntity scriptEntity = new ScriptContingencyListEntity(new ScriptContingencyList(null, script));
             scriptEntity.setId(newId == null ? UUID.randomUUID() : newId);
             return fromScriptContingencyListEntity(scriptContingencyListRepository.save(scriptEntity));
         }).orElseThrow(() -> {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Contingency list " + id + " not found");
         });
     }
-
-    @Transactional
-    public void renameContingencyList(UUID id, RenameContingencyListAttributes renameAttributes) {
-        Objects.requireNonNull(id);
-
-        Optional<ScriptContingencyListEntity> scriptEntity = scriptContingencyListRepository.findById(id);
-        if (scriptEntity.isPresent()) {
-            scriptEntity.get().setName(renameAttributes.getNewElementName());
-        } else {
-            Optional<FiltersContingencyListEntity> filterEntity = filtersContingencyListRepository.findById(id);
-            if (filterEntity.isPresent()) {
-                filterEntity.get().setName(renameAttributes.getNewElementName());
-            } else {
-                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Contingency list " + id + " not found");
-            }
-        }
-    }
-
 }

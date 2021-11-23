@@ -25,7 +25,7 @@ import static org.apache.commons.collections4.SetUtils.emptyIfNull;
 @Getter
 @Setter
 @Entity
-@Table(name = "filters_contingency_list", indexes = @Index(name = "filter_contingency_list_name_idx", columnList = "name"))
+@Table(name = "filters_contingency_list")
 public class FiltersContingencyListEntity extends AbstractContingencyEntity {
 
     @Column(name = "equipmentId")
@@ -55,7 +55,6 @@ public class FiltersContingencyListEntity extends AbstractContingencyEntity {
 
     /* called in constructor so it is final */
     final void init(FiltersContingencyListAttributes filtersContingencyListAttributes) {
-        super.update(filtersContingencyListAttributes);
         this.equipmentId = filtersContingencyListAttributes.getEquipmentID();
         this.equipmentName = filtersContingencyListAttributes.getEquipmentName();
         this.equipmentType = filtersContingencyListAttributes.getEquipmentType();

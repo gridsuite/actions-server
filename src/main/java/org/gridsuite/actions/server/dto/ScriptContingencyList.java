@@ -26,9 +26,6 @@ public class ScriptContingencyList implements ContingencyList {
     @Schema(description = "list id")
     private UUID id;
 
-    @Schema(description = "List name")
-    private String name;
-
     @Schema(description = "Script")
     private String script;
 
@@ -37,7 +34,4 @@ public class ScriptContingencyList implements ContingencyList {
     public ContingencyListType getType() {
         return ContingencyListType.SCRIPT;
     }
-
-    @Schema(description = "description")
-    private String description;
 }

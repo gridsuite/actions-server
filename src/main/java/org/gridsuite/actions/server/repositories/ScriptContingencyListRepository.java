@@ -9,9 +9,7 @@ package org.gridsuite.actions.server.repositories;
 import org.gridsuite.actions.server.entities.ScriptContingencyListEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
-import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Optional;
 import java.util.UUID;
 
 /**
@@ -20,11 +18,4 @@ import java.util.UUID;
  */
 @Repository
 public interface ScriptContingencyListRepository extends JpaRepository<ScriptContingencyListEntity, UUID> {
-
-    Optional<ScriptContingencyListEntity> findByName(String name);
-
-    @Transactional
-    void deleteByName(String name);
-
-    boolean existsByName(String name);
 }
