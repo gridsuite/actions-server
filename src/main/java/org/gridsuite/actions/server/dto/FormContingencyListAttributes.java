@@ -10,6 +10,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.gridsuite.actions.server.utils.ContingencyListType;
 
 import java.util.Set;
@@ -18,11 +19,13 @@ import java.util.UUID;
 /**
  * @author Chamseddine benhamed <chamseddine.benhamed at rte-france.com>
  */
+
 @Getter
-@AllArgsConstructor
+@Setter
 @NoArgsConstructor
-@Schema(description = "Filter contingency list")
-public class FiltersContingencyList implements ContingencyList {
+@AllArgsConstructor
+@Schema(description = "Form contingency list attributes")
+public class FormContingencyListAttributes implements ContingencyList {
 
     @Schema(description = "list id")
     private UUID id;
@@ -45,7 +48,6 @@ public class FiltersContingencyList implements ContingencyList {
     @Schema(description = "Countries")
     private Set<String> countries;
 
-    @Schema(description = "Type")
     @Override
     public ContingencyListType getType() {
         return ContingencyListType.FORM;

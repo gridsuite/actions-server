@@ -1,9 +1,12 @@
-<?xml version="1.1" encoding="UTF-8" standalone="no"?>
 <databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog" xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext" xmlns:pro="http://www.liquibase.org/xml/ns/pro" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd http://www.liquibase.org/xml/ns/pro http://www.liquibase.org/xml/ns/pro/liquibase-pro-3.10.xsd http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.10.xsd">
-    <changeSet author="homereti (generated)" id="1635414020193-1">
-        <renameTable
-                      newTableName="FORM_CONTINGENCY_LIST"
-                      oldTableName="FILTERS_CONTINGENCY_LIST"
-                      schemaName="public"/>
+    <changeSet author="homereti" id="1637665038908-1">
+            <renameTable catalogName="actions"
+                         newTableName="form_contingency_list"
+                         oldTableName="filters_contingency_list"
+                         schemaName="public"/>
+            <renameTable catalogName="actions"
+                         newTableName="form_contingency_list_entity_countries"
+                         oldTableName="filters_contingency_list_entity_countries"
+                         schemaName="public"/>
     </changeSet>
 </databaseChangeLog>
