@@ -79,8 +79,8 @@ public class ContingencyListService {
             entity.getEquipmentType(), entity.getNominalVoltage(), entity.getNominalVoltageOperator(), entity.getCountries());
     }
 
-    private static FormContingencyListAttributes fromFormContingencyListEntityAttributes(FormContingencyListEntity entity) {
-        return new FormContingencyListAttributes(entity.getId(), entity.getEquipmentId(), entity.getEquipmentName(),
+    private static FormContingencyList fromFormContingencyListEntityAttributes(FormContingencyListEntity entity) {
+        return new FormContingencyList(entity.getId(), entity.getEquipmentId(), entity.getEquipmentName(),
             entity.getEquipmentType(), entity.getNominalVoltage(), entity.getNominalVoltageOperator(), entity.getCountries());
     }
 
@@ -311,21 +311,21 @@ public class ContingencyListService {
         scriptContingencyListRepository.save(scriptContingencyListRepository.getOne(id).update(script));
     }
 
-    public FormContingencyList createFormContingencyList(UUID id, FormContingencyListAttributes formContingencyListAttributes) {
+    public FormContingencyList createFormContingencyList(UUID id, FormContingencyList formContingencyList) {
         if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("Create form contingency list '{}'", formContingencyListAttributes.getId());
+            LOGGER.debug("Create form contingency list '{}'", formContingencyList.getId());
         }
-        FormContingencyListEntity entity = new FormContingencyListEntity(formContingencyListAttributes);
+        FormContingencyListEntity entity = new FormContingencyListEntity(formContingencyList);
         entity.setId(id == null ? UUID.randomUUID() : id);
         return fromFormContingencyListEntity(formContingencyListRepository.save(entity));
     }
 
-    public void modifyFormContingencyList(UUID id, FormContingencyListAttributes formContingencyListAttributes) {
+    public void modifyFormContingencyList(UUID id, FormContingencyList formContingencyList) {
         if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("Modify form contingency list '{}'", formContingencyListAttributes.getId());
+            LOGGER.debug("Modify form contingency list '{}'", formContingencyList.getId());
         }
         // throw if not found
-        formContingencyListRepository.save(formContingencyListRepository.getOne(id).update(formContingencyListAttributes));
+        formContingencyListRepository.save(formContingencyListRepository.getOne(id).update(formContingencyList));
     }
 
     @Transactional
@@ -337,8 +337,8 @@ public class ContingencyListService {
         }
     }
 
-    private String generateGroovyScriptFromForm(FormContingencyListAttributes formContingencyListAttributes) {
-        return formToScript.generateGroovyScriptFromForm(formContingencyListAttributes);
+    private String generateGroovyScriptFromForm(FormContingencyList formContingencyList) {
+        return formToScript.generateGroovyScriptFromForm(formContingencyList);
     }
 
     @Transactional

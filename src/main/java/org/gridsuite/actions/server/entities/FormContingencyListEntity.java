@@ -9,7 +9,7 @@ package org.gridsuite.actions.server.entities;
 import lombok.NoArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
-import org.gridsuite.actions.server.dto.FormContingencyListAttributes;
+import org.gridsuite.actions.server.dto.FormContingencyList;
 
 import javax.persistence.*;
 import java.util.HashSet;
@@ -48,23 +48,23 @@ public class FormContingencyListEntity extends AbstractContingencyEntity {
     @CollectionTable(foreignKey = @ForeignKey(name = "formContingencyListEntity_countries_fk"), indexes = {@Index(name = "formContingencyListEntity_countries_idx", columnList = "form_contingency_list_entity_id")})
     private Set<String> countries;
 
-    public FormContingencyListEntity(FormContingencyListAttributes formContingencyListAttributes) {
+    public FormContingencyListEntity(FormContingencyList formContingencyList) {
         super();
-        init(formContingencyListAttributes);
+        init(formContingencyList);
     }
 
     /* called in constructor so it is final */
-    final void init(FormContingencyListAttributes formContingencyListAttributes) {
-        this.equipmentId = formContingencyListAttributes.getEquipmentID();
-        this.equipmentName = formContingencyListAttributes.getEquipmentName();
-        this.equipmentType = formContingencyListAttributes.getEquipmentType();
-        this.nominalVoltage = formContingencyListAttributes.getNominalVoltage();
-        this.nominalVoltageOperator = formContingencyListAttributes.getNominalVoltageOperator();
-        this.countries = new HashSet<>(emptyIfNull(formContingencyListAttributes.getCountries()));
+    final void init(FormContingencyList formContingencyList) {
+        this.equipmentId = formContingencyList.getEquipmentID();
+        this.equipmentName = formContingencyList.getEquipmentName();
+        this.equipmentType = formContingencyList.getEquipmentType();
+        this.nominalVoltage = formContingencyList.getNominalVoltage();
+        this.nominalVoltageOperator = formContingencyList.getNominalVoltageOperator();
+        this.countries = new HashSet<>(emptyIfNull(formContingencyList.getCountries()));
     }
 
-    public FormContingencyListEntity update(FormContingencyListAttributes formContingencyListAttributes) {
-        init(formContingencyListAttributes);
+    public FormContingencyListEntity update(FormContingencyList formContingencyList) {
+        init(formContingencyList);
         return this;
     }
 }

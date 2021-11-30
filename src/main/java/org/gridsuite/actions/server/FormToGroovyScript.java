@@ -8,7 +8,7 @@ package org.gridsuite.actions.server;
 
 import com.powsybl.commons.PowsyblException;
 import org.apache.commons.io.IOUtils;
-import org.gridsuite.actions.server.dto.FormContingencyListAttributes;
+import org.gridsuite.actions.server.dto.FormContingencyList;
 import org.gridsuite.actions.server.utils.EquipmentType;
 import org.springframework.core.io.ClassPathResource;
 import org.stringtemplate.v4.ST;
@@ -36,11 +36,11 @@ public class FormToGroovyScript {
         }
     }
 
-    public String generateGroovyScriptFromForm(FormContingencyListAttributes formContingencyListAttributes) {
+    public String generateGroovyScriptFromForm(FormContingencyList formContingencyList) {
         String script = "";
         String equipmentsCollection = "";
 
-        switch (EquipmentType.valueOf(formContingencyListAttributes.getEquipmentType())) {
+        switch (EquipmentType.valueOf(formContingencyList.getEquipmentType())) {
             case GENERATOR:
                 equipmentsCollection = "generators";
                 script = injectionTemplate;
@@ -80,16 +80,16 @@ public class FormToGroovyScript {
         ST template = new ST(script);
 
         template.add("collectionName", equipmentsCollection);
-        if (formContingencyListAttributes.getNominalVoltage() != -1) {
-            template.add("nominalV", formContingencyListAttributes.getNominalVoltage());
+        if (formContingencyList.getNominalVoltage() != -1) {
+            template.add("nominalV", formContingencyList.getNominalVoltage());
         }
-        template.add("nominalVOperator", formContingencyListAttributes.getNominalVoltageOperator().equals("=") ?
+        template.add("nominalVOperator", formContingencyList.getNominalVoltageOperator().equals("=") ?
                 "==" :
-                formContingencyListAttributes.getNominalVoltageOperator());
-        template.add("equipmentId", formContingencyListAttributes.getEquipmentID());
-        template.add("equipmentName", formContingencyListAttributes.getEquipmentName());
-        if (!formContingencyListAttributes.getCountries().isEmpty()) {
-            template.add("countries", formContingencyListAttributes.getCountries().stream().collect(joining("','", "['", "']")));
+                formContingencyList.getNominalVoltageOperator());
+        template.add("equipmentId", formContingencyList.getEquipmentID());
+        template.add("equipmentName", formContingencyList.getEquipmentName());
+        if (!formContingencyList.getCountries().isEmpty()) {
+            template.add("countries", formContingencyList.getCountries().stream().collect(joining("','", "['", "']")));
         }
 
         return template.render();

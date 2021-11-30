@@ -120,18 +120,18 @@ public class ContingencyListController {
     @Operation(summary = "Create a form contingency list")
     @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "The form contingency list have been created successfully")})
     public ResponseEntity<FormContingencyList> createFormContingencyList(@RequestParam(required = false, value = "id") UUID id,
-                                                                           @RequestBody(required = true) FormContingencyListAttributes formContingencyListAttributes) {
+                                                                           @RequestBody(required = true) FormContingencyList formContingencyList) {
         return ResponseEntity.ok()
             .contentType(MediaType.APPLICATION_JSON)
-            .body(service.createFormContingencyList(id, formContingencyListAttributes));
+            .body(service.createFormContingencyList(id, formContingencyList));
     }
 
     @PutMapping(value = "/form-contingency-lists/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Modify a form contingency list")
     @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "The form contingency list have been modified successfully")})
-    public ResponseEntity<Void> modifyFormContingencyList(@PathVariable UUID id, @RequestBody(required = true) FormContingencyListAttributes formContingencyListAttributes) {
+    public ResponseEntity<Void> modifyFormContingencyList(@PathVariable UUID id, @RequestBody(required = true) FormContingencyList formContingencyList) {
         try {
-            service.modifyFormContingencyList(id, formContingencyListAttributes);
+            service.modifyFormContingencyList(id, formContingencyList);
             return ResponseEntity.ok().build();
         } catch (EntityNotFoundException ignored) {
             return ResponseEntity.notFound().build();
