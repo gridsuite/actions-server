@@ -79,11 +79,6 @@ public class ContingencyListService {
             entity.getEquipmentType(), entity.getNominalVoltage(), entity.getNominalVoltageOperator(), entity.getCountries());
     }
 
-    private static FormContingencyList fromFormContingencyListEntityAttributes(FormContingencyListEntity entity) {
-        return new FormContingencyList(entity.getId(), entity.getEquipmentId(), entity.getEquipmentName(),
-            entity.getEquipmentType(), entity.getNominalVoltage(), entity.getNominalVoltageOperator(), entity.getCountries());
-    }
-
     List<ScriptContingencyList> getScriptContingencyLists() {
         return scriptContingencyListRepository.findAll().stream().map(ContingencyListService::fromScriptContingencyListEntity).collect(Collectors.toList());
     }
@@ -349,7 +344,7 @@ public class ContingencyListService {
         }
         Optional<FormContingencyListEntity> formContingencyList = self.doGetFormContingencyListWithPreFetchedCountries(id);
         return formContingencyList.map(entity -> {
-            String script = generateGroovyScriptFromForm(fromFormContingencyListEntityAttributes(entity));
+            String script = generateGroovyScriptFromForm(fromFormContingencyListEntity(entity));
             var scriptContingencyListEntity = new ScriptContingencyListEntity(new ScriptContingencyList(id, script));
             scriptContingencyListEntity.setId(id);
             var res = fromScriptContingencyListEntity(scriptContingencyListRepository.save(scriptContingencyListEntity));
@@ -369,7 +364,7 @@ public class ContingencyListService {
 
         Optional<FormContingencyListEntity> formContingencyList = self.doGetFormContingencyListWithPreFetchedCountries(id);
         return formContingencyList.map(entity -> {
-            String script = generateGroovyScriptFromForm(fromFormContingencyListEntityAttributes(entity));
+            String script = generateGroovyScriptFromForm(fromFormContingencyListEntity(entity));
             ScriptContingencyListEntity scriptEntity = new ScriptContingencyListEntity(new ScriptContingencyList(null, script));
             scriptEntity.setId(newId == null ? UUID.randomUUID() : newId);
             return fromScriptContingencyListEntity(scriptContingencyListRepository.save(scriptEntity));
