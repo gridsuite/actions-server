@@ -8,7 +8,7 @@ package org.gridsuite.actions.server;
 
 import com.powsybl.commons.PowsyblException;
 import org.apache.commons.io.IOUtils;
-import org.gridsuite.actions.server.dto.FiltersContingencyListAttributes;
+import org.gridsuite.actions.server.dto.FormContingencyList;
 import org.gridsuite.actions.server.utils.EquipmentType;
 import org.springframework.core.io.ClassPathResource;
 import org.stringtemplate.v4.ST;
@@ -21,12 +21,12 @@ import static java.util.stream.Collectors.joining;
 /**
  * @author Franck Lecuyer <franck.lecuyer at rte-france.com>
  */
-public class FiltersToGroovyScript {
+public class FormToGroovyScript {
     private final String branchTemplate;
     private final String injectionTemplate;
     private final String hvdcLineTemplate;
 
-    public FiltersToGroovyScript() {
+    public FormToGroovyScript() {
         try {
             branchTemplate = IOUtils.toString(new ClassPathResource("branch.st").getInputStream(), Charset.defaultCharset());
             injectionTemplate = IOUtils.toString(new ClassPathResource("injection.st").getInputStream(), Charset.defaultCharset());
@@ -36,11 +36,11 @@ public class FiltersToGroovyScript {
         }
     }
 
-    public String generateGroovyScriptFromFilters(FiltersContingencyListAttributes filtersContingencyListAttributes) {
+    public String generateGroovyScriptFromForm(FormContingencyList formContingencyList) {
         String script = "";
         String equipmentsCollection = "";
 
-        switch (EquipmentType.valueOf(filtersContingencyListAttributes.getEquipmentType())) {
+        switch (EquipmentType.valueOf(formContingencyList.getEquipmentType())) {
             case GENERATOR:
                 equipmentsCollection = "generators";
                 script = injectionTemplate;
@@ -80,16 +80,16 @@ public class FiltersToGroovyScript {
         ST template = new ST(script);
 
         template.add("collectionName", equipmentsCollection);
-        if (filtersContingencyListAttributes.getNominalVoltage() != -1) {
-            template.add("nominalV", filtersContingencyListAttributes.getNominalVoltage());
+        if (formContingencyList.getNominalVoltage() != -1) {
+            template.add("nominalV", formContingencyList.getNominalVoltage());
         }
-        template.add("nominalVOperator", filtersContingencyListAttributes.getNominalVoltageOperator().equals("=") ?
+        template.add("nominalVOperator", formContingencyList.getNominalVoltageOperator().equals("=") ?
                 "==" :
-                filtersContingencyListAttributes.getNominalVoltageOperator());
-        template.add("equipmentId", filtersContingencyListAttributes.getEquipmentID());
-        template.add("equipmentName", filtersContingencyListAttributes.getEquipmentName());
-        if (!filtersContingencyListAttributes.getCountries().isEmpty()) {
-            template.add("countries", filtersContingencyListAttributes.getCountries().stream().collect(joining("','", "['", "']")));
+                formContingencyList.getNominalVoltageOperator());
+        template.add("equipmentId", formContingencyList.getEquipmentID());
+        template.add("equipmentName", formContingencyList.getEquipmentName());
+        if (!formContingencyList.getCountries().isEmpty()) {
+            template.add("countries", formContingencyList.getCountries().stream().collect(joining("','", "['", "']")));
         }
 
         return template.render();

@@ -21,8 +21,8 @@ import java.util.UUID;
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
-@Schema(description = "Filter contingency list")
-public class FiltersContingencyList implements ContingencyList {
+@Schema(description = "Form contingency list")
+public class FormContingencyList implements ContingencyList {
 
     @Schema(description = "list id")
     private UUID id;
@@ -48,6 +48,6 @@ public class FiltersContingencyList implements ContingencyList {
     @Schema(description = "Type")
     @Override
     public ContingencyListType getType() {
-        return ContingencyListType.FILTERS;
+        return ContingencyListType.FORM;
     }
 }

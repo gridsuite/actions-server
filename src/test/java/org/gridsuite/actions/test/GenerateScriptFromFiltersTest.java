@@ -6,8 +6,8 @@
  */
 package org.gridsuite.actions.test;
 
-import org.gridsuite.actions.server.FiltersToGroovyScript;
-import org.gridsuite.actions.server.dto.FiltersContingencyListAttributes;
+import org.gridsuite.actions.server.FormToGroovyScript;
+import org.gridsuite.actions.server.dto.FormContingencyList;
 import org.junit.Test;
 
 import java.util.HashSet;
@@ -21,7 +21,7 @@ import static org.junit.Assert.assertEquals;
 public class GenerateScriptFromFiltersTest {
     @Test
     public void generateScriptTest() {
-        FiltersToGroovyScript filtersToScript = new FiltersToGroovyScript();
+        FormToGroovyScript formToScript = new FormToGroovyScript();
 
         LinkedHashSet<String> countries = new LinkedHashSet<>();
         countries.add("FR");
@@ -34,7 +34,7 @@ public class GenerateScriptFromFiltersTest {
                 "     ) {\n" +
                 "        contingency(equipment.id) { equipments equipment.id }\n" +
                 "  }\n" +
-                "}\n", filtersToScript.generateGroovyScriptFromFilters(new FiltersContingencyListAttributes(null, "BRESS*",
+                "}\n", formToScript.generateGroovyScriptFromForm(new FormContingencyList(null, "BRESS*",
             "OTHER*",
             "GENERATOR",
             90,
@@ -46,8 +46,8 @@ public class GenerateScriptFromFiltersTest {
             "     ) {\n" +
             "           contingency(equipment.id) { equipments equipment.id }\n" +
             "  }\n" +
-            "}\n", filtersToScript.generateGroovyScriptFromFilters(
-            new FiltersContingencyListAttributes(null,
+            "}\n", formToScript.generateGroovyScriptFromForm(
+            new FormContingencyList(null,
                 "*",
                 "*",
                 "TWO_WINDINGS_TRANSFORMER",
@@ -62,7 +62,7 @@ public class GenerateScriptFromFiltersTest {
             "          || isLocatedIn(['FR','BE'], equipment.converterStation2))) {\n" +
             "           contingency(equipment.id) { equipments equipment.id }\n" +
             "  }\n" +
-            "}\n", filtersToScript.generateGroovyScriptFromFilters(new FiltersContingencyListAttributes(null, "BAIXA*",
+            "}\n", formToScript.generateGroovyScriptFromForm(new FormContingencyList(null, "BAIXA*",
             "*",
             "HVDC_LINE",
             -1,
@@ -75,7 +75,7 @@ public class GenerateScriptFromFiltersTest {
             "     ) {\n" +
             "        contingency(equipment.id) { equipments equipment.id }\n" +
             "  }\n" +
-            "}\n", filtersToScript.generateGroovyScriptFromFilters(new FiltersContingencyListAttributes(
+            "}\n", formToScript.generateGroovyScriptFromForm(new FormContingencyList(
             null,
             "*",
             "*",
@@ -89,7 +89,7 @@ public class GenerateScriptFromFiltersTest {
             "     ) {\n" +
             "        contingency(equipment.id) { equipments equipment.id }\n" +
             "  }\n" +
-            "}\n", filtersToScript.generateGroovyScriptFromFilters(new FiltersContingencyListAttributes(null, "SVC*",
+            "}\n", formToScript.generateGroovyScriptFromForm(new FormContingencyList(null, "SVC*",
             "*",
             "STATIC_VAR_COMPENSATOR",
             -1,
@@ -102,7 +102,7 @@ public class GenerateScriptFromFiltersTest {
             "     ) {\n" +
             "        contingency(equipment.id) { equipments equipment.id }\n" +
             "  }\n" +
-            "}\n", filtersToScript.generateGroovyScriptFromFilters(new FiltersContingencyListAttributes(null, "*",
+            "}\n", formToScript.generateGroovyScriptFromForm(new FormContingencyList(null, "*",
             "SHUNT*",
             "SHUNT_COMPENSATOR",
             90,
@@ -116,7 +116,7 @@ public class GenerateScriptFromFiltersTest {
             "     ) {\n" +
             "           contingency(equipment.id) { equipments equipment.id }\n" +
             "  }\n" +
-            "}\n", filtersToScript.generateGroovyScriptFromFilters(new FiltersContingencyListAttributes(null, "*",
+            "}\n", formToScript.generateGroovyScriptFromForm(new FormContingencyList(null, "*",
             "*",
             "LINE",
             225,
@@ -130,7 +130,7 @@ public class GenerateScriptFromFiltersTest {
             "     ) {\n" +
             "        contingency(equipment.id) { equipments equipment.id }\n" +
             "  }\n" +
-            "}\n", filtersToScript.generateGroovyScriptFromFilters(new FiltersContingencyListAttributes(null, "BBS*",
+            "}\n", formToScript.generateGroovyScriptFromForm(new FormContingencyList(null, "BBS*",
             "BBS*",
             "BUSBAR_SECTION",
             63,
