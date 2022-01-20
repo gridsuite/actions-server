@@ -120,7 +120,7 @@ public class ContingencyListController {
     @Operation(summary = "Create a form contingency list")
     @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "The form contingency list have been created successfully")})
     public ResponseEntity<FormContingencyList> createFormContingencyList(@RequestParam(required = false, value = "id") UUID id,
-                                                                           @RequestBody(required = true) FormContingencyList formContingencyList) {
+                                                                           @RequestBody FormContingencyList formContingencyList) {
         return ResponseEntity.ok()
             .contentType(MediaType.APPLICATION_JSON)
             .body(service.createFormContingencyList(id, formContingencyList));
@@ -129,7 +129,7 @@ public class ContingencyListController {
     @PutMapping(value = "/form-contingency-lists/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Modify a form contingency list")
     @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "The form contingency list have been modified successfully")})
-    public ResponseEntity<Void> modifyFormContingencyList(@PathVariable UUID id, @RequestBody(required = true) FormContingencyList formContingencyList) {
+    public ResponseEntity<Void> modifyFormContingencyList(@PathVariable UUID id, @RequestBody FormContingencyList formContingencyList) {
         try {
             service.modifyFormContingencyList(id, formContingencyList);
             return ResponseEntity.ok().build();
@@ -173,7 +173,7 @@ public class ContingencyListController {
     @Operation(summary = "Get contingency lists metadata")
     @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "contingency lists metadata"),
         @ApiResponse(responseCode = "404", description = "The contingency list does not exists")})
-    public ResponseEntity<List<ContingencyListAttributes>> getContingencyListsMetadata(@RequestHeader("ids") List<UUID> ids) {
+    public ResponseEntity<List<ContingencyListAttributes>> getContingencyListsMetadata(@RequestParam("ids") List<UUID> ids) {
         return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(service.getContingencyLists(ids));
     }
 }
