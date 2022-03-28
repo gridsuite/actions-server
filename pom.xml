@@ -15,7 +15,7 @@
     <parent>
         <groupId>com.powsybl</groupId>
         <artifactId>powsybl-parent-ws</artifactId>
-        <version>7</version>
+        <version>8-SNAPSHOT</version>
         <relativePath/>
     </parent>
 
@@ -45,7 +45,7 @@
 
     <properties>
         <java.version>11</java.version>
-        <gridsuite-dependencies.version>14</gridsuite-dependencies.version>
+        <gridsuite-dependencies.version>16-SNAPSHOT</gridsuite-dependencies.version>
         <string-template.version>4.3.1</string-template.version>
         <commons-lang3.version>3.9</commons-lang3.version>
         <liquibase-hibernate-package>org.gridsuite.actions.server</liquibase-hibernate-package>
@@ -136,6 +136,18 @@
         <dependency>
             <groupId>org.springdoc</groupId>
             <artifactId>springdoc-openapi-ui</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-annotations</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-core</artifactId>
         </dependency>
 
         <!-- jpa, crud repository -->

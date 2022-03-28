@@ -1,5 +1,7 @@
 spring:
   application:
     name: actions-server
+  main:
+    allow-circular-references: true
 
 dbName: actions
