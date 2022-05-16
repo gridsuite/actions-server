@@ -299,6 +299,19 @@ public class ContingencyListService {
         return fromScriptContingencyListEntity(scriptContingencyListRepository.save(entity));
     }
 
+    Optional<ScriptContingencyList> createScriptContingencyList(UUID parentListId, UUID id) {
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("Create script contingency list '{}'", id);
+        }
+        ScriptContingencyList parentScriptContingencyList = getScriptContingencyList(parentListId).orElse(null);
+        if(parentScriptContingencyList != null) {
+            ScriptContingencyListEntity entity = new ScriptContingencyListEntity(parentScriptContingencyList);
+            entity.setId(id == null ? UUID.randomUUID() : id);
+            return Optional.of(fromScriptContingencyListEntity(scriptContingencyListRepository.save(entity)));
+        }
+        return Optional.empty();
+    }
+
     void modifyScriptContingencyList(UUID id, ScriptContingencyList script) {
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("Create script contingency list '{}'", script.getId());
@@ -313,6 +326,19 @@ public class ContingencyListService {
         FormContingencyListEntity entity = new FormContingencyListEntity(formContingencyList);
         entity.setId(id == null ? UUID.randomUUID() : id);
         return fromFormContingencyListEntity(formContingencyListRepository.save(entity));
+    }
+
+    public Optional<FormContingencyList> createFormContingencyList(UUID parentListId, UUID id) {
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("Create form contingency list '{}'", id);
+        }
+        FormContingencyList parentFormContingencyList = getFormContingencyList(parentListId).orElse(null);
+        if(parentFormContingencyList != null) {
+            FormContingencyListEntity entity = new FormContingencyListEntity(parentFormContingencyList);
+            entity.setId(id == null ? UUID.randomUUID() : id);
+            return Optional.of(fromFormContingencyListEntity(formContingencyListRepository.save(entity)));
+        }
+        return Optional.empty();
     }
 
     public void modifyFormContingencyList(UUID id, FormContingencyList formContingencyList) {

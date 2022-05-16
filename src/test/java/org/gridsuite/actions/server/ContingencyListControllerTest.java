@@ -121,6 +121,9 @@ public class ContingencyListControllerTest {
 
     @Test
     public void test() throws Exception {
+        UUID existingFormContengencyList;
+        UUID existingScriptContengencyList;
+
         UUID notFoundId = UUID.fromString("abcdef01-1234-5678-abcd-e123456789aa");
         String script = "{ \n" +
                 "\"script\" : \"contingency('NHV1_NHV2_1') {" +
@@ -163,10 +166,13 @@ public class ContingencyListControllerTest {
 
         UUID ticId = objectMapper.readValue(res, FormContingencyList.class).getId();
 
-        mvc.perform(post("/" + VERSION + "/form-contingency-lists/")
+        String response =  mvc.perform(post("/" + VERSION + "/form-contingency-lists/")
                 .content(formContingencyList2)
                 .contentType(APPLICATION_JSON))
-                .andExpect(status().isOk());
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString();
+
+        existingFormContengencyList = UUID.fromString(response.substring(7, 43));
 
         mvc.perform(post("/" + VERSION + "/form-contingency-lists/")
                 .content(formContingencyList3)
@@ -677,5 +683,25 @@ public class ContingencyListControllerTest {
 
         UUID scriptId = addNewScriptContingencyListWithId(script, id);
         assertEquals(scriptId, id);
+    }
+
+    @Test
+    public void duplicateFormContingencyList() throws Exception {
+        String list = genFormContingencyList("*", "*", EquipmentType.LINE, 11, "=", Set.of());
+        UUID id = addNewFormContingencyList(list);
+
+        mvc.perform(post("/" + VERSION + "/form-contingency-lists?duplicateFrom=" + id + "&id=" + UUID.randomUUID()))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    public void duplicateScriptContingencyList() throws Exception {
+        UUID id = addNewScriptContingencyList("{ \n" +
+                "\"script\" : \"contingency('NHV1_NHV2_1') {" +
+                "     equipments 'NHV1_NHV2_1'}\"" +
+                "}");
+
+        mvc.perform(post("/" + VERSION + "/script-contingency-lists?duplicateFrom=" + id + "&id=" + UUID.randomUUID()))
+                .andExpect(status().isOk());
     }
 }

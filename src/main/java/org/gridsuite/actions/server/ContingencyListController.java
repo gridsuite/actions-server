@@ -104,6 +104,17 @@ public class ContingencyListController {
             .body(service.createScriptContingencyList(id, script));
     }
 
+    /*@PostMapping(value = "/script-contingency-lists")
+    @Operation(summary = "Create a script contingency list from another existing one")
+    @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "The script contingency list have been created successfully")})
+    public ResponseEntity<ScriptContingencyList> createScriptContingencyList(@RequestParam("duplicateFrom") UUID parentListId,
+                                                                             @RequestParam(value = "id") UUID id) {
+        return service.createScriptContingencyList(parentListId, id).map(contingencyList -> ResponseEntity.ok()
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .body(contingencyList))
+                .orElse(ResponseEntity.notFound().build());
+    }*/
+
     @PutMapping(value = "/script-contingency-lists/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Modify a script contingency list")
     @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "The script contingency list have been modified successfully")})
@@ -124,6 +135,17 @@ public class ContingencyListController {
         return ResponseEntity.ok()
             .contentType(MediaType.APPLICATION_JSON)
             .body(service.createFormContingencyList(id, formContingencyList));
+    }
+
+    @PostMapping(value = "/form-contingency-lists")
+    @Operation(summary = "Create a form contingency list from another existing one")
+    @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "The script contingency list have been created successfully")})
+    public ResponseEntity<FormContingencyList> createFormContingencyList(@RequestParam("duplicateFrom") UUID parentListId,
+                                                                             @RequestParam(value = "id") UUID id) {
+        return service.createFormContingencyList(parentListId, id).map(contingencyList -> ResponseEntity.ok()
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .body(contingencyList))
+                .orElse(ResponseEntity.notFound().build());
     }
 
     @PutMapping(value = "/form-contingency-lists/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
