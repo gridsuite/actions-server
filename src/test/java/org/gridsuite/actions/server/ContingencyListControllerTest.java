@@ -692,6 +692,9 @@ public class ContingencyListControllerTest {
 
         mvc.perform(post("/" + VERSION + "/form-contingency-lists?duplicateFrom=" + id + "&id=" + UUID.randomUUID()))
                 .andExpect(status().isOk());
+
+        mvc.perform(post("/" + VERSION + "/form-contingency-lists?duplicateFrom=" + UUID.randomUUID() + "&id=" + UUID.randomUUID()))
+                .andExpect(status().isNotFound());
     }
 
     @Test
@@ -703,5 +706,8 @@ public class ContingencyListControllerTest {
 
         mvc.perform(post("/" + VERSION + "/script-contingency-lists?duplicateFrom=" + id + "&id=" + UUID.randomUUID()))
                 .andExpect(status().isOk());
+
+        mvc.perform(post("/" + VERSION + "/script-contingency-lists?duplicateFrom=" + UUID.randomUUID() + "&id=" + UUID.randomUUID()))
+                .andExpect(status().isNotFound());
     }
 }
