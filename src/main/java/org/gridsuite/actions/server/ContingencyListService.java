@@ -301,7 +301,7 @@ public class ContingencyListService {
 
     Optional<ScriptContingencyList> createScriptContingencyList(UUID parentListId, UUID id) {
         if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("Create script contingency list '{}'", id);
+            LOGGER.debug("Create script contingency list '{}' based on '{}'", id, parentListId);
         }
         ScriptContingencyList parentScriptContingencyList = getScriptContingencyList(parentListId).orElse(null);
         if (parentScriptContingencyList != null) {
@@ -321,7 +321,7 @@ public class ContingencyListService {
 
     public FormContingencyList createFormContingencyList(UUID id, FormContingencyList formContingencyList) {
         if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("Create form contingency list '{}'", formContingencyList.getId());
+            LOGGER.debug("Create form contingency list '{}' based on ", formContingencyList.getId());
         }
         FormContingencyListEntity entity = new FormContingencyListEntity(formContingencyList);
         entity.setId(id == null ? UUID.randomUUID() : id);
@@ -330,7 +330,7 @@ public class ContingencyListService {
 
     public Optional<FormContingencyList> createFormContingencyList(UUID parentListId, UUID id) {
         if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("Create form contingency list '{}'", id);
+            LOGGER.debug("Create form contingency list '{}' based on '{}'", id, parentListId);
         }
         FormContingencyList parentFormContingencyList = getFormContingencyList(parentListId).orElse(null);
         if (parentFormContingencyList != null) {

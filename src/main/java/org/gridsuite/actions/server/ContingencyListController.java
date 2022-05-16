@@ -107,7 +107,7 @@ public class ContingencyListController {
     @PostMapping(value = "/script-contingency-lists")
     @Operation(summary = "Create a script contingency list from another existing one")
     @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "The script contingency list have been duplicated successfully")})
-    public ResponseEntity<ScriptContingencyList> duplicateScriptContingencyList(@RequestParam("duplicateFrom") UUID parentListId,
+    public ResponseEntity<ScriptContingencyList> createScriptContingencyList(@RequestParam("duplicateFrom") UUID parentListId,
                                                                                 @RequestParam(value = "id") UUID id) {
         return service.createScriptContingencyList(parentListId, id).map(contingencyList -> ResponseEntity.ok()
                         .contentType(MediaType.APPLICATION_JSON)
@@ -140,7 +140,7 @@ public class ContingencyListController {
     @PostMapping(value = "/form-contingency-lists")
     @Operation(summary = "Create a form contingency list from another existing one")
     @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "The script contingency list have been duplicated successfully")})
-    public ResponseEntity<FormContingencyList> duplicateFormContingencyList(@RequestParam("duplicateFrom") UUID parentListId,
+    public ResponseEntity<FormContingencyList> createFormContingencyList(@RequestParam("duplicateFrom") UUID parentListId,
                                                                              @RequestParam(value = "id") UUID id) {
         return service.createFormContingencyList(parentListId, id).map(contingencyList -> ResponseEntity.ok()
                         .contentType(MediaType.APPLICATION_JSON)
