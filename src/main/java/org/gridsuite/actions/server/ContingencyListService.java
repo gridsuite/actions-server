@@ -304,7 +304,7 @@ public class ContingencyListService {
             LOGGER.debug("Create script contingency list '{}'", id);
         }
         ScriptContingencyList parentScriptContingencyList = getScriptContingencyList(parentListId).orElse(null);
-        if(parentScriptContingencyList != null) {
+        if (parentScriptContingencyList != null) {
             ScriptContingencyListEntity entity = new ScriptContingencyListEntity(parentScriptContingencyList);
             entity.setId(id == null ? UUID.randomUUID() : id);
             return Optional.of(fromScriptContingencyListEntity(scriptContingencyListRepository.save(entity)));
@@ -333,7 +333,7 @@ public class ContingencyListService {
             LOGGER.debug("Create form contingency list '{}'", id);
         }
         FormContingencyList parentFormContingencyList = getFormContingencyList(parentListId).orElse(null);
-        if(parentFormContingencyList != null) {
+        if (parentFormContingencyList != null) {
             FormContingencyListEntity entity = new FormContingencyListEntity(parentFormContingencyList);
             entity.setId(id == null ? UUID.randomUUID() : id);
             return Optional.of(fromFormContingencyListEntity(formContingencyListRepository.save(entity)));
