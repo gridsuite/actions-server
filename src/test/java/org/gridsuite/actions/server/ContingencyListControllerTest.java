@@ -699,7 +699,7 @@ public class ContingencyListControllerTest {
 
     @Test
     public void duplicateScriptContingencyList() throws Exception {
-        String script = "{ " +"\"script\" : \"contingency('NHV1_NHV2_1') {" +
+        String script = "{ " + "\"script\" : \"contingency('NHV1_NHV2_1') {" +
                 "     equipments 'NHV1_NHV2_1'}\"" +
                 "}";
         UUID id = addNewScriptContingencyList(script.strip());
