@@ -121,6 +121,9 @@ public class ContingencyListControllerTest {
 
     @Test
     public void test() throws Exception {
+        UUID existingFormContengencyList;
+        UUID existingScriptContengencyList;
+
         UUID notFoundId = UUID.fromString("abcdef01-1234-5678-abcd-e123456789aa");
         String script = "{ \n" +
                 "\"script\" : \"contingency('NHV1_NHV2_1') {" +
@@ -166,7 +169,8 @@ public class ContingencyListControllerTest {
         mvc.perform(post("/" + VERSION + "/form-contingency-lists/")
                 .content(formContingencyList2)
                 .contentType(APPLICATION_JSON))
-                .andExpect(status().isOk());
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString();
 
         mvc.perform(post("/" + VERSION + "/form-contingency-lists/")
                 .content(formContingencyList3)
@@ -677,5 +681,35 @@ public class ContingencyListControllerTest {
 
         UUID scriptId = addNewScriptContingencyListWithId(script, id);
         assertEquals(scriptId, id);
+    }
+
+    @Test
+    public void duplicateFormContingencyList() throws Exception {
+        String list = genFormContingencyList("*", "*", EquipmentType.LINE, 11, "=", Set.of());
+        UUID id = addNewFormContingencyList(list);
+
+        String res = mvc.perform(post("/" + VERSION + "/form-contingency-lists?duplicateFrom=" + id + "&id=" + UUID.randomUUID()))
+                .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
+        String returnedEquipmentType = objectMapper.readValue(res, FormContingencyList.class).getEquipmentType();
+        assertEquals(returnedEquipmentType, EquipmentType.LINE.toString());
+
+        mvc.perform(post("/" + VERSION + "/form-contingency-lists?duplicateFrom=" + UUID.randomUUID() + "&id=" + UUID.randomUUID()))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    public void duplicateScriptContingencyList() throws Exception {
+        String script = "{ " + "\"script\" : \"contingency('NHV1_NHV2_1') {" +
+                "     equipments 'NHV1_NHV2_1'}\"" +
+                "}";
+        UUID id = addNewScriptContingencyList(script.strip());
+
+        String res = mvc.perform(post("/" + VERSION + "/script-contingency-lists?duplicateFrom=" + id + "&id=" + UUID.randomUUID()))
+                .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
+        String returnedScript = objectMapper.readValue(res, ScriptContingencyList.class).getScript();
+        assertTrue(returnedScript.contains("equipments 'NHV1_NHV2_1'"));
+
+        mvc.perform(post("/" + VERSION + "/script-contingency-lists?duplicateFrom=" + UUID.randomUUID() + "&id=" + UUID.randomUUID()))
+                .andExpect(status().isNotFound());
     }
 }

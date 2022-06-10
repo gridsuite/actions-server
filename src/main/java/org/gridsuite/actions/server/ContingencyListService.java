@@ -299,6 +299,19 @@ public class ContingencyListService {
         return fromScriptContingencyListEntity(scriptContingencyListRepository.save(entity));
     }
 
+    Optional<ScriptContingencyList> createScriptContingencyList(UUID sourceListId, UUID id) {
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("Create script contingency list '{}' based on '{}'", id, sourceListId);
+        }
+        ScriptContingencyList sourceScriptContingencyList = getScriptContingencyList(sourceListId).orElse(null);
+        if (sourceScriptContingencyList != null) {
+            ScriptContingencyListEntity entity = new ScriptContingencyListEntity(sourceScriptContingencyList);
+            entity.setId(id == null ? UUID.randomUUID() : id);
+            return Optional.of(fromScriptContingencyListEntity(scriptContingencyListRepository.save(entity)));
+        }
+        return Optional.empty();
+    }
+
     void modifyScriptContingencyList(UUID id, ScriptContingencyList script) {
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("Create script contingency list '{}'", script.getId());
@@ -308,11 +321,24 @@ public class ContingencyListService {
 
     public FormContingencyList createFormContingencyList(UUID id, FormContingencyList formContingencyList) {
         if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("Create form contingency list '{}'", formContingencyList.getId());
+            LOGGER.debug("Create form contingency list '{}' based on ", formContingencyList.getId());
         }
         FormContingencyListEntity entity = new FormContingencyListEntity(formContingencyList);
         entity.setId(id == null ? UUID.randomUUID() : id);
         return fromFormContingencyListEntity(formContingencyListRepository.save(entity));
+    }
+
+    public Optional<FormContingencyList> createFormContingencyList(UUID sourceListId, UUID id) {
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("Create form contingency list '{}' based on '{}'", id, sourceListId);
+        }
+        FormContingencyList sourceFormContingencyList = getFormContingencyList(sourceListId).orElse(null);
+        if (sourceFormContingencyList != null) {
+            FormContingencyListEntity entity = new FormContingencyListEntity(sourceFormContingencyList);
+            entity.setId(id == null ? UUID.randomUUID() : id);
+            return Optional.of(fromFormContingencyListEntity(formContingencyListRepository.save(entity)));
+        }
+        return Optional.empty();
     }
 
     public void modifyFormContingencyList(UUID id, FormContingencyList formContingencyList) {
