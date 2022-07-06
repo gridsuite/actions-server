@@ -27,12 +27,6 @@ public class FormContingencyList implements ContingencyList {
     @Schema(description = "list id")
     private UUID id;
 
-    @Schema(description = "Equipment ID")
-    private String equipmentID;
-
-    @Schema(description = "Equipment name")
-    private String equipmentName;
-
     @Schema(description = "Equipment type")
     private String equipmentType;
 

@@ -75,8 +75,7 @@ public class ContingencyListService {
     }
 
     private static FormContingencyList fromFormContingencyListEntity(FormContingencyListEntity entity) {
-        return new FormContingencyList(entity.getId(), entity.getEquipmentId(), entity.getEquipmentName(),
-            entity.getEquipmentType(), entity.getNominalVoltage(), entity.getNominalVoltageOperator(), entity.getCountries());
+        return new FormContingencyList(entity.getId(), entity.getEquipmentType(), entity.getNominalVoltage(), entity.getNominalVoltageOperator(), entity.getCountries());
     }
 
     List<ScriptContingencyList> getScriptContingencyLists() {
@@ -167,7 +166,6 @@ public class ContingencyListService {
 
     private <I extends Injection<I>> Stream<Injection<I>> getInjectionContingencyList(Stream<Injection<I>> stream, FormContingencyList formContingencyList) {
         return stream
-            .filter(injection -> matches(formContingencyList.getEquipmentID(), injection.getId()) || injection.getOptionalName().isPresent() && matches(formContingencyList.getEquipmentName(), injection.getOptionalName().get()))
             .filter(injection -> formContingencyList.getNominalVoltage() == -1 || filterByVoltage(injection.getTerminal().getVoltageLevel().getNominalV(), formContingencyList.getNominalVoltage(), formContingencyList.getNominalVoltageOperator()))
             .filter(injection -> countryFilter(injection, formContingencyList));
     }
@@ -192,7 +190,6 @@ public class ContingencyListService {
 
     private <I extends Branch<I>> List<Contingency> getBranchContingencyList(Stream<Branch<I>> stream, FormContingencyList formContingencyList) {
         return stream
-            .filter(branch -> matches(formContingencyList.getEquipmentID(), branch.getId()) || branch.getOptionalName().isPresent() && matches(formContingencyList.getEquipmentName(), branch.getOptionalName().get()))
             .filter(branch -> formContingencyList.getNominalVoltage() == -1 || filterByVoltage(branch.getTerminal1().getVoltageLevel().getNominalV(), formContingencyList.getNominalVoltage(), formContingencyList.getNominalVoltageOperator())
                 || filterByVoltage(branch.getTerminal2().getVoltageLevel().getNominalV(), formContingencyList.getNominalVoltage(), formContingencyList.getNominalVoltageOperator()))
             .filter(branch -> countryFilter(branch, formContingencyList))
@@ -210,7 +207,6 @@ public class ContingencyListService {
 
     private List<Contingency> getHvdcContingencyList(Network network, FormContingencyList formContingencyList) {
         return network.getHvdcLineStream()
-            .filter(hvdcLine -> matches(formContingencyList.getEquipmentID(), hvdcLine.getId()) || hvdcLine.getOptionalName().isPresent() && matches(formContingencyList.getEquipmentName(), hvdcLine.getOptionalName().get()))
             .filter(hvdcLine -> formContingencyList.getNominalVoltage() == -1 || filterByVoltage(hvdcLine.getNominalV(), formContingencyList.getNominalVoltage(), formContingencyList.getNominalVoltageOperator()))
             .filter(hvdcLine -> countryFilter(hvdcLine, formContingencyList))
             .map(hvdcLine -> new Contingency(hvdcLine.getId(), Collections.singletonList(new HvdcLineContingency(hvdcLine.getId()))))
