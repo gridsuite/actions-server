@@ -225,10 +225,6 @@ public class ContingencyListService {
             .collect(Collectors.toList());
     }
 
-    private boolean matches(String pattern, String path) {
-        return antMatcher.match(pattern, path);
-    }
-
     private List<Contingency> getContingencies(FormContingencyList formContingencyList, Network network) {
         List<Contingency> contingencies;
         switch (EquipmentType.valueOf(formContingencyList.getEquipmentType())) {
