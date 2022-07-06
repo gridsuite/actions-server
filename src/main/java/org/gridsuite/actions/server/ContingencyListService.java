@@ -30,8 +30,6 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.AntPathMatcher;
-import org.springframework.util.PathMatcher;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.*;
@@ -53,8 +51,6 @@ public class ContingencyListService {
     private FormContingencyListRepository formContingencyListRepository;
 
     private NetworkStoreService networkStoreService;
-
-    private final PathMatcher antMatcher = new AntPathMatcher("\0");
 
     private final FormToGroovyScript formToScript = new FormToGroovyScript();
 
