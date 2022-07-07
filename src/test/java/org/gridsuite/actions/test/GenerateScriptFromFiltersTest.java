@@ -29,27 +29,20 @@ public class GenerateScriptFromFiltersTest {
 
         assertEquals("for (equipment in network.generators) {\n" +
                 "  if ((equipment.terminal.voltageLevel.nominalV == 90.0)\n" +
-                "      && (matchID('BRESS*', equipment) || matchName('OTHER*', equipment))\n" +
                 "      && isLocatedIn(['FR','BE'], equipment)\n" +
                 "     ) {\n" +
                 "        contingency(equipment.id) { equipments equipment.id }\n" +
                 "  }\n" +
-                "}\n", formToScript.generateGroovyScriptFromForm(new FormContingencyList(null, "BRESS*",
-            "OTHER*",
+                "}\n", formToScript.generateGroovyScriptFromForm(new FormContingencyList(null,
             "GENERATOR",
             90,
             "=",
             countries)));
 
         assertEquals("for (equipment in network.twoWindingsTransformers) {\n" +
-            "  if ((matchID('*', equipment) || matchName('*', equipment))\n" +
-            "     ) {\n" +
             "           contingency(equipment.id) { equipments equipment.id }\n" +
-            "  }\n" +
             "}\n", formToScript.generateGroovyScriptFromForm(
             new FormContingencyList(null,
-                "*",
-                "*",
                 "TWO_WINDINGS_TRANSFORMER",
                 -1,
                 ">=",
@@ -57,40 +50,44 @@ public class GenerateScriptFromFiltersTest {
             )));
 
         assertEquals("for (equipment in network.hvdcLines) {\n" +
-            "  if ((matchID('BAIXA*', equipment) || matchName('*', equipment))\n" +
-            "      && (isLocatedIn(['FR','BE'], equipment.converterStation1)\n" +
-            "          || isLocatedIn(['FR','BE'], equipment.converterStation2))) {\n" +
+            "  if (\n" +
+            "  (isLocatedIn(['FR','BE'], equipment.converterStation1)\n" +
+            "         || isLocatedIn(['FR','BE'], equipment.converterStation2))) {\n" +
             "           contingency(equipment.id) { equipments equipment.id }\n" +
             "  }\n" +
-            "}\n", formToScript.generateGroovyScriptFromForm(new FormContingencyList(null, "BAIXA*",
-            "*",
+            "}\n", formToScript.generateGroovyScriptFromForm(new FormContingencyList(null,
             "HVDC_LINE",
             -1,
             "<=",
             countries)));
 
+        assertEquals("for (equipment in network.hvdcLines) {\n" +
+                "  if ((equipment.nominalV <= 225.0)\n" +
+                "        && (isLocatedIn(['FR','BE'], equipment.converterStation1)\n" +
+                "         || isLocatedIn(['FR','BE'], equipment.converterStation2))) {\n" +
+                "           contingency(equipment.id) { equipments equipment.id }\n" +
+                "  }\n" +
+                "}\n", formToScript.generateGroovyScriptFromForm(new FormContingencyList(null,
+                "HVDC_LINE",
+                225,
+                "<=",
+                countries)));
+
         assertEquals("for (equipment in network.danglingLines) {\n" +
             "  if ((equipment.terminal.voltageLevel.nominalV == 225.0)\n" +
-            "      && (matchID('*', equipment) || matchName('*', equipment))\n" +
             "     ) {\n" +
             "        contingency(equipment.id) { equipments equipment.id }\n" +
             "  }\n" +
             "}\n", formToScript.generateGroovyScriptFromForm(new FormContingencyList(
             null,
-            "*",
-            "*",
             "DANGLING_LINE",
             225,
             "=",
             new HashSet<>())));
 
         assertEquals("for (equipment in network.staticVarCompensators) {\n" +
-            "  if ((matchID('SVC*', equipment) || matchName('*', equipment))\n" +
-            "     ) {\n" +
             "        contingency(equipment.id) { equipments equipment.id }\n" +
-            "  }\n" +
-            "}\n", formToScript.generateGroovyScriptFromForm(new FormContingencyList(null, "SVC*",
-            "*",
+            "}\n", formToScript.generateGroovyScriptFromForm(new FormContingencyList(null,
             "STATIC_VAR_COMPENSATOR",
             -1,
             "=",
@@ -98,12 +95,10 @@ public class GenerateScriptFromFiltersTest {
 
         assertEquals("for (equipment in network.shuntCompensators) {\n" +
             "  if ((equipment.terminal.voltageLevel.nominalV < 90.0)\n" +
-            "      && (matchID('*', equipment) || matchName('SHUNT*', equipment))\n" +
             "     ) {\n" +
             "        contingency(equipment.id) { equipments equipment.id }\n" +
             "  }\n" +
-            "}\n", formToScript.generateGroovyScriptFromForm(new FormContingencyList(null, "*",
-            "SHUNT*",
+            "}\n", formToScript.generateGroovyScriptFromForm(new FormContingencyList(null,
             "SHUNT_COMPENSATOR",
             90,
             "<",
@@ -112,26 +107,34 @@ public class GenerateScriptFromFiltersTest {
         assertEquals("for (equipment in network.lines) {\n" +
             "  if ((equipment.terminal1.voltageLevel.nominalV == 225.0\n" +
             "          || equipment.terminal2.voltageLevel.nominalV == 225.0)\n" +
-            "      && (matchID('*', equipment) || matchName('*', equipment))\n" +
             "     ) {\n" +
             "           contingency(equipment.id) { equipments equipment.id }\n" +
             "  }\n" +
-            "}\n", formToScript.generateGroovyScriptFromForm(new FormContingencyList(null, "*",
-            "*",
+            "}\n", formToScript.generateGroovyScriptFromForm(new FormContingencyList(null,
             "LINE",
             225,
             "=",
             new HashSet<>())));
 
+        assertEquals("for (equipment in network.lines) {\n" +
+                "  if (isLocatedIn(['FR','BE'], equipment)\n" +
+                "     ) {\n" +
+                "           contingency(equipment.id) { equipments equipment.id }\n" +
+                "  }\n" +
+                "}\n", formToScript.generateGroovyScriptFromForm(new FormContingencyList(null,
+                "LINE",
+                -1,
+                "=",
+                countries
+                )));
+
         assertEquals("for (equipment in network.busbarSections) {\n" +
             "  if ((equipment.terminal.voltageLevel.nominalV >= 63.0)\n" +
-            "      && (matchID('BBS*', equipment) || matchName('BBS*', equipment))\n" +
             "      && isLocatedIn(['FR','BE'], equipment)\n" +
             "     ) {\n" +
             "        contingency(equipment.id) { equipments equipment.id }\n" +
             "  }\n" +
-            "}\n", formToScript.generateGroovyScriptFromForm(new FormContingencyList(null, "BBS*",
-            "BBS*",
+            "}\n", formToScript.generateGroovyScriptFromForm(new FormContingencyList(null,
             "BUSBAR_SECTION",
             63,
             ">=",

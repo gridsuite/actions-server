@@ -86,8 +86,6 @@ public class FormToGroovyScript {
         template.add("nominalVOperator", formContingencyList.getNominalVoltageOperator().equals("=") ?
                 "==" :
                 formContingencyList.getNominalVoltageOperator());
-        template.add("equipmentId", formContingencyList.getEquipmentID());
-        template.add("equipmentName", formContingencyList.getEquipmentName());
         if (!formContingencyList.getCountries().isEmpty()) {
             template.add("countries", formContingencyList.getCountries().stream().collect(joining("','", "['", "']")));
         }

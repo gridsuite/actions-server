@@ -28,12 +28,6 @@ import static org.apache.commons.collections4.SetUtils.emptyIfNull;
 @Table(name = "form_contingency_list")
 public class FormContingencyListEntity extends AbstractContingencyEntity {
 
-    @Column(name = "equipmentId")
-    private String equipmentId;
-
-    @Column(name = "equipmentName")
-    private String equipmentName;
-
     @Column(name = "equipmentType")
     private String equipmentType;
 
@@ -55,8 +49,6 @@ public class FormContingencyListEntity extends AbstractContingencyEntity {
 
     /* called in constructor so it is final */
     final void init(FormContingencyList formContingencyList) {
-        this.equipmentId = formContingencyList.getEquipmentID();
-        this.equipmentName = formContingencyList.getEquipmentName();
         this.equipmentType = formContingencyList.getEquipmentType();
         this.nominalVoltage = formContingencyList.getNominalVoltage();
         this.nominalVoltageOperator = formContingencyList.getNominalVoltageOperator();

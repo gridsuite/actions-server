@@ -6,16 +6,15 @@
  */
 package org.gridsuite.actions.test;
 
-import com.powsybl.iidm.network.Generator;
-import com.powsybl.iidm.network.Identifiable;
+import com.powsybl.iidm.network.*;
+import com.powsybl.iidm.network.test.EurostagTutorialExample1Factory;
+import com.powsybl.network.store.iidm.impl.NetworkFactoryImpl;
 import org.gridsuite.actions.server.utils.FiltersUtils;
 import org.junit.Test;
-import org.mockito.Mockito;
 
-import java.util.Optional;
+import java.util.List;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 /**
  * @author Franck Lecuyer <franck.lecuyer at rte-france.com>
@@ -23,14 +22,11 @@ import static org.junit.Assert.assertTrue;
 public class FiltersUtilsTest {
     @Test
     public void test() {
-        Identifiable<Generator> ident = Mockito.mock(Identifiable.class);
-        Mockito.when(ident.getId()).thenReturn("id1");
-        Mockito.when(ident.getOptionalName()).thenReturn(Optional.of("name1"));
+        Network network = EurostagTutorialExample1Factory.createWithMoreGenerators(new NetworkFactoryImpl());
+        Connectable<Generator> generator = network.getGenerator("GEN");
 
-        assertTrue(FiltersUtils.matchID("id1", ident));
-        assertFalse(FiltersUtils.matchID("id2", ident));
-
-        assertTrue(FiltersUtils.matchName("name1", ident));
-        assertFalse(FiltersUtils.matchName("name2", ident));
+        assertNotNull(generator);
+        assertTrue(FiltersUtils.isLocatedIn(List.of("FR", "BE"), generator));
+        assertFalse(FiltersUtils.isLocatedIn(List.of("DE"), generator));
     }
 }
