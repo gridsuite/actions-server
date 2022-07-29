@@ -1,0 +1,43 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog" xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext" xmlns:pro="http://www.liquibase.org/xml/ns/pro" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd http://www.liquibase.org/xml/ns/pro http://www.liquibase.org/xml/ns/pro/liquibase-pro-4.1.xsd http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.1.xsd">
+    <changeSet author="yenguised (generated)" id="1656333571480-1">
+        <createTable tableName="form_contingency_list_entity_countries">
+            <column name="form_contingency_list_entity_id" type="UUID">
+                <constraints nullable="false"/>
+            </column>
+            <column name="country" type="VARCHAR(255)"/>
+        </createTable>
+    </changeSet>
+    <changeSet author="yenguised (generated)" id="1656333571480-3">
+        <createTable tableName="form_contingency_list">
+            <column name="id" type="UUID">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="form_contingency_listPK"/>
+            </column>
+            <column name="creation_date" type="TIMESTAMP"/>
+            <column name="modification_date" type="TIMESTAMP"/>
+            <column name="equipment_id" type="VARCHAR(255)"/>
+            <column name="equipment_name" type="VARCHAR(255)"/>
+            <column name="equipment_type" type="VARCHAR(255)"/>
+            <column name="nominal_voltage" type="FLOAT8"/>
+            <column name="nominal_voltage_operator" type="VARCHAR(255)"/>
+        </createTable>
+    </changeSet>
+    <changeSet author="yenguised (generated)" id="1656333571480-4">
+        <createIndex indexName="form_contingency_list_entity_countries_idx" tableName="form_contingency_list_entity_countries">
+            <column name="form_contingency_list_entity_id"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="yenguised (generated)" id="1656333571480-5">
+        <addForeignKeyConstraint baseColumnNames="form_contingency_list_entity_id" baseTableName="form_contingency_list_entity_countries" constraintName="formContingencyListEntity_countries_fk" deferrable="false" initiallyDeferred="false" referencedColumnNames="id" referencedTableName="form_contingency_list" validate="true"/>
+    </changeSet>
+    <changeSet author="yenguised (generated)" id="1656333571480-6">
+        <createTable tableName="script_contingency_list">
+            <column name="id" type="UUID">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="script_contingency_listPK"/>
+            </column>
+            <column name="creation_date" type="TIMESTAMP"/>
+            <column name="modification_date" type="TIMESTAMP"/>
+            <column name="script" type="CLOB"/>
+        </createTable>
+    </changeSet>
+</databaseChangeLog>
