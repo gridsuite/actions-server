@@ -5,3 +5,6 @@ spring:
     allow-circular-references: true
 
 dbName: actions
+
+server:
+  max-http-header-size: 64000
