@@ -4,7 +4,9 @@ spring:
   main:
     allow-circular-references: true
 
-dbName: actions
+powsybl-ws:
+  database:
+    name: actions
 
 server:
   max-http-header-size: 64000
