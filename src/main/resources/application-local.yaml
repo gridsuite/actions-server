@@ -4,3 +4,6 @@ server:
 network-store-server:
   base-uri: http://localhost:8080/
 
+powsybl-ws:
+  database:
+    host: localhost
