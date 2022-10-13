@@ -17,7 +17,8 @@ public enum NominalVoltageOperator {
     MORE_THAN,
     MORE_THAN_OR_EQUAL,
     LESS_THAN,
-    LESS_THAN_OR_EQUAL;
+    LESS_THAN_OR_EQUAL,
+    RANGE;
 
     public static NominalVoltageOperator fromOperator(String op) {
         switch (op) {

@@ -39,6 +39,9 @@ public class FormContingencyList implements ContingencyList {
     @Schema(description = "Countries")
     private Set<String> countries;
 
+    @Schema(description = "Countries")
+    private Set<String> countries2;
+
     @Schema(description = "Type")
     @Override
     public ContingencyListType getType() {

@@ -1,0 +1,19 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog" xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext" xmlns:pro="http://www.liquibase.org/xml/ns/pro" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd http://www.liquibase.org/xml/ns/pro http://www.liquibase.org/xml/ns/pro/liquibase-pro-4.1.xsd http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.1.xsd">
+    <changeSet author="braquartdav (generated)" id="1665675161275-1">
+        <createTable tableName="form_contingency_list_entity_countries2">
+            <column name="form_contingency_list_entity_id" type="UUID">
+                <constraints nullable="false"/>
+            </column>
+            <column name="country2" type="VARCHAR(255)"/>
+        </createTable>
+    </changeSet>
+    <changeSet author="braquartdav (generated)" id="1665675161275-2">
+        <createIndex indexName="formContingencyListEntity_countries2_idx" tableName="form_contingency_list_entity_countries2">
+            <column name="form_contingency_list_entity_id"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="braquartdav (generated)" id="1665675161275-3">
+        <addForeignKeyConstraint baseColumnNames="form_contingency_list_entity_id" baseTableName="form_contingency_list_entity_countries2" constraintName="formContingencyListEntity_countries2_fk" deferrable="false" initiallyDeferred="false" referencedColumnNames="id" referencedTableName="form_contingency_list" validate="true"/>
+    </changeSet>
+</databaseChangeLog>

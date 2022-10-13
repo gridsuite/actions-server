@@ -37,16 +37,16 @@ public class GenerateScriptFromFiltersTest {
             "GENERATOR",
             90,
             "=",
-            countries)));
+            countries, new HashSet<>())));
 
         assertEquals("for (equipment in network.twoWindingsTransformers) {\n" +
             "           contingency(equipment.id) { equipments equipment.id }\n" +
             "}\n", formToScript.generateGroovyScriptFromForm(
-            new FormContingencyList(null,
-                "TWO_WINDINGS_TRANSFORMER",
-                -1,
-                ">=",
-                new HashSet<>()
+                new FormContingencyList(null,
+                    "TWO_WINDINGS_TRANSFORMER",
+                    -1,
+                    ">=",
+                    new HashSet<>(), new HashSet<>()
             )));
 
         assertEquals("for (equipment in network.hvdcLines) {\n" +
@@ -59,7 +59,7 @@ public class GenerateScriptFromFiltersTest {
             "HVDC_LINE",
             -1,
             "<=",
-            countries)));
+            countries, new HashSet<>())));
 
         assertEquals("for (equipment in network.hvdcLines) {\n" +
                 "  if ((equipment.nominalV <= 225.0)\n" +
@@ -71,7 +71,7 @@ public class GenerateScriptFromFiltersTest {
                 "HVDC_LINE",
                 225,
                 "<=",
-                countries)));
+                countries, new HashSet<>())));
 
         assertEquals("for (equipment in network.danglingLines) {\n" +
             "  if ((equipment.terminal.voltageLevel.nominalV == 225.0)\n" +
@@ -83,7 +83,7 @@ public class GenerateScriptFromFiltersTest {
             "DANGLING_LINE",
             225,
             "=",
-            new HashSet<>())));
+                new HashSet<>(), new HashSet<>())));
 
         assertEquals("for (equipment in network.staticVarCompensators) {\n" +
             "        contingency(equipment.id) { equipments equipment.id }\n" +
@@ -91,7 +91,7 @@ public class GenerateScriptFromFiltersTest {
             "STATIC_VAR_COMPENSATOR",
             -1,
             "=",
-            new HashSet<>())));
+                new HashSet<>(), new HashSet<>())));
 
         assertEquals("for (equipment in network.shuntCompensators) {\n" +
             "  if ((equipment.terminal.voltageLevel.nominalV < 90.0)\n" +
@@ -102,7 +102,7 @@ public class GenerateScriptFromFiltersTest {
             "SHUNT_COMPENSATOR",
             90,
             "<",
-            new HashSet<>())));
+                new HashSet<>(), new HashSet<>())));
 
         assertEquals("for (equipment in network.lines) {\n" +
             "  if ((equipment.terminal1.voltageLevel.nominalV == 225.0\n" +
@@ -114,7 +114,7 @@ public class GenerateScriptFromFiltersTest {
             "LINE",
             225,
             "=",
-            new HashSet<>())));
+                new HashSet<>(), new HashSet<>())));
 
         assertEquals("for (equipment in network.lines) {\n" +
                 "  if (isLocatedIn(['FR','BE'], equipment)\n" +
@@ -125,7 +125,7 @@ public class GenerateScriptFromFiltersTest {
                 "LINE",
                 -1,
                 "=",
-                countries
+                countries, new HashSet<>()
                 )));
 
         assertEquals("for (equipment in network.busbarSections) {\n" +
@@ -138,6 +138,6 @@ public class GenerateScriptFromFiltersTest {
             "BUSBAR_SECTION",
             63,
             ">=",
-            countries)));
+            countries, new HashSet<>())));
     }
 }

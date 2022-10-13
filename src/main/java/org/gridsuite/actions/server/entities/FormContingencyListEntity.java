@@ -42,6 +42,11 @@ public class FormContingencyListEntity extends AbstractContingencyEntity {
     @CollectionTable(foreignKey = @ForeignKey(name = "formContingencyListEntity_countries_fk"), indexes = {@Index(name = "formContingencyListEntity_countries_idx", columnList = "form_contingency_list_entity_id")})
     private Set<String> countries;
 
+    @Column(name = "country2")
+    @ElementCollection
+    @CollectionTable(foreignKey = @ForeignKey(name = "formContingencyListEntity_countries2_fk"), indexes = {@Index(name = "formContingencyListEntity_countries2_idx", columnList = "form_contingency_list_entity_id")})
+    private Set<String> countries2;
+
     public FormContingencyListEntity(FormContingencyList formContingencyList) {
         super();
         init(formContingencyList);
@@ -53,6 +58,7 @@ public class FormContingencyListEntity extends AbstractContingencyEntity {
         this.nominalVoltage = formContingencyList.getNominalVoltage();
         this.nominalVoltageOperator = formContingencyList.getNominalVoltageOperator();
         this.countries = new HashSet<>(emptyIfNull(formContingencyList.getCountries()));
+        this.countries2 = new HashSet<>(emptyIfNull(formContingencyList.getCountries2()));
     }
 
     public FormContingencyListEntity update(FormContingencyList formContingencyList) {
