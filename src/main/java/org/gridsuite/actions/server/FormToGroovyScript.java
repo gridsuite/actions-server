@@ -10,6 +10,7 @@ import com.powsybl.commons.PowsyblException;
 import org.apache.commons.io.IOUtils;
 import org.gridsuite.actions.server.dto.FormContingencyList;
 import org.gridsuite.actions.server.utils.EquipmentType;
+import org.gridsuite.actions.server.utils.NumericalFilterOperator;
 import org.springframework.core.io.ClassPathResource;
 import org.stringtemplate.v4.ST;
 
@@ -67,11 +68,11 @@ public class FormToGroovyScript {
                 break;
             case LINE:
                 equipmentsCollection = "lines";
-                script += branchTemplate;
+                script = branchTemplate;
                 break;
             case TWO_WINDINGS_TRANSFORMER:
                 equipmentsCollection = "twoWindingsTransformers";
-                script += branchTemplate;
+                script = branchTemplate;
                 break;
             default:
                 throw new PowsyblException("Unknown equipment type");
@@ -80,12 +81,11 @@ public class FormToGroovyScript {
         ST template = new ST(script);
 
         template.add("collectionName", equipmentsCollection);
-        if (formContingencyList.getNominalVoltage() != -1) {
-            template.add("nominalV", formContingencyList.getNominalVoltage());
+        if (formContingencyList.getNominalVoltage1() != null) {
+            template.add("nominalV", formContingencyList.getNominalVoltage1().getValue1());
+            template.add("nominalVOperator", NumericalFilterOperator.toScript(formContingencyList.getNominalVoltage1().getOperator()));
         }
-        template.add("nominalVOperator", formContingencyList.getNominalVoltageOperator().equals("=") ?
-                "==" :
-                formContingencyList.getNominalVoltageOperator());
+        // TODO DBR range
         if (!formContingencyList.getCountries().isEmpty()) {
             template.add("countries", formContingencyList.getCountries().stream().collect(joining("','", "['", "']")));
         }

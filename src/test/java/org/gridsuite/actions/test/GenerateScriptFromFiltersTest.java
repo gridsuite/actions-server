@@ -8,6 +8,8 @@ package org.gridsuite.actions.test;
 
 import org.gridsuite.actions.server.FormToGroovyScript;
 import org.gridsuite.actions.server.dto.FormContingencyList;
+import org.gridsuite.actions.server.dto.NumericalFilter;
+import org.gridsuite.actions.server.utils.NumericalFilterOperator;
 import org.junit.Test;
 
 import java.util.HashSet;
@@ -34,18 +36,14 @@ public class GenerateScriptFromFiltersTest {
                 "        contingency(equipment.id) { equipments equipment.id }\n" +
                 "  }\n" +
                 "}\n", formToScript.generateGroovyScriptFromForm(new FormContingencyList(null,
-            "GENERATOR",
-            90,
-            "=",
+            "GENERATOR", new NumericalFilter(NumericalFilterOperator.EQUAL, 90., null), null,
             countries, new HashSet<>())));
 
         assertEquals("for (equipment in network.twoWindingsTransformers) {\n" +
             "           contingency(equipment.id) { equipments equipment.id }\n" +
             "}\n", formToScript.generateGroovyScriptFromForm(
                 new FormContingencyList(null,
-                    "TWO_WINDINGS_TRANSFORMER",
-                    -1,
-                    ">=",
+                    "TWO_WINDINGS_TRANSFORMER", null, null,
                     new HashSet<>(), new HashSet<>()
             )));
 
@@ -56,9 +54,7 @@ public class GenerateScriptFromFiltersTest {
             "           contingency(equipment.id) { equipments equipment.id }\n" +
             "  }\n" +
             "}\n", formToScript.generateGroovyScriptFromForm(new FormContingencyList(null,
-            "HVDC_LINE",
-            -1,
-            "<=",
+            "HVDC_LINE", null, null,
             countries, new HashSet<>())));
 
         assertEquals("for (equipment in network.hvdcLines) {\n" +
@@ -68,9 +64,7 @@ public class GenerateScriptFromFiltersTest {
                 "           contingency(equipment.id) { equipments equipment.id }\n" +
                 "  }\n" +
                 "}\n", formToScript.generateGroovyScriptFromForm(new FormContingencyList(null,
-                "HVDC_LINE",
-                225,
-                "<=",
+                "HVDC_LINE", new NumericalFilter(NumericalFilterOperator.LESS_THAN_OR_EQUAL, 225., null), null,
                 countries, new HashSet<>())));
 
         assertEquals("for (equipment in network.danglingLines) {\n" +
@@ -80,17 +74,13 @@ public class GenerateScriptFromFiltersTest {
             "  }\n" +
             "}\n", formToScript.generateGroovyScriptFromForm(new FormContingencyList(
             null,
-            "DANGLING_LINE",
-            225,
-            "=",
+            "DANGLING_LINE", new NumericalFilter(NumericalFilterOperator.EQUAL, 225., null), null,
                 new HashSet<>(), new HashSet<>())));
 
         assertEquals("for (equipment in network.staticVarCompensators) {\n" +
             "        contingency(equipment.id) { equipments equipment.id }\n" +
             "}\n", formToScript.generateGroovyScriptFromForm(new FormContingencyList(null,
-            "STATIC_VAR_COMPENSATOR",
-            -1,
-            "=",
+            "STATIC_VAR_COMPENSATOR", null, null,
                 new HashSet<>(), new HashSet<>())));
 
         assertEquals("for (equipment in network.shuntCompensators) {\n" +
@@ -99,9 +89,7 @@ public class GenerateScriptFromFiltersTest {
             "        contingency(equipment.id) { equipments equipment.id }\n" +
             "  }\n" +
             "}\n", formToScript.generateGroovyScriptFromForm(new FormContingencyList(null,
-            "SHUNT_COMPENSATOR",
-            90,
-            "<",
+            "SHUNT_COMPENSATOR", new NumericalFilter(NumericalFilterOperator.LESS_THAN, 90., null), null,
                 new HashSet<>(), new HashSet<>())));
 
         assertEquals("for (equipment in network.lines) {\n" +
@@ -111,9 +99,7 @@ public class GenerateScriptFromFiltersTest {
             "           contingency(equipment.id) { equipments equipment.id }\n" +
             "  }\n" +
             "}\n", formToScript.generateGroovyScriptFromForm(new FormContingencyList(null,
-            "LINE",
-            225,
-            "=",
+            "LINE", new NumericalFilter(NumericalFilterOperator.EQUAL, 225., null), null,
                 new HashSet<>(), new HashSet<>())));
 
         assertEquals("for (equipment in network.lines) {\n" +
@@ -122,9 +108,7 @@ public class GenerateScriptFromFiltersTest {
                 "           contingency(equipment.id) { equipments equipment.id }\n" +
                 "  }\n" +
                 "}\n", formToScript.generateGroovyScriptFromForm(new FormContingencyList(null,
-                "LINE",
-                -1,
-                "=",
+                "LINE", null, null,
                 countries, new HashSet<>()
                 )));
 
@@ -135,9 +119,7 @@ public class GenerateScriptFromFiltersTest {
             "        contingency(equipment.id) { equipments equipment.id }\n" +
             "  }\n" +
             "}\n", formToScript.generateGroovyScriptFromForm(new FormContingencyList(null,
-            "BUSBAR_SECTION",
-            63,
-            ">=",
+            "BUSBAR_SECTION", new NumericalFilter(NumericalFilterOperator.MORE_THAN_OR_EQUAL, 63., null), null,
             countries, new HashSet<>())));
     }
 }

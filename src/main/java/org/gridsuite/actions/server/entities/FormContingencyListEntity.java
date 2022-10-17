@@ -31,12 +31,23 @@ public class FormContingencyListEntity extends AbstractContingencyEntity {
     @Column(name = "equipmentType")
     private String equipmentType;
 
-    @Column(name = "nominalVoltage")
-    private double nominalVoltage;
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @JoinColumn(name  =  "numericFilterId1_id",
+            referencedColumnName  =  "id",
+            foreignKey = @ForeignKey(
+                    name = "numericFilterId_id_fk1"
+            ), nullable = true)
+    NumericalFilterEntity nominalVoltage1;
 
-    @Column(name = "nominalVoltageOperator")
-    private String nominalVoltageOperator;
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @JoinColumn(name  =  "numericFilterId2_id",
+            referencedColumnName  =  "id",
+            foreignKey = @ForeignKey(
+                    name = "numericFilterId_id_fk2"
+            ), nullable = true)
+    NumericalFilterEntity nominalVoltage2;
 
+    // TODO DBR rename into country1
     @Column(name = "country")
     @ElementCollection
     @CollectionTable(foreignKey = @ForeignKey(name = "formContingencyListEntity_countries_fk"), indexes = {@Index(name = "formContingencyListEntity_countries_idx", columnList = "form_contingency_list_entity_id")})
@@ -55,8 +66,8 @@ public class FormContingencyListEntity extends AbstractContingencyEntity {
     /* called in constructor so it is final */
     final void init(FormContingencyList formContingencyList) {
         this.equipmentType = formContingencyList.getEquipmentType();
-        this.nominalVoltage = formContingencyList.getNominalVoltage();
-        this.nominalVoltageOperator = formContingencyList.getNominalVoltageOperator();
+        this.nominalVoltage1 = NumericalFilterEntity.convert(formContingencyList.getNominalVoltage1());
+        this.nominalVoltage2 = NumericalFilterEntity.convert(formContingencyList.getNominalVoltage2());
         this.countries = new HashSet<>(emptyIfNull(formContingencyList.getCountries()));
         this.countries2 = new HashSet<>(emptyIfNull(formContingencyList.getCountries2()));
     }

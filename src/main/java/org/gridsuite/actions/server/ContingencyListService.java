@@ -17,12 +17,12 @@ import org.codehaus.groovy.control.customizers.ImportCustomizer;
 import org.gridsuite.actions.server.dto.*;
 import org.gridsuite.actions.server.dto.ContingencyList;
 import org.gridsuite.actions.server.entities.FormContingencyListEntity;
+import org.gridsuite.actions.server.entities.NumericalFilterEntity;
 import org.gridsuite.actions.server.entities.ScriptContingencyListEntity;
 import org.gridsuite.actions.server.repositories.FormContingencyListRepository;
 import org.gridsuite.actions.server.repositories.ScriptContingencyListRepository;
 import org.gridsuite.actions.server.utils.ContingencyListType;
 import org.gridsuite.actions.server.utils.EquipmentType;
-import org.gridsuite.actions.server.utils.NominalVoltageOperator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -71,7 +71,7 @@ public class ContingencyListService {
     }
 
     private static FormContingencyList fromFormContingencyListEntity(FormContingencyListEntity entity) {
-        return new FormContingencyList(entity.getId(), entity.getEquipmentType(), entity.getNominalVoltage(), entity.getNominalVoltageOperator(), entity.getCountries(), entity.getCountries2());
+        return new FormContingencyList(entity.getId(), entity.getEquipmentType(), NumericalFilterEntity.convert(entity.getNominalVoltage1()), NumericalFilterEntity.convert(entity.getNominalVoltage2()), entity.getCountries(), entity.getCountries2());
     }
 
     List<ScriptContingencyList> getScriptContingencyLists() {
@@ -162,7 +162,7 @@ public class ContingencyListService {
 
     private <I extends Injection<I>> Stream<Injection<I>> getInjectionContingencyList(Stream<Injection<I>> stream, FormContingencyList formContingencyList) {
         return stream
-            .filter(injection -> formContingencyList.getNominalVoltage() == -1 || filterByVoltage(injection.getTerminal().getVoltageLevel().getNominalV(), formContingencyList.getNominalVoltage(), formContingencyList.getNominalVoltageOperator()))
+            .filter(injection -> formContingencyList.getNominalVoltage1() == null || filterByVoltage(injection.getTerminal().getVoltageLevel().getNominalV(), formContingencyList.getNominalVoltage1()))
             .filter(injection -> countryFilter(injection, formContingencyList));
     }
 
@@ -184,26 +184,35 @@ public class ContingencyListService {
             .collect(Collectors.toList());
     }
 
-    private <I extends Branch<I>> List<Contingency> getBranchContingencyList(Stream<Branch<I>> stream, FormContingencyList formContingencyList) {
+    private List<Contingency> getLineContingencyList(Stream<Line> stream, FormContingencyList formContingencyList) {
         return stream
-            .filter(branch -> formContingencyList.getNominalVoltage() == -1 || filterByVoltage(branch.getTerminal1().getVoltageLevel().getNominalV(), formContingencyList.getNominalVoltage(), formContingencyList.getNominalVoltageOperator())
-                || filterByVoltage(branch.getTerminal2().getVoltageLevel().getNominalV(), formContingencyList.getNominalVoltage(), formContingencyList.getNominalVoltageOperator()))
-            .filter(branch -> countryFilter(branch, formContingencyList))
-            .map(branch -> new Contingency(branch.getId(), Collections.singletonList(new BranchContingency(branch.getId()))))
-            .collect(Collectors.toList());
+                .filter(line -> formContingencyList.getNominalVoltage1() == null || filterByVoltage(line.getTerminal1().getVoltageLevel().getNominalV(), formContingencyList.getNominalVoltage1())
+                        || filterByVoltage(line.getTerminal2().getVoltageLevel().getNominalV(), formContingencyList.getNominalVoltage1()))
+                .filter(line -> countryFilter(line, formContingencyList))
+                .map(line -> new Contingency(line.getId(), Collections.singletonList(new BranchContingency(line.getId()))))
+                .collect(Collectors.toList());
     }
 
     private List<Contingency> getLineContingencyList(Network network, FormContingencyList formContingencyList) {
-        return getBranchContingencyList(network.getLineStream().map(line -> line), formContingencyList);
+        return getLineContingencyList(network.getLineStream().map(line -> line), formContingencyList);
+    }
+
+    private List<Contingency> get2WTransformerContingencyList(Stream<TwoWindingsTransformer> stream, FormContingencyList formContingencyList) {
+        return stream
+                .filter(transformer -> formContingencyList.getNominalVoltage1() == null || filterByVoltage(transformer.getTerminal1().getVoltageLevel().getNominalV(), formContingencyList.getNominalVoltage1())
+                        || filterByVoltage(transformer.getTerminal2().getVoltageLevel().getNominalV(), formContingencyList.getNominalVoltage1()))
+                .filter(transformer -> countryFilter(transformer, formContingencyList))
+                .map(transformer -> new Contingency(transformer.getId(), Collections.singletonList(new BranchContingency(transformer.getId()))))
+                .collect(Collectors.toList());
     }
 
     private List<Contingency> get2WTransformerContingencyList(Network network, FormContingencyList formContingencyList) {
-        return getBranchContingencyList(network.getTwoWindingsTransformerStream().map(twt -> twt), formContingencyList);
+        return get2WTransformerContingencyList(network.getTwoWindingsTransformerStream().map(twt -> twt), formContingencyList);
     }
 
     private List<Contingency> getHvdcContingencyList(Network network, FormContingencyList formContingencyList) {
         return network.getHvdcLineStream()
-            .filter(hvdcLine -> formContingencyList.getNominalVoltage() == -1 || filterByVoltage(hvdcLine.getNominalV(), formContingencyList.getNominalVoltage(), formContingencyList.getNominalVoltageOperator()))
+            .filter(hvdcLine -> formContingencyList.getNominalVoltage1() == null || filterByVoltage(hvdcLine.getNominalV(), formContingencyList.getNominalVoltage1()))
             .filter(hvdcLine -> countryFilter(hvdcLine, formContingencyList))
             .map(hvdcLine -> new Contingency(hvdcLine.getId(), Collections.singletonList(new HvdcLineContingency(hvdcLine.getId()))))
             .collect(Collectors.toList());
@@ -254,18 +263,20 @@ public class ContingencyListService {
         return contingencies;
     }
 
-    private boolean filterByVoltage(double equipmentNominalVoltage, double nominalVoltage, String nominalVoltageOperator) {
-        switch (NominalVoltageOperator.fromOperator(nominalVoltageOperator)) {
+    private boolean filterByVoltage(double equipmentNominalVoltage, NumericalFilter numericalFilter) {
+        switch (numericalFilter.getOperator()) {
             case EQUAL:
-                return equipmentNominalVoltage == nominalVoltage;
+                return equipmentNominalVoltage == numericalFilter.getValue1();
             case LESS_THAN:
-                return equipmentNominalVoltage < nominalVoltage;
+                return equipmentNominalVoltage < numericalFilter.getValue1();
             case LESS_THAN_OR_EQUAL:
-                return equipmentNominalVoltage <= nominalVoltage;
+                return equipmentNominalVoltage <= numericalFilter.getValue1();
             case MORE_THAN:
-                return equipmentNominalVoltage > nominalVoltage;
+                return equipmentNominalVoltage > numericalFilter.getValue1();
             case MORE_THAN_OR_EQUAL:
-                return equipmentNominalVoltage >= nominalVoltage;
+                return equipmentNominalVoltage >= numericalFilter.getValue1();
+            case RANGE:
+                return equipmentNominalVoltage >= numericalFilter.getValue1() && equipmentNominalVoltage <= numericalFilter.getValue2();
             default:
                 throw new PowsyblException("Unknown nominal voltage operator");
         }

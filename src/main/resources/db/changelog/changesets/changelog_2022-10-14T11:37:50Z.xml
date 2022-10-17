@@ -1,0 +1,27 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog" xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext" xmlns:pro="http://www.liquibase.org/xml/ns/pro" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd http://www.liquibase.org/xml/ns/pro http://www.liquibase.org/xml/ns/pro/liquibase-pro-4.1.xsd http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.1.xsd">
+    <changeSet author="braquartdav (generated)" id="1665747498527-1">
+        <createTable tableName="numeric_filter">
+            <column name="id" type="UUID">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="numeric_filterPK"/>
+            </column>
+            <column name="operator" type="VARCHAR(255)"/>
+            <column name="value1" type="FLOAT8"/>
+            <column name="value2" type="FLOAT8"/>
+        </createTable>
+    </changeSet>
+    <changeSet author="braquartdav (generated)" id="1665747498527-2">
+        <addColumn tableName="form_contingency_list">
+            <column name="numeric_filter_id1_id" type="uuid"/>
+        </addColumn>
+    </changeSet>
+    <changeSet author="braquartdav (generated)" id="1665747498527-3">
+        <addForeignKeyConstraint baseColumnNames="numeric_filter_id1_id" baseTableName="form_contingency_list" constraintName="numericFilterId_id_fk1" deferrable="false" initiallyDeferred="false" referencedColumnNames="id" referencedTableName="numeric_filter" validate="true"/>
+    </changeSet>
+    <changeSet author="braquartdav (generated)" id="1665747498527-4">
+        <dropColumn columnName="NOMINAL_VOLTAGE" tableName="FORM_CONTINGENCY_LIST"/>
+    </changeSet>
+    <changeSet author="braquartdav (generated)" id="1665747498527-5">
+        <dropColumn columnName="NOMINAL_VOLTAGE_OPERATOR" tableName="FORM_CONTINGENCY_LIST"/>
+    </changeSet>
+</databaseChangeLog>
