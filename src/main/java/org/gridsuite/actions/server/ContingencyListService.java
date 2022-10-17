@@ -264,16 +264,16 @@ public class ContingencyListService {
     }
 
     private boolean filterByVoltage(double equipmentNominalVoltage, NumericalFilter numericalFilter) {
-        switch (numericalFilter.getOperator()) {
-            case EQUAL:
+        switch (numericalFilter.getType()) {
+            case EQUALITY:
                 return equipmentNominalVoltage == numericalFilter.getValue1();
             case LESS_THAN:
                 return equipmentNominalVoltage < numericalFilter.getValue1();
-            case LESS_THAN_OR_EQUAL:
+            case LESS_OR_EQUAL:
                 return equipmentNominalVoltage <= numericalFilter.getValue1();
-            case MORE_THAN:
+            case GREATER_THAN:
                 return equipmentNominalVoltage > numericalFilter.getValue1();
-            case MORE_THAN_OR_EQUAL:
+            case GREATER_OR_EQUAL:
                 return equipmentNominalVoltage >= numericalFilter.getValue1();
             case RANGE:
                 return equipmentNominalVoltage >= numericalFilter.getValue1() && equipmentNominalVoltage <= numericalFilter.getValue2();

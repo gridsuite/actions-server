@@ -13,25 +13,25 @@ import com.powsybl.commons.PowsyblException;
  */
 
 public enum NumericalFilterOperator {
-    EQUAL,
-    MORE_THAN,
-    MORE_THAN_OR_EQUAL,
+    EQUALITY,
+    GREATER_THAN,
+    GREATER_OR_EQUAL,
     LESS_THAN,
-    LESS_THAN_OR_EQUAL,
+    LESS_OR_EQUAL,
     RANGE;
 
     public static NumericalFilterOperator fromString(String op) {
         switch (op) {
             case "=":
-                return EQUAL;
+                return EQUALITY;
             case ">":
-                return MORE_THAN;
+                return GREATER_THAN;
             case ">=":
-                return MORE_THAN_OR_EQUAL;
+                return GREATER_OR_EQUAL;
             case "<":
                 return LESS_THAN;
             case "<=":
-                return LESS_THAN_OR_EQUAL;
+                return LESS_OR_EQUAL;
             case "range":
                 return RANGE;
             default:
@@ -41,15 +41,15 @@ public enum NumericalFilterOperator {
 
     public static String toScript(NumericalFilterOperator op) {
         switch (op) {
-            case EQUAL:
+            case EQUALITY:
                 return "==";
-            case MORE_THAN:
+            case GREATER_THAN:
                 return ">";
-            case MORE_THAN_OR_EQUAL:
+            case GREATER_OR_EQUAL:
                 return ">=";
             case LESS_THAN:
                 return "<";
-            case LESS_THAN_OR_EQUAL:
+            case LESS_OR_EQUAL:
                 return "<=";
             case RANGE:
                 return "range";

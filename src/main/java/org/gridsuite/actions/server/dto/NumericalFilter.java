@@ -19,7 +19,7 @@ import org.gridsuite.actions.server.utils.NumericalFilterOperator;
 @Builder
 @ToString
 public class NumericalFilter {
-    NumericalFilterOperator operator;
+    NumericalFilterOperator type;
     Double value1;
     Double value2;
 }

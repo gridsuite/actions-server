@@ -42,10 +42,10 @@ public class NumericalFilterEntity {
 
     public static NumericalFilterEntity convert(NumericalFilter filter) {
         if (filter == null || filter.getValue1() == null
-            || filter.getOperator() == NumericalFilterOperator.RANGE && filter.getValue2() == null) {
+            || filter.getType() == NumericalFilterOperator.RANGE && filter.getValue2() == null) {
             return null;
         }
-        return new NumericalFilterEntity(null, filter.getOperator(), filter.getValue1(), filter.getValue2());
+        return new NumericalFilterEntity(null, filter.getType(), filter.getValue1(), filter.getValue2());
     }
 
     public static NumericalFilter convert(NumericalFilterEntity entity) {

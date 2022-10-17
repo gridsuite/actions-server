@@ -83,7 +83,7 @@ public class FormToGroovyScript {
         template.add("collectionName", equipmentsCollection);
         if (formContingencyList.getNominalVoltage1() != null) {
             template.add("nominalV", formContingencyList.getNominalVoltage1().getValue1());
-            template.add("nominalVOperator", NumericalFilterOperator.toScript(formContingencyList.getNominalVoltage1().getOperator()));
+            template.add("nominalVOperator", NumericalFilterOperator.toScript(formContingencyList.getNominalVoltage1().getType()));
         }
         // TODO DBR range
         if (!formContingencyList.getCountries().isEmpty()) {
