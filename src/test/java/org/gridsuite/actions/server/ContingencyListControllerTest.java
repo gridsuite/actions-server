@@ -698,7 +698,7 @@ public class ContingencyListControllerTest {
     }
 
     @Test
-    public void testExportContingenciesBadOperator() throws Exception {
+    public void testCreateContingencyBadOperator() throws Exception {
         String lineFilters = "{\n" +
                 "  \"equipmentType\": \"LINE\"," +
                 "  \"nominalVoltage1\": {" +
@@ -713,6 +713,72 @@ public class ContingencyListControllerTest {
                         .content(lineFilters)
                         .contentType(APPLICATION_JSON))
                 .andExpect(status().is4xxClientError());
+    }
+
+    @Test
+    public void testCreateContingencyNoValue1() throws Exception {
+        String formContingencyList = "{\n" +
+                "  \"equipmentType\": \"LINE\"," +
+                "  \"nominalVoltage1\": {" +
+                "    \"type\": \"EQUALITY\"," +
+                "    \"value1\": \"null\"," +
+                "    \"value2\": \"null\"" +
+                "  }," +
+                "  \"nominalVoltage2\": {" +
+                "    \"type\": \"LESS_OR_EQUAL\"," +
+                "    \"value1\": \"null\"," +
+                "    \"value2\": \"null\"" +
+                "  }," +
+                "  \"countries\": [\"FR\", \"BE\"]" +
+                "}";
+        // creation
+        String res = mvc.perform(post("/" + VERSION + "/form-contingency-lists/")
+                        .content(formContingencyList)
+                        .contentType(APPLICATION_JSON))
+                .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
+        UUID clId = objectMapper.readValue(res, FormContingencyList.class).getId();
+        // retrieve it, no numeric filters created (because of null values)
+        String noNominalFilter1Response = "{\"equipmentType\":\"LINE\",\"nominalVoltage1\":null,\"nominalVoltage2\":null,\"countries\":[\"BE\",\"FR\"],\"countries2\":[],\"type\":\"FORM\"}";
+        mvc.perform(get("/" + VERSION + "/form-contingency-lists/" + clId)
+                        .contentType(APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+                .andExpect(content().json(noNominalFilter1Response, false));
+
+        mvc.perform(delete("/" + VERSION + "/contingency-lists/" + clId)).andExpect(status().isOk());
+    }
+
+    @Test
+    public void testCreateContingencyNoValue2ForRange() throws Exception {
+        String formContingencyList = "{\n" +
+                "  \"equipmentType\": \"LINE\"," +
+                "  \"nominalVoltage1\": {" +
+                "    \"type\": \"RANGE\"," +
+                "    \"value1\": \"63.\"," +
+                "    \"value2\": \"null\"" +
+                "  }," +
+                "  \"nominalVoltage2\": {" +
+                "    \"type\": \"RANGE\"," +
+                "    \"value1\": \"44.\"," +
+                "    \"value2\": \"null\"" +
+                "  }," +
+                "  \"countries\": [\"FR\", \"BE\"]" +
+                "}";
+        // creation
+        String res = mvc.perform(post("/" + VERSION + "/form-contingency-lists/")
+                        .content(formContingencyList)
+                        .contentType(APPLICATION_JSON))
+                .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
+        UUID clId = objectMapper.readValue(res, FormContingencyList.class).getId();
+        // retrieve it, no numeric filters created (because of null values)
+        String noNominalFilter1Response = "{\"equipmentType\":\"LINE\",\"nominalVoltage1\":null,\"nominalVoltage2\":null,\"countries\":[\"BE\",\"FR\"],\"countries2\":[],\"type\":\"FORM\"}";
+        mvc.perform(get("/" + VERSION + "/form-contingency-lists/" + clId)
+                        .contentType(APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+                .andExpect(content().json(noNominalFilter1Response, false));
+
+        mvc.perform(delete("/" + VERSION + "/contingency-lists/" + clId)).andExpect(status().isOk());
     }
 
     @Test
