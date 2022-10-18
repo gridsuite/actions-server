@@ -92,6 +92,15 @@ public class GenerateScriptFromFiltersTest {
             "SHUNT_COMPENSATOR", new NumericalFilter(NumericalFilterOperator.LESS_THAN, 90., null), null,
                 new HashSet<>(), new HashSet<>())));
 
+        assertEquals("for (equipment in network.shuntCompensators) {\n" +
+                "  if ((equipment.terminal.voltageLevel.nominalV > 90.0)\n" +
+                "     ) {\n" +
+                "        contingency(equipment.id) { equipments equipment.id }\n" +
+                "  }\n" +
+                "}\n", formToScript.generateGroovyScriptFromForm(new FormContingencyList(null,
+                "SHUNT_COMPENSATOR", new NumericalFilter(NumericalFilterOperator.GREATER_THAN, 90., null), null,
+                    new HashSet<>(), new HashSet<>())));
+
         assertEquals("for (equipment in network.lines) {\n" +
             "  if ((equipment.terminal1.voltageLevel.nominalV == 225.0\n" +
             "          || equipment.terminal2.voltageLevel.nominalV == 225.0)\n" +

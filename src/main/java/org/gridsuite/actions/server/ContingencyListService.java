@@ -45,8 +45,6 @@ import java.util.stream.Stream;
 @Service
 public class ContingencyListService {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(ContingencyListService.class);
-
     private ScriptContingencyListRepository scriptContingencyListRepository;
 
     private FormContingencyListRepository formContingencyListRepository;
@@ -309,18 +307,12 @@ public class ContingencyListService {
     }
 
     ScriptContingencyList createScriptContingencyList(UUID id, ScriptContingencyList script) {
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("Create script contingency list '{}'", script.getId());
-        }
         ScriptContingencyListEntity entity = new ScriptContingencyListEntity(script);
         entity.setId(id == null ? UUID.randomUUID() : id);
         return fromScriptContingencyListEntity(scriptContingencyListRepository.save(entity));
     }
 
     Optional<ScriptContingencyList> createScriptContingencyList(UUID sourceListId, UUID id) {
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("Create script contingency list '{}' based on '{}'", id, sourceListId);
-        }
         ScriptContingencyList sourceScriptContingencyList = getScriptContingencyList(sourceListId).orElse(null);
         if (sourceScriptContingencyList != null) {
             ScriptContingencyListEntity entity = new ScriptContingencyListEntity(sourceScriptContingencyList);
@@ -331,25 +323,16 @@ public class ContingencyListService {
     }
 
     void modifyScriptContingencyList(UUID id, ScriptContingencyList script) {
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("Create script contingency list '{}'", script.getId());
-        }
         scriptContingencyListRepository.save(scriptContingencyListRepository.getOne(id).update(script));
     }
 
     public FormContingencyList createFormContingencyList(UUID id, FormContingencyList formContingencyList) {
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("Create form contingency list '{}' based on ", formContingencyList.getId());
-        }
         FormContingencyListEntity entity = new FormContingencyListEntity(formContingencyList);
         entity.setId(id == null ? UUID.randomUUID() : id);
         return fromFormContingencyListEntity(formContingencyListRepository.save(entity));
     }
 
     public Optional<FormContingencyList> createFormContingencyList(UUID sourceListId, UUID id) {
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("Create form contingency list '{}' based on '{}'", id, sourceListId);
-        }
         FormContingencyList sourceFormContingencyList = getFormContingencyList(sourceListId).orElse(null);
         if (sourceFormContingencyList != null) {
             FormContingencyListEntity entity = new FormContingencyListEntity(sourceFormContingencyList);
@@ -360,9 +343,6 @@ public class ContingencyListService {
     }
 
     public void modifyFormContingencyList(UUID id, FormContingencyList formContingencyList) {
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("Modify form contingency list '{}'", formContingencyList.getId());
-        }
         // throw if not found
         formContingencyListRepository.save(formContingencyListRepository.getOne(id).update(formContingencyList));
     }
@@ -383,9 +363,6 @@ public class ContingencyListService {
     @Transactional
     public ScriptContingencyList replaceFormContingencyListWithScript(UUID id) {
         Objects.requireNonNull(id);
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("Replace form contingency list with script'{}'", id);
-        }
         Optional<FormContingencyListEntity> formContingencyList = self.doGetFormContingencyListWithPreFetchedCountries(id);
         return formContingencyList.map(entity -> {
             String script = generateGroovyScriptFromForm(fromFormContingencyListEntity(entity));
@@ -402,10 +379,6 @@ public class ContingencyListService {
     @Transactional
     public ScriptContingencyList newScriptFromFormContingencyList(UUID id, UUID newId) {
         Objects.requireNonNull(id);
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("New script from form contingency list'{}'", id);
-        }
-
         Optional<FormContingencyListEntity> formContingencyList = self.doGetFormContingencyListWithPreFetchedCountries(id);
         return formContingencyList.map(entity -> {
             String script = generateGroovyScriptFromForm(fromFormContingencyListEntity(entity));
