@@ -13,6 +13,7 @@ import com.powsybl.iidm.network.*;
 import com.powsybl.network.store.client.NetworkStoreService;
 import com.powsybl.network.store.client.PreloadingStrategy;
 import com.powsybl.network.store.iidm.impl.NetworkFactoryImpl;
+import org.apache.commons.collections4.CollectionUtils;
 import org.codehaus.groovy.control.customizers.ImportCustomizer;
 import org.gridsuite.actions.server.dto.*;
 import org.gridsuite.actions.server.dto.ContingencyList;
@@ -148,22 +149,47 @@ public class ContingencyListService {
         }
     }
 
-    boolean countryFilter(Connectable<?> con, FormContingencyList filter) {
-        Set<String> countries = filter.getCountries();
-        return countries.isEmpty() || con.getTerminals().stream().anyMatch(connectable -> {
-            Optional<Country> country = connectable.getVoltageLevel().getSubstation().flatMap(Substation::getCountry);
-            return country.map(c -> countries.contains(c.name())).orElse(false);
-        });
+    private boolean countryFilter(Terminal terminal, Set<String> countries) {
+        Optional<Country> country = terminal.getVoltageLevel().getSubstation().flatMap(Substation::getCountry);
+        return CollectionUtils.isEmpty(countries) || country.map(c -> countries.contains(c.name())).orElse(false);
     }
 
-    boolean countryFilter(HvdcLine hvdcLine, FormContingencyList filter) {
-        return countryFilter(hvdcLine.getConverterStation1(), filter) || countryFilter(hvdcLine.getConverterStation2(), filter);
+    private boolean filterByCountries(Terminal terminal1, Terminal terminal2, Set<String> filter1, Set<String> filter2) {
+        return
+            // terminal 1 matches filter 1 and terminal 2 matches filter 2
+            countryFilter(terminal1, filter1) &&
+            countryFilter(terminal2, filter2)
+            || // or the opposite
+            countryFilter(terminal1, filter2) &&
+            countryFilter(terminal2, filter1);
+    }
+
+    private boolean filterByCountries(Branch<?> branch, FormContingencyList filter) {
+        return filterByCountries(branch.getTerminal1(), branch.getTerminal2(), filter.getCountries(), filter.getCountries2());
+    }
+
+    private boolean filterByCountries(HvdcLine line, FormContingencyList filter) {
+        return filterByCountries(line.getConverterStation1().getTerminal(), line.getConverterStation2().getTerminal(), filter.getCountries(), filter.getCountries2());
+    }
+
+    private boolean filterByVoltage(Terminal terminal, NumericalFilter numericalFilter) {
+        return filterByVoltage(terminal.getVoltageLevel().getNominalV(), numericalFilter);
+    }
+
+    private boolean filterByVoltages(Branch<?> branch, NumericalFilter numFilter1, NumericalFilter numFilter2) {
+        return
+            // terminal 1 matches filter 1 and terminal 2 matches filter 2
+            filterByVoltage(branch.getTerminal1(), numFilter1) &&
+            filterByVoltage(branch.getTerminal2(), numFilter2)
+            || // or the opposite
+            filterByVoltage(branch.getTerminal1(), numFilter2) &&
+            filterByVoltage(branch.getTerminal2(), numFilter1);
     }
 
     private <I extends Injection<I>> Stream<Injection<I>> getInjectionContingencyList(Stream<Injection<I>> stream, FormContingencyList formContingencyList) {
         return stream
-            .filter(injection -> formContingencyList.getNominalVoltage1() == null || filterByVoltage(injection.getTerminal().getVoltageLevel().getNominalV(), formContingencyList.getNominalVoltage1()))
-            .filter(injection -> countryFilter(injection, formContingencyList));
+            .filter(injection -> filterByVoltage(injection.getTerminal().getVoltageLevel().getNominalV(), formContingencyList.getNominalVoltage1()))
+            .filter(injection -> countryFilter(injection.getTerminal(), formContingencyList.getCountries()));
     }
 
     private List<Contingency> getGeneratorContingencyList(Network network, FormContingencyList formContingencyList) {
@@ -184,36 +210,26 @@ public class ContingencyListService {
             .collect(Collectors.toList());
     }
 
-    private List<Contingency> getLineContingencyList(Stream<Line> stream, FormContingencyList formContingencyList) {
-        return stream
-                .filter(line -> formContingencyList.getNominalVoltage1() == null || filterByVoltage(line.getTerminal1().getVoltageLevel().getNominalV(), formContingencyList.getNominalVoltage1())
-                        || filterByVoltage(line.getTerminal2().getVoltageLevel().getNominalV(), formContingencyList.getNominalVoltage1()))
-                .filter(line -> countryFilter(line, formContingencyList))
+    private List<Contingency> getLineContingencyList(Network network, FormContingencyList formContingencyList) {
+        return network.getLineStream()
+                .filter(line -> filterByVoltages(line, formContingencyList.getNominalVoltage1(), formContingencyList.getNominalVoltage2()))
+                .filter(line -> filterByCountries(line, formContingencyList))
                 .map(line -> new Contingency(line.getId(), Collections.singletonList(new BranchContingency(line.getId()))))
                 .collect(Collectors.toList());
     }
 
-    private List<Contingency> getLineContingencyList(Network network, FormContingencyList formContingencyList) {
-        return getLineContingencyList(network.getLineStream().map(line -> line), formContingencyList);
-    }
-
-    private List<Contingency> get2WTransformerContingencyList(Stream<TwoWindingsTransformer> stream, FormContingencyList formContingencyList) {
-        return stream
-                .filter(transformer -> formContingencyList.getNominalVoltage1() == null || filterByVoltage(transformer.getTerminal1().getVoltageLevel().getNominalV(), formContingencyList.getNominalVoltage1())
-                        || filterByVoltage(transformer.getTerminal2().getVoltageLevel().getNominalV(), formContingencyList.getNominalVoltage1()))
-                .filter(transformer -> countryFilter(transformer, formContingencyList))
+    private List<Contingency> get2WTransformerContingencyList(Network network, FormContingencyList formContingencyList) {
+        return network.getTwoWindingsTransformerStream()
+                .filter(transformer -> filterByVoltages(transformer, formContingencyList.getNominalVoltage1(), formContingencyList.getNominalVoltage2()))
+                .filter(transformer -> filterByCountries(transformer, formContingencyList))
                 .map(transformer -> new Contingency(transformer.getId(), Collections.singletonList(new BranchContingency(transformer.getId()))))
                 .collect(Collectors.toList());
     }
 
-    private List<Contingency> get2WTransformerContingencyList(Network network, FormContingencyList formContingencyList) {
-        return get2WTransformerContingencyList(network.getTwoWindingsTransformerStream().map(twt -> twt), formContingencyList);
-    }
-
     private List<Contingency> getHvdcContingencyList(Network network, FormContingencyList formContingencyList) {
         return network.getHvdcLineStream()
-            .filter(hvdcLine -> formContingencyList.getNominalVoltage1() == null || filterByVoltage(hvdcLine.getNominalV(), formContingencyList.getNominalVoltage1()))
-            .filter(hvdcLine -> countryFilter(hvdcLine, formContingencyList))
+            .filter(hvdcLine -> filterByVoltage(hvdcLine.getNominalV(), formContingencyList.getNominalVoltage1()))
+            .filter(hvdcLine -> filterByCountries(hvdcLine, formContingencyList))
             .map(hvdcLine -> new Contingency(hvdcLine.getId(), Collections.singletonList(new HvdcLineContingency(hvdcLine.getId()))))
             .collect(Collectors.toList());
     }
@@ -264,6 +280,9 @@ public class ContingencyListService {
     }
 
     private boolean filterByVoltage(double equipmentNominalVoltage, NumericalFilter numericalFilter) {
+        if (numericalFilter == null) {
+            return true;
+        }
         switch (numericalFilter.getType()) {
             case EQUALITY:
                 return equipmentNominalVoltage == numericalFilter.getValue1();

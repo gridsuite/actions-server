@@ -20,25 +20,6 @@ public enum NumericalFilterOperator {
     LESS_OR_EQUAL,
     RANGE;
 
-    public static NumericalFilterOperator fromString(String op) {
-        switch (op) {
-            case "=":
-                return EQUALITY;
-            case ">":
-                return GREATER_THAN;
-            case ">=":
-                return GREATER_OR_EQUAL;
-            case "<":
-                return LESS_THAN;
-            case "<=":
-                return LESS_OR_EQUAL;
-            case "range":
-                return RANGE;
-            default:
-                throw new PowsyblException("Unknown operator string");
-        }
-    }
-
     public static String toScript(NumericalFilterOperator op) {
         switch (op) {
             case EQUALITY:

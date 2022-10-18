@@ -47,7 +47,6 @@ public class FormContingencyListEntity extends AbstractContingencyEntity {
             ), nullable = true)
     NumericalFilterEntity nominalVoltage2;
 
-    // TODO DBR rename into country1
     @Column(name = "country")
     @ElementCollection
     @CollectionTable(foreignKey = @ForeignKey(name = "formContingencyListEntity_countries_fk"), indexes = {@Index(name = "formContingencyListEntity_countries_idx", columnList = "form_contingency_list_entity_id")})
