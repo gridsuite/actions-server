@@ -23,10 +23,10 @@ public class FiltersUtilsTest {
     @Test
     public void test() {
         Network network = EurostagTutorialExample1Factory.createWithMoreGenerators(new NetworkFactoryImpl());
-        Connectable<Generator> generator = network.getGenerator("GEN");
+        Generator generator = network.getGenerator("GEN");
 
         assertNotNull(generator);
-        assertTrue(FiltersUtils.isLocatedIn(List.of("FR", "BE"), generator));
-        assertFalse(FiltersUtils.isLocatedIn(List.of("DE"), generator));
+        assertTrue(FiltersUtils.injectionMatch(generator.getTerminal(), List.of("FR", "BE")));
+        assertFalse(FiltersUtils.injectionMatch(generator.getTerminal(), List.of("DE")));
     }
 }

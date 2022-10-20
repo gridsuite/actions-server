@@ -9,6 +9,7 @@ package org.gridsuite.actions.server;
 import com.powsybl.commons.PowsyblException;
 import org.apache.commons.io.IOUtils;
 import org.gridsuite.actions.server.dto.FormContingencyList;
+import org.gridsuite.actions.server.dto.NumericalFilter;
 import org.gridsuite.actions.server.utils.EquipmentType;
 import org.gridsuite.actions.server.utils.NumericalFilterOperator;
 import org.springframework.core.io.ClassPathResource;
@@ -23,23 +24,58 @@ import static java.util.stream.Collectors.joining;
  * @author Franck Lecuyer <franck.lecuyer at rte-france.com>
  */
 public class FormToGroovyScript {
-    private final String branchTemplate;
+    private final String transfo2WTemplate;
     private final String injectionTemplate;
+    private final String lineTemplate;
     private final String hvdcLineTemplate;
 
     public FormToGroovyScript() {
         try {
-            branchTemplate = IOUtils.toString(new ClassPathResource("branch.st").getInputStream(), Charset.defaultCharset());
+            transfo2WTemplate = IOUtils.toString(new ClassPathResource("transfo2W.st").getInputStream(), Charset.defaultCharset());
             injectionTemplate = IOUtils.toString(new ClassPathResource("injection.st").getInputStream(), Charset.defaultCharset());
+            lineTemplate = IOUtils.toString(new ClassPathResource("line.st").getInputStream(), Charset.defaultCharset());
             hvdcLineTemplate = IOUtils.toString(new ClassPathResource("hvdcLine.st").getInputStream(), Charset.defaultCharset());
         } catch (IOException e) {
             throw new PowsyblException("Unable to load templates for groovy script generation !!");
         }
     }
 
+    private void addNominalVoltage(ST template, NumericalFilter filter, int rank) {
+        if (filter == null) {
+            return;
+        }
+        if (filter.getType() == NumericalFilterOperator.RANGE) {
+            // range will use >= and <=
+            template.add(rank == 0 ? "nominalVMin" : "nominalVMin" + rank, filter.getValue1());
+            template.add(rank == 0 ? "nominalVMax" : "nominalVMax" + rank, filter.getValue2());
+        } else {
+            template.add(rank == 0 ? "nominalV" : "nominalV" + rank, filter.getValue1());
+            template.add(rank == 0 ? "nominalVOperator" : "nominalVOperator" + rank, filter.operator());
+        }
+    }
+
+    private void addCountry(ST template, FormContingencyList formContingencyList) {
+        if (!formContingencyList.getCountries().isEmpty()) {
+            template.add("countries", formContingencyList.getCountries().stream().collect(joining("','", "['", "']")));
+        }
+    }
+
+    private void addCountries(ST template, FormContingencyList formContingencyList) {
+        if (formContingencyList.getCountries().isEmpty() && formContingencyList.getCountries2().isEmpty()) {
+            return;
+        }
+        String set1 = formContingencyList.getCountries().isEmpty() ? "[]" : formContingencyList.getCountries().stream().collect(joining("','", "['", "']"));
+        String set2 = formContingencyList.getCountries2().isEmpty() ? "[]" : formContingencyList.getCountries2().stream().collect(joining("','", "['", "']"));
+        // always add both (easier template)
+        template.add("countries", set1);
+        template.add("countries2", set2);
+    }
+
     public String generateGroovyScriptFromForm(FormContingencyList formContingencyList) {
-        String script = "";
-        String equipmentsCollection = "";
+        String script;
+        String equipmentsCollection;
+        boolean isLine = false;
+        boolean isTransfo = false;
 
         switch (EquipmentType.valueOf(formContingencyList.getEquipmentType())) {
             case GENERATOR:
@@ -65,14 +101,17 @@ public class FormToGroovyScript {
             case HVDC_LINE:
                 equipmentsCollection = "hvdcLines";
                 script = hvdcLineTemplate;
+                isLine = true;
                 break;
             case LINE:
                 equipmentsCollection = "lines";
-                script = branchTemplate;
+                script = lineTemplate;
+                isLine = true;
                 break;
             case TWO_WINDINGS_TRANSFORMER:
                 equipmentsCollection = "twoWindingsTransformers";
-                script = branchTemplate;
+                script = transfo2WTemplate;
+                isTransfo = true;
                 break;
             default:
                 throw new PowsyblException("Unknown equipment type");
@@ -81,15 +120,25 @@ public class FormToGroovyScript {
         ST template = new ST(script);
 
         template.add("collectionName", equipmentsCollection);
-        if (formContingencyList.getNominalVoltage1() != null) {
-            template.add("nominalV", formContingencyList.getNominalVoltage1().getValue1());
-            template.add("nominalVOperator", NumericalFilterOperator.toScript(formContingencyList.getNominalVoltage1().getType()));
-        }
-        // TODO DBR range
-        if (!formContingencyList.getCountries().isEmpty()) {
-            template.add("countries", formContingencyList.getCountries().stream().collect(joining("','", "['", "']")));
-        }
 
+        if (isLine) {
+            addNominalVoltage(template, formContingencyList.getNominalVoltage1(), 0);
+            addCountries(template, formContingencyList);
+        } else if (isTransfo) {
+            if (formContingencyList.getNominalVoltage1() != null && formContingencyList.getNominalVoltage2() != null) {
+                addNominalVoltage(template, formContingencyList.getNominalVoltage1(), 1);
+                addNominalVoltage(template, formContingencyList.getNominalVoltage2(), 2);
+            } else if (formContingencyList.getNominalVoltage1() != null) {
+                addNominalVoltage(template, formContingencyList.getNominalVoltage1(), 0);
+            } else if (formContingencyList.getNominalVoltage2() != null) {
+                addNominalVoltage(template, formContingencyList.getNominalVoltage2(), 0);
+            }
+            addCountry(template, formContingencyList);
+        } else {
+            // injection case
+            addNominalVoltage(template, formContingencyList.getNominalVoltage1(), 0);
+            addCountry(template, formContingencyList);
+        }
         return template.render();
     }
 }

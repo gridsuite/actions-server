@@ -31,7 +31,7 @@ public class GenerateScriptFromFiltersTest {
 
         assertEquals("for (equipment in network.generators) {\n" +
                 "  if ((equipment.terminal.voltageLevel.nominalV == 90.0)\n" +
-                "      && isLocatedIn(['FR','BE'], equipment)\n" +
+                "      && injectionMatch(equipment.terminal, ['FR','BE'])\n" +
                 "     ) {\n" +
                 "        contingency(equipment.id) { equipments equipment.id }\n" +
                 "  }\n" +
@@ -41,7 +41,7 @@ public class GenerateScriptFromFiltersTest {
 
         assertEquals("for (equipment in network.twoWindingsTransformers) {\n" +
             "           contingency(equipment.id) { equipments equipment.id }\n" +
-            "}\n", formToScript.generateGroovyScriptFromForm(
+            "}\n\n\n", formToScript.generateGroovyScriptFromForm(
                 new FormContingencyList(null,
                     "TWO_WINDINGS_TRANSFORMER", null, null,
                     new HashSet<>(), new HashSet<>()
@@ -49,8 +49,8 @@ public class GenerateScriptFromFiltersTest {
 
         assertEquals("for (equipment in network.hvdcLines) {\n" +
             "  if (\n" +
-            "  (isLocatedIn(['FR','BE'], equipment.converterStation1)\n" +
-            "         || isLocatedIn(['FR','BE'], equipment.converterStation2))) {\n" +
+            "  (hvdcLineMatch(equipment, ['FR','BE'], []))\n" +
+            "       ) {\n" +
             "           contingency(equipment.id) { equipments equipment.id }\n" +
             "  }\n" +
             "}\n", formToScript.generateGroovyScriptFromForm(new FormContingencyList(null,
@@ -59,8 +59,8 @@ public class GenerateScriptFromFiltersTest {
 
         assertEquals("for (equipment in network.hvdcLines) {\n" +
                 "  if ((equipment.nominalV <= 225.0)\n" +
-                "        && (isLocatedIn(['FR','BE'], equipment.converterStation1)\n" +
-                "         || isLocatedIn(['FR','BE'], equipment.converterStation2))) {\n" +
+                "        && (hvdcLineMatch(equipment, ['FR','BE'], []))\n" +
+                "       ) {\n" +
                 "           contingency(equipment.id) { equipments equipment.id }\n" +
                 "  }\n" +
                 "}\n", formToScript.generateGroovyScriptFromForm(new FormContingencyList(null,
@@ -102,9 +102,9 @@ public class GenerateScriptFromFiltersTest {
                     new HashSet<>(), new HashSet<>())));
 
         assertEquals("for (equipment in network.lines) {\n" +
-            "  if ((equipment.terminal1.voltageLevel.nominalV == 225.0\n" +
-            "          || equipment.terminal2.voltageLevel.nominalV == 225.0)\n" +
-            "     ) {\n" +
+            "  if (\n" +
+            "        (equipment.terminal1.voltageLevel.nominalV == 225.0 || equipment.terminal2.voltageLevel.nominalV == 225.0)\n" +
+            "       ) {\n" +
             "           contingency(equipment.id) { equipments equipment.id }\n" +
             "  }\n" +
             "}\n", formToScript.generateGroovyScriptFromForm(new FormContingencyList(null,
@@ -112,8 +112,9 @@ public class GenerateScriptFromFiltersTest {
                 new HashSet<>(), new HashSet<>())));
 
         assertEquals("for (equipment in network.lines) {\n" +
-                "  if (isLocatedIn(['FR','BE'], equipment)\n" +
-                "     ) {\n" +
+                "  if (\n" +
+                "  (lineMatch(equipment, ['FR','BE'], []))\n" +
+                "       ) {\n" +
                 "           contingency(equipment.id) { equipments equipment.id }\n" +
                 "  }\n" +
                 "}\n", formToScript.generateGroovyScriptFromForm(new FormContingencyList(null,
@@ -123,7 +124,7 @@ public class GenerateScriptFromFiltersTest {
 
         assertEquals("for (equipment in network.busbarSections) {\n" +
             "  if ((equipment.terminal.voltageLevel.nominalV >= 63.0)\n" +
-            "      && isLocatedIn(['FR','BE'], equipment)\n" +
+            "      && injectionMatch(equipment.terminal, ['FR','BE'])\n" +
             "     ) {\n" +
             "        contingency(equipment.id) { equipments equipment.id }\n" +
             "  }\n" +

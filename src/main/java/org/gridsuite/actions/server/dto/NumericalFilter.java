@@ -20,5 +20,20 @@ public class NumericalFilter {
     NumericalFilterOperator type;
     Double value1;
     Double value2;
+
+    public String operator() {
+        if (type == NumericalFilterOperator.EQUALITY) {
+            return "==";
+        } else if (type == NumericalFilterOperator.GREATER_THAN) {
+            return ">";
+        } else if (type == NumericalFilterOperator.GREATER_OR_EQUAL) {
+            return ">=";
+        } else if (type == NumericalFilterOperator.LESS_THAN) {
+            return "<";
+        } else if (type == NumericalFilterOperator.LESS_OR_EQUAL) {
+            return "<=";
+        }
+        return "";
+    }
 }
 

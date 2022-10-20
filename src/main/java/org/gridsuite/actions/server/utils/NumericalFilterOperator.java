@@ -6,8 +6,6 @@
  */
 package org.gridsuite.actions.server.utils;
 
-import com.powsybl.commons.PowsyblException;
-
 /**
  * @author Chamseddine benhamed <chamseddine.benhamed at rte-france.com>
  */
@@ -18,24 +16,5 @@ public enum NumericalFilterOperator {
     GREATER_OR_EQUAL,
     LESS_THAN,
     LESS_OR_EQUAL,
-    RANGE;
-
-    public static String toScript(NumericalFilterOperator op) {
-        switch (op) {
-            case EQUALITY:
-                return "==";
-            case GREATER_THAN:
-                return ">";
-            case GREATER_OR_EQUAL:
-                return ">=";
-            case LESS_THAN:
-                return "<";
-            case LESS_OR_EQUAL:
-                return "<=";
-            case RANGE:
-                return "range";
-            default:
-                throw new PowsyblException("Unknown operator");
-        }
-    }
+    RANGE
 }
