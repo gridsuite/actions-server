@@ -151,7 +151,8 @@ public class ContingencyListControllerTest {
                 "  \"countries\": [\"FR\", \"IT\", \"NL\"]" +
                 "}";
 
-        String formContingencyList3 = "{\n" +
+        // LOAD is not a supported type => error case
+        String formContingencyListError = "{\n" +
                 "  \"equipmentType\": \"LOAD\"," +
                 "  \"nominalVoltage1\": {" +
                 "    \"type\": \"EQUALITY\"," +
@@ -183,17 +184,23 @@ public class ContingencyListControllerTest {
                 .andExpect(status().isOk())
                 .andReturn().getResponse().getContentAsString();
 
-        mvc.perform(post("/" + VERSION + "/form-contingency-lists/")
-                .content(formContingencyList3)
-                .contentType(APPLICATION_JSON))
-                .andExpect(status().isOk());
+        Throwable e = null;
+        try {
+            mvc.perform(post("/" + VERSION + "/form-contingency-lists/")
+                            .content(formContingencyListError)
+                            .contentType(APPLICATION_JSON))
+                    .andExpect(status().isOk());
+        } catch (Throwable ex) {
+            e = ex;
+        }
+        assertTrue(e instanceof NestedServletException);
 
         // Check data
         mvc.perform(get("/" + VERSION + "/contingency-lists")
                 .contentType(APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-                .andExpect(content().json("[{\"type\":\"SCRIPT\"},{\"type\":\"FORM\"},{\"type\":\"FORM\"},{\"type\":\"FORM\"}]", false));
+                .andExpect(content().json("[{\"type\":\"SCRIPT\"},{\"type\":\"FORM\"},{\"type\":\"FORM\"}]", false));
 
         mvc.perform(get("/" + VERSION + "/script-contingency-lists")
                 .contentType(APPLICATION_JSON))
@@ -206,8 +213,7 @@ public class ContingencyListControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
                 .andExpect(content().json("[{\"equipmentType\":\"GENERATOR\",\"nominalVoltage1\":{\"type\":\"GREATER_THAN\",\"value1\":100.0,\"value2\":null},\"nominalVoltage2\":null,\"countries\":[\"BE\",\"FR\"],\"countries2\":[],\"type\":\"FORM\"},{" +
-                        "\"equipmentType\":\"LINE\",\"nominalVoltage1\":{\"type\":\"LESS_OR_EQUAL\",\"value1\":225.0,\"value2\":null},\"nominalVoltage2\":null,\"countries\":[\"IT\",\"FR\",\"NL\"],\"countries2\":[],\"type\":\"FORM\"},{" +
-                        "\"equipmentType\":\"LOAD\",\"nominalVoltage1\":{\"type\":\"EQUALITY\",\"value1\":380.0,\"value2\":null},\"nominalVoltage2\":null,\"countries\":[],\"countries2\":[],\"type\":\"FORM\"}]", false));
+                        "\"equipmentType\":\"LINE\",\"nominalVoltage1\":{\"type\":\"LESS_OR_EQUAL\",\"value1\":225.0,\"value2\":null},\"nominalVoltage2\":null,\"countries\":[\"IT\",\"FR\",\"NL\"],\"countries2\":[],\"type\":\"FORM\"}]", false));
 
         mvc.perform(get("/" + VERSION + "/script-contingency-lists/" + scriptId)
                 .contentType(APPLICATION_JSON))
@@ -462,6 +468,7 @@ public class ContingencyListControllerTest {
         Set<String> france = Collections.singleton("FR");
         Set<String> franceAndMore = Set.of("FR", "ZA", "ES");
         Set<String> belgium = Collections.singleton("BE");
+        Set<String> italy = Collections.singleton("IT");
         Set<String> belgiumAndFrance = Set.of("FR", "BE");
 
         final String bothMatch = "[{\"id\":\"NGEN_NHV1\",\"elements\":[{\"id\":\"NGEN_NHV1\",\"type\":\"BRANCH\"}]},{\"id\":\"NHV2_NLOAD\",\"elements\":[{\"id\":\"NHV2_NLOAD\",\"type\":\"BRANCH\"}]}]";
@@ -475,18 +482,16 @@ public class ContingencyListControllerTest {
         testExportContingencies(twtForm, bothMatch, NETWORK_UUID);
         twtForm = genFormContingencyList(EquipmentType.TWO_WINDINGS_TRANSFORMER, -1., GREATER_THAN, belgium);
         testExportContingencies(twtForm, noMatch, NETWORK_UUID);
-        twtForm = genFormContingencyList(EquipmentType.TWO_WINDINGS_TRANSFORMER, -1., GREATER_THAN, belgium, franceAndMore);
-        testExportContingencies(twtForm, noMatch, NETWORK_UUID);
-        twtForm = genFormContingencyList(EquipmentType.TWO_WINDINGS_TRANSFORMER, -1., GREATER_THAN, france, franceAndMore);
-        testExportContingencies(twtForm, bothMatch, NETWORK_UUID);
 
         // NETWORK_UUID5 : a 2-country network (one substation FR, one BE)
         twtForm = genFormContingencyList(EquipmentType.TWO_WINDINGS_TRANSFORMER, -1., GREATER_THAN, belgium);
         testExportContingencies(twtForm, matchLOAD, NETWORK_UUID_5);
-        twtForm = genFormContingencyList(EquipmentType.TWO_WINDINGS_TRANSFORMER, -1., GREATER_THAN, belgium, franceAndMore);
-        testExportContingencies(twtForm, noMatch, NETWORK_UUID_5);
-        twtForm = genFormContingencyList(EquipmentType.TWO_WINDINGS_TRANSFORMER, -1., GREATER_THAN, belgiumAndFrance, franceAndMore);
+        twtForm = genFormContingencyList(EquipmentType.TWO_WINDINGS_TRANSFORMER, -1., GREATER_THAN, france);
         testExportContingencies(twtForm, matchGEN, NETWORK_UUID_5);
+        twtForm = genFormContingencyList(EquipmentType.TWO_WINDINGS_TRANSFORMER, -1., GREATER_THAN, belgiumAndFrance);
+        testExportContingencies(twtForm, bothMatch, NETWORK_UUID_5);
+        twtForm = genFormContingencyList(EquipmentType.TWO_WINDINGS_TRANSFORMER, -1., GREATER_THAN, italy);
+        testExportContingencies(twtForm, noMatch, NETWORK_UUID_5);
     }
 
     @Test

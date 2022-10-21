@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 import org.gridsuite.actions.server.dto.FormContingencyList;
+import org.gridsuite.actions.server.utils.EquipmentType;
 
 import javax.persistence.*;
 import java.util.HashSet;
@@ -65,10 +66,20 @@ public class FormContingencyListEntity extends AbstractContingencyEntity {
     /* called in constructor so it is final */
     final void init(FormContingencyList formContingencyList) {
         this.equipmentType = formContingencyList.getEquipmentType();
+        EquipmentType type = EquipmentType.valueOf(this.equipmentType);
         this.nominalVoltage1 = NumericalFilterEntity.convert(formContingencyList.getNominalVoltage1());
-        this.nominalVoltage2 = NumericalFilterEntity.convert(formContingencyList.getNominalVoltage2());
+        // protection against unrelevant input data
+        if (type == EquipmentType.TWO_WINDINGS_TRANSFORMER) {
+            this.nominalVoltage2 = NumericalFilterEntity.convert(formContingencyList.getNominalVoltage2());
+        } else {
+            this.nominalVoltage2 = null;
+        }
         this.countries = new HashSet<>(emptyIfNull(formContingencyList.getCountries()));
-        this.countries2 = new HashSet<>(emptyIfNull(formContingencyList.getCountries2()));
+        if (type == EquipmentType.LINE || type == EquipmentType.HVDC_LINE) {
+            this.countries2 = new HashSet<>(emptyIfNull(formContingencyList.getCountries2()));
+        } else {
+            this.countries2 = null;
+        }
     }
 
     public FormContingencyListEntity update(FormContingencyList formContingencyList) {
