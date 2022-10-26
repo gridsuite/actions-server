@@ -138,7 +138,7 @@ public class ContingencyListControllerTest {
                 "    \"value1\": \"100\"," +
                 "    \"value2\": \"null\"" +
                 "  }," +
-                "  \"countries\": [\"FR\", \"BE\"]" +
+                "  \"countries1\": [\"FR\", \"BE\"]" +
                 "}";
 
         String formContingencyList2 = "{\n" +
@@ -148,7 +148,7 @@ public class ContingencyListControllerTest {
                 "    \"value1\": \"225\"," +
                 "    \"value2\": \"null\"" +
                 "  }," +
-                "  \"countries\": [\"FR\", \"IT\", \"NL\"]" +
+                "  \"countries1\": [\"FR\", \"IT\", \"NL\"]" +
                 "}";
 
         // LOAD is not a supported type => error case
@@ -159,7 +159,7 @@ public class ContingencyListControllerTest {
                 "    \"value1\": \"380\"," +
                 "    \"value2\": \"null\"" +
                 "  }," +
-                "  \"countries\": []" +
+                "  \"countries1\": []" +
                 "}";
 
         UUID scriptId = addNewScriptContingencyList(script);
@@ -176,7 +176,7 @@ public class ContingencyListControllerTest {
                         .contentType(APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-                .andExpect(content().json("[{\"equipmentType\":\"GENERATOR\",\"nominalVoltage1\":{\"type\":\"GREATER_THAN\",\"value1\":100.0,\"value2\":null},\"nominalVoltage2\":null,\"countries\":[\"BE\",\"FR\"],\"countries2\":[],\"type\":\"FORM\"}]", false));
+                .andExpect(content().json("[{\"equipmentType\":\"GENERATOR\",\"nominalVoltage1\":{\"type\":\"GREATER_THAN\",\"value1\":100.0,\"value2\":null},\"nominalVoltage2\":null,\"countries1\":[\"BE\",\"FR\"],\"countries2\":[],\"type\":\"FORM\"}]", false));
 
         mvc.perform(post("/" + VERSION + "/form-contingency-lists/")
                 .content(formContingencyList2)
@@ -212,8 +212,8 @@ public class ContingencyListControllerTest {
                 .contentType(APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-                .andExpect(content().json("[{\"equipmentType\":\"GENERATOR\",\"nominalVoltage1\":{\"type\":\"GREATER_THAN\",\"value1\":100.0,\"value2\":null},\"nominalVoltage2\":null,\"countries\":[\"BE\",\"FR\"],\"countries2\":[],\"type\":\"FORM\"},{" +
-                        "\"equipmentType\":\"LINE\",\"nominalVoltage1\":{\"type\":\"LESS_OR_EQUAL\",\"value1\":225.0,\"value2\":null},\"nominalVoltage2\":null,\"countries\":[\"IT\",\"FR\",\"NL\"],\"countries2\":[],\"type\":\"FORM\"}]", false));
+                .andExpect(content().json("[{\"equipmentType\":\"GENERATOR\",\"nominalVoltage1\":{\"type\":\"GREATER_THAN\",\"value1\":100.0,\"value2\":null},\"nominalVoltage2\":null,\"countries1\":[\"BE\",\"FR\"],\"countries2\":[],\"type\":\"FORM\"},{" +
+                        "\"equipmentType\":\"LINE\",\"nominalVoltage1\":{\"type\":\"LESS_OR_EQUAL\",\"value1\":225.0,\"value2\":null},\"nominalVoltage2\":null,\"countries1\":[\"IT\",\"FR\",\"NL\"],\"countries2\":[],\"type\":\"FORM\"}]", false));
 
         mvc.perform(get("/" + VERSION + "/script-contingency-lists/" + scriptId)
                 .contentType(APPLICATION_JSON))
@@ -225,7 +225,7 @@ public class ContingencyListControllerTest {
                 .contentType(APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-                .andExpect(content().json("{\"equipmentType\":\"GENERATOR\",\"nominalVoltage1\":{\"type\":\"GREATER_THAN\",\"value1\":100.0,\"value2\":null},\"nominalVoltage2\":null,\"countries\":[\"BE\",\"FR\"],\"countries2\":[],\"type\":\"FORM\"}", false));
+                .andExpect(content().json("{\"equipmentType\":\"GENERATOR\",\"nominalVoltage1\":{\"type\":\"GREATER_THAN\",\"value1\":100.0,\"value2\":null},\"nominalVoltage2\":null,\"countries1\":[\"BE\",\"FR\"],\"countries2\":[],\"type\":\"FORM\"}", false));
 
         // check not found
         mvc.perform(get("/" + VERSION + "/script-contingency-lists/" + notFoundId)
@@ -318,7 +318,7 @@ public class ContingencyListControllerTest {
             }
             jsonData += "},";
         }
-        jsonData += "\"countries\": [" + (!countries.isEmpty() ? "\"" + join(countries, "\",\"") + "\"" : "") + "], ";
+        jsonData += "\"countries1\": [" + (!countries.isEmpty() ? "\"" + join(countries, "\",\"") + "\"" : "") + "], ";
         jsonData += "\"countries2\": [" + (!countries2.isEmpty() ? "\"" + join(countries2, "\",\"") + "\"" : "") + "]}";
         return jsonData;
     }
@@ -569,10 +569,10 @@ public class ContingencyListControllerTest {
     }
 
     void compareFormContingencyList(FormContingencyList expected, FormContingencyList current) {
-        if (null == expected.getCountries()) {
-            assertTrue(current.getCountries().isEmpty());
+        if (null == expected.getCountries1()) {
+            assertTrue(current.getCountries1().isEmpty());
         } else {
-            assertEquals(expected.getCountries(), current.getCountries());
+            assertEquals(expected.getCountries1(), current.getCountries1());
         }
         assertEquals(expected.getEquipmentType(), current.getEquipmentType());
         if (expected.getNominalVoltage1() == null || current.getNominalVoltage1() == null) {
@@ -711,7 +711,7 @@ public class ContingencyListControllerTest {
                 "    \"value1\": \"100\"," +
                 "    \"value2\": \"null\"" +
                 "  }," +
-                "  \"countries\": [\"FR\", \"BE\"]" +
+                "  \"countries1\": [\"FR\", \"BE\"]" +
                 "}";
 
         mvc.perform(post("/" + VERSION + "/form-contingency-lists/")
@@ -734,7 +734,7 @@ public class ContingencyListControllerTest {
                 "    \"value1\": \"null\"," +
                 "    \"value2\": \"null\"" +
                 "  }," +
-                "  \"countries\": [\"FR\", \"BE\"]" +
+                "  \"countries1\": [\"FR\", \"BE\"]" +
                 "}";
         // creation
         String res = mvc.perform(post("/" + VERSION + "/form-contingency-lists/")
@@ -743,7 +743,7 @@ public class ContingencyListControllerTest {
                 .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
         UUID clId = objectMapper.readValue(res, FormContingencyList.class).getId();
         // retrieve it, no numeric filters created (because of null values)
-        String noNominalFilter1Response = "{\"equipmentType\":\"LINE\",\"nominalVoltage1\":null,\"nominalVoltage2\":null,\"countries\":[\"BE\",\"FR\"],\"countries2\":[],\"type\":\"FORM\"}";
+        String noNominalFilter1Response = "{\"equipmentType\":\"LINE\",\"nominalVoltage1\":null,\"nominalVoltage2\":null,\"countries1\":[\"BE\",\"FR\"],\"countries2\":[],\"type\":\"FORM\"}";
         mvc.perform(get("/" + VERSION + "/form-contingency-lists/" + clId)
                         .contentType(APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -767,7 +767,7 @@ public class ContingencyListControllerTest {
                 "    \"value1\": \"44.\"," +
                 "    \"value2\": \"null\"" +
                 "  }," +
-                "  \"countries\": [\"FR\", \"BE\"]" +
+                "  \"countries1\": [\"FR\", \"BE\"]" +
                 "}";
         // creation
         String res = mvc.perform(post("/" + VERSION + "/form-contingency-lists/")
@@ -776,7 +776,7 @@ public class ContingencyListControllerTest {
                 .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
         UUID clId = objectMapper.readValue(res, FormContingencyList.class).getId();
         // retrieve it, no numeric filters created (because of null values)
-        String noNominalFilter1Response = "{\"equipmentType\":\"LINE\",\"nominalVoltage1\":null,\"nominalVoltage2\":null,\"countries\":[\"BE\",\"FR\"],\"countries2\":[],\"type\":\"FORM\"}";
+        String noNominalFilter1Response = "{\"equipmentType\":\"LINE\",\"nominalVoltage1\":null,\"nominalVoltage2\":null,\"countries1\":[\"BE\",\"FR\"],\"countries2\":[],\"type\":\"FORM\"}";
         mvc.perform(get("/" + VERSION + "/form-contingency-lists/" + clId)
                         .contentType(APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -810,13 +810,13 @@ public class ContingencyListControllerTest {
         FormContingencyListEntity entity = new FormContingencyListEntity();
         entity.setEquipmentType("LINE");
         entity.setNominalVoltage1(new NumericalFilterEntity(null, EQUALITY, 225., null));
-        entity.setCountries(Set.of("FRANCE", "ITALY"));
+        entity.setCountries1(Set.of("FRANCE", "ITALY"));
 
         assertEquals("LINE", entity.getEquipmentType());
         assertEquals(225., entity.getNominalVoltage1().getValue1(), 0.1);
         assertEquals(EQUALITY, entity.getNominalVoltage1().getOperator());
-        assertTrue(entity.getCountries().contains("FRANCE"));
-        assertTrue(entity.getCountries().contains("ITALY"));
+        assertTrue(entity.getCountries1().contains("FRANCE"));
+        assertTrue(entity.getCountries1().contains("ITALY"));
     }
 
     @Test
@@ -828,7 +828,7 @@ public class ContingencyListControllerTest {
                 "    \"value1\": \"100\"," +
                 "    \"value2\": \"null\"" +
                 "  }," +
-                "  \"countries\": [\"FR\", \"BE\"]" +
+                "  \"countries1\": [\"FR\", \"BE\"]" +
                 "}";
 
         // Put data
@@ -861,7 +861,7 @@ public class ContingencyListControllerTest {
                 "    \"value1\": \"100\"," +
                 "    \"value2\": \"null\"" +
                 "  }," +
-                "  \"countries\": [\"FR\", \"BE\"]" +
+                "  \"countries1\": [\"FR\", \"BE\"]" +
                 "}";
         // Put data
         UUID firstUUID = addNewFormContingencyList(form);

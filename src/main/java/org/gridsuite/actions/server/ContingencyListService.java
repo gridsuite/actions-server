@@ -68,7 +68,7 @@ public class ContingencyListService {
     }
 
     private static FormContingencyList fromFormContingencyListEntity(FormContingencyListEntity entity) {
-        return new FormContingencyList(entity.getId(), entity.getEquipmentType(), NumericalFilterEntity.convert(entity.getNominalVoltage1()), NumericalFilterEntity.convert(entity.getNominalVoltage2()), entity.getCountries(), entity.getCountries2());
+        return new FormContingencyList(entity.getId(), entity.getEquipmentType(), NumericalFilterEntity.convert(entity.getNominalVoltage1()), NumericalFilterEntity.convert(entity.getNominalVoltage2()), entity.getCountries1(), entity.getCountries2());
     }
 
     List<ScriptContingencyList> getScriptContingencyLists() {
@@ -106,7 +106,7 @@ public class ContingencyListService {
     public Optional<FormContingencyListEntity> doGetFormContingencyListWithPreFetchedCountries(UUID name) {
         return formContingencyListRepository.findById(name).map(entity -> {
             @SuppressWarnings("unused")
-            int ignoreSize = entity.getCountries().size();
+            int ignoreSize = entity.getCountries1().size();
             return entity;
         });
     }
@@ -161,11 +161,11 @@ public class ContingencyListService {
     }
 
     private boolean filterByCountries(Branch<?> branch, FormContingencyList filter) {
-        return filterByCountries(branch.getTerminal1(), branch.getTerminal2(), filter.getCountries(), filter.getCountries2());
+        return filterByCountries(branch.getTerminal1(), branch.getTerminal2(), filter.getCountries1(), filter.getCountries2());
     }
 
     private boolean filterByCountries(HvdcLine line, FormContingencyList filter) {
-        return filterByCountries(line.getConverterStation1().getTerminal(), line.getConverterStation2().getTerminal(), filter.getCountries(), filter.getCountries2());
+        return filterByCountries(line.getConverterStation1().getTerminal(), line.getConverterStation2().getTerminal(), filter.getCountries1(), filter.getCountries2());
     }
 
     private boolean filterByVoltage(Terminal terminal, NumericalFilter numericalFilter) {
@@ -185,7 +185,7 @@ public class ContingencyListService {
     private <I extends Injection<I>> Stream<Injection<I>> getInjectionContingencyList(Stream<Injection<I>> stream, FormContingencyList formContingencyList) {
         return stream
             .filter(injection -> filterByVoltage(injection.getTerminal().getVoltageLevel().getNominalV(), formContingencyList.getNominalVoltage1()))
-            .filter(injection -> countryFilter(injection.getTerminal(), formContingencyList.getCountries()));
+            .filter(injection -> countryFilter(injection.getTerminal(), formContingencyList.getCountries1()));
     }
 
     private List<Contingency> getGeneratorContingencyList(Network network, FormContingencyList formContingencyList) {

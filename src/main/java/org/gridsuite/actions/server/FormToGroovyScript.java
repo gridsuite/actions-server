@@ -55,19 +55,19 @@ public class FormToGroovyScript {
     }
 
     private void addCountry(ST template, FormContingencyList formContingencyList) {
-        if (!formContingencyList.getCountries().isEmpty()) {
-            template.add("countries", formContingencyList.getCountries().stream().collect(joining("','", "['", "']")));
+        if (!formContingencyList.getCountries1().isEmpty()) {
+            template.add("countries1", formContingencyList.getCountries1().stream().collect(joining("','", "['", "']")));
         }
     }
 
     private void addCountries(ST template, FormContingencyList formContingencyList) {
-        if (formContingencyList.getCountries().isEmpty() && formContingencyList.getCountries2().isEmpty()) {
+        if (formContingencyList.getCountries1().isEmpty() && formContingencyList.getCountries2().isEmpty()) {
             return;
         }
-        String set1 = formContingencyList.getCountries().isEmpty() ? "[]" : formContingencyList.getCountries().stream().collect(joining("','", "['", "']"));
+        String set1 = formContingencyList.getCountries1().isEmpty() ? "[]" : formContingencyList.getCountries1().stream().collect(joining("','", "['", "']"));
         String set2 = formContingencyList.getCountries2().isEmpty() ? "[]" : formContingencyList.getCountries2().stream().collect(joining("','", "['", "']"));
         // always add both (easier template)
-        template.add("countries", set1);
+        template.add("countries1", set1);
         template.add("countries2", set2);
     }
 

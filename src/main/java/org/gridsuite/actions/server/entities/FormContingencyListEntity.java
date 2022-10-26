@@ -48,10 +48,10 @@ public class FormContingencyListEntity extends AbstractContingencyEntity {
             ), nullable = true)
     NumericalFilterEntity nominalVoltage2;
 
-    @Column(name = "country")
+    @Column(name = "country1")
     @ElementCollection
-    @CollectionTable(foreignKey = @ForeignKey(name = "formContingencyListEntity_countries_fk"), indexes = {@Index(name = "formContingencyListEntity_countries_idx", columnList = "form_contingency_list_entity_id")})
-    private Set<String> countries;
+    @CollectionTable(foreignKey = @ForeignKey(name = "formContingencyListEntity_countries1_fk"), indexes = {@Index(name = "formContingencyListEntity_countries1_idx", columnList = "form_contingency_list_entity_id")})
+    private Set<String> countries1;
 
     @Column(name = "country2")
     @ElementCollection
@@ -74,7 +74,7 @@ public class FormContingencyListEntity extends AbstractContingencyEntity {
         } else {
             this.nominalVoltage2 = null;
         }
-        this.countries = new HashSet<>(emptyIfNull(formContingencyList.getCountries()));
+        this.countries1 = new HashSet<>(emptyIfNull(formContingencyList.getCountries1()));
         if (type == EquipmentType.LINE || type == EquipmentType.HVDC_LINE) {
             this.countries2 = new HashSet<>(emptyIfNull(formContingencyList.getCountries2()));
         } else {

@@ -21,7 +21,7 @@ import java.util.UUID;
 @Repository
 public interface FormContingencyListRepository extends JpaRepository<FormContingencyListEntity, UUID> {
 
-    @Query("SELECT DISTINCT entity FROM FormContingencyListEntity entity LEFT JOIN FETCH entity.countries")
+    @Query("SELECT DISTINCT entity FROM FormContingencyListEntity entity LEFT JOIN FETCH entity.countries1")
     List<FormContingencyListEntity> findAllWithCountries();
 
     /* do not use deleteById which throw when id does not exists */

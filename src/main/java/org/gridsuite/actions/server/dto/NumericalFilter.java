@@ -22,18 +22,20 @@ public class NumericalFilter {
     Double value2;
 
     public String operator() {
-        if (type == NumericalFilterOperator.EQUALITY) {
-            return "==";
-        } else if (type == NumericalFilterOperator.GREATER_THAN) {
-            return ">";
-        } else if (type == NumericalFilterOperator.GREATER_OR_EQUAL) {
-            return ">=";
-        } else if (type == NumericalFilterOperator.LESS_THAN) {
-            return "<";
-        } else if (type == NumericalFilterOperator.LESS_OR_EQUAL) {
-            return "<=";
+        switch (type) {
+            case EQUALITY:
+                return "==";
+            case LESS_THAN:
+                return "<";
+            case LESS_OR_EQUAL:
+                return "<=";
+            case GREATER_THAN:
+                return ">";
+            case GREATER_OR_EQUAL:
+                return ">=";
+            default:
+                return "";
         }
-        return "";
     }
 }
 
