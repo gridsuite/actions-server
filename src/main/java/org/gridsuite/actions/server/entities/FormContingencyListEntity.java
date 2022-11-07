@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 import org.gridsuite.actions.server.dto.FormContingencyList;
+import org.gridsuite.actions.server.utils.EquipmentType;
 
 import javax.persistence.*;
 import java.util.HashSet;
@@ -31,16 +32,31 @@ public class FormContingencyListEntity extends AbstractContingencyEntity {
     @Column(name = "equipmentType")
     private String equipmentType;
 
-    @Column(name = "nominalVoltage")
-    private double nominalVoltage;
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @JoinColumn(name  =  "numericFilterId1_id",
+            referencedColumnName  =  "id",
+            foreignKey = @ForeignKey(
+                    name = "numericFilterId_id_fk1"
+            ), nullable = true)
+    NumericalFilterEntity nominalVoltage1;
 
-    @Column(name = "nominalVoltageOperator")
-    private String nominalVoltageOperator;
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @JoinColumn(name  =  "numericFilterId2_id",
+            referencedColumnName  =  "id",
+            foreignKey = @ForeignKey(
+                    name = "numericFilterId_id_fk2"
+            ), nullable = true)
+    NumericalFilterEntity nominalVoltage2;
 
-    @Column(name = "country")
+    @Column(name = "country1")
     @ElementCollection
-    @CollectionTable(foreignKey = @ForeignKey(name = "formContingencyListEntity_countries_fk"), indexes = {@Index(name = "formContingencyListEntity_countries_idx", columnList = "form_contingency_list_entity_id")})
-    private Set<String> countries;
+    @CollectionTable(foreignKey = @ForeignKey(name = "formContingencyListEntity_countries1_fk"), indexes = {@Index(name = "formContingencyListEntity_countries1_idx", columnList = "form_contingency_list_entity_id")})
+    private Set<String> countries1;
+
+    @Column(name = "country2")
+    @ElementCollection
+    @CollectionTable(foreignKey = @ForeignKey(name = "formContingencyListEntity_countries2_fk"), indexes = {@Index(name = "formContingencyListEntity_countries2_idx", columnList = "form_contingency_list_entity_id")})
+    private Set<String> countries2;
 
     public FormContingencyListEntity(FormContingencyList formContingencyList) {
         super();
@@ -50,9 +66,20 @@ public class FormContingencyListEntity extends AbstractContingencyEntity {
     /* called in constructor so it is final */
     final void init(FormContingencyList formContingencyList) {
         this.equipmentType = formContingencyList.getEquipmentType();
-        this.nominalVoltage = formContingencyList.getNominalVoltage();
-        this.nominalVoltageOperator = formContingencyList.getNominalVoltageOperator();
-        this.countries = new HashSet<>(emptyIfNull(formContingencyList.getCountries()));
+        EquipmentType type = EquipmentType.valueOf(this.equipmentType);
+        this.nominalVoltage1 = NumericalFilterEntity.convert(formContingencyList.getNominalVoltage1());
+        // protection against unrelevant input data
+        if (type == EquipmentType.TWO_WINDINGS_TRANSFORMER) {
+            this.nominalVoltage2 = NumericalFilterEntity.convert(formContingencyList.getNominalVoltage2());
+        } else {
+            this.nominalVoltage2 = null;
+        }
+        this.countries1 = new HashSet<>(emptyIfNull(formContingencyList.getCountries1()));
+        if (type == EquipmentType.LINE || type == EquipmentType.HVDC_LINE) {
+            this.countries2 = new HashSet<>(emptyIfNull(formContingencyList.getCountries2()));
+        } else {
+            this.countries2 = null;
+        }
     }
 
     public FormContingencyListEntity update(FormContingencyList formContingencyList) {
