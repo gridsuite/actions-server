@@ -74,8 +74,8 @@ public class FormToGroovyScript {
     public String generateGroovyScriptFromForm(FormContingencyList formContingencyList) {
         String script;
         String equipmentsCollection;
-        boolean isLine = false;
-        boolean isTransfo = false;
+        boolean twoCountry = false;
+        boolean twoVoltage = false;
 
         switch (EquipmentType.valueOf(formContingencyList.getEquipmentType())) {
             case GENERATOR:
@@ -101,17 +101,18 @@ public class FormToGroovyScript {
             case HVDC_LINE:
                 equipmentsCollection = "hvdcLines";
                 script = hvdcLineTemplate;
-                isLine = true;
+                twoCountry = true;
                 break;
             case LINE:
                 equipmentsCollection = "lines";
                 script = lineTemplate;
-                isLine = true;
+                twoCountry = true;
+                twoVoltage = true;
                 break;
             case TWO_WINDINGS_TRANSFORMER:
                 equipmentsCollection = "twoWindingsTransformers";
                 script = transfo2WTemplate;
-                isTransfo = true;
+                twoVoltage = true;
                 break;
             default:
                 throw new PowsyblException("Unknown equipment type");
@@ -121,10 +122,13 @@ public class FormToGroovyScript {
 
         template.add("collectionName", equipmentsCollection);
 
-        if (isLine) {
-            addNominalVoltage(template, formContingencyList.getNominalVoltage1(), 0);
+        if (twoCountry) {
             addCountries(template, formContingencyList);
-        } else if (isTransfo) {
+        } else {
+            addCountry(template, formContingencyList);
+        }
+
+        if (twoVoltage) {
             if (formContingencyList.getNominalVoltage1() != null && formContingencyList.getNominalVoltage2() != null) {
                 addNominalVoltage(template, formContingencyList.getNominalVoltage1(), 1);
                 addNominalVoltage(template, formContingencyList.getNominalVoltage2(), 2);
@@ -133,12 +137,10 @@ public class FormToGroovyScript {
             } else if (formContingencyList.getNominalVoltage2() != null) {
                 addNominalVoltage(template, formContingencyList.getNominalVoltage2(), 0);
             }
-            addCountry(template, formContingencyList);
         } else {
-            // injection case
             addNominalVoltage(template, formContingencyList.getNominalVoltage1(), 0);
-            addCountry(template, formContingencyList);
         }
+
         return template.render();
     }
 }

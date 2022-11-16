@@ -146,41 +146,42 @@ public class GenerateScriptFromFiltersTest {
 
         assertEquals("for (equipment in network.lines) {\n" +
                 "  if (\n" +
-                "        (equipment.terminal1.voltageLevel.nominalV == 225.0 || equipment.terminal2.voltageLevel.nominalV == 225.0)\n" +
-                "       ) {\n" +
+                "       (equipment.terminal1.voltageLevel.nominalV == 225.0\n" +
+                "            || equipment.terminal2.voltageLevel.nominalV == 225.0)\n" +
+                "     ) {\n" +
                 "           contingency(equipment.id) { equipments equipment.id }\n" +
                 "  }\n" +
-                "}\n", formToScript.generateGroovyScriptFromForm(new FormContingencyList(null,
+                "}\n\n\n", formToScript.generateGroovyScriptFromForm(new FormContingencyList(null,
                 "LINE", new NumericalFilter(NumericalFilterOperator.EQUALITY, 225., null), null,
                     new HashSet<>(), new HashSet<>())));
 
         assertEquals("for (equipment in network.lines) {\n" +
                 "  if (\n" +
                 "  (lineMatch(equipment, ['FR','BE'], ['ES','CA']))\n" +
-                "       ) {\n" +
+                "     ) {\n" +
                 "           contingency(equipment.id) { equipments equipment.id }\n" +
                 "  }\n" +
-                "}\n", formToScript.generateGroovyScriptFromForm(new FormContingencyList(null,
+                "}\n\n\n", formToScript.generateGroovyScriptFromForm(new FormContingencyList(null,
                 "LINE", null, null,
                 countries, countries2)));
 
         assertEquals("for (equipment in network.lines) {\n" +
                 "  if (\n" +
                 "  (lineMatch(equipment, ['FR','BE'], []))\n" +
-                "       ) {\n" +
+                "     ) {\n" +
                 "           contingency(equipment.id) { equipments equipment.id }\n" +
                 "  }\n" +
-                "}\n", formToScript.generateGroovyScriptFromForm(new FormContingencyList(null,
+                "}\n\n\n", formToScript.generateGroovyScriptFromForm(new FormContingencyList(null,
                 "LINE", null, null,
                 countries, new HashSet<>())));
 
         assertEquals("for (equipment in network.lines) {\n" +
                 "  if (\n" +
                 "  (lineMatch(equipment, [], ['ES','CA']))\n" +
-                "       ) {\n" +
+                "     ) {\n" +
                 "           contingency(equipment.id) { equipments equipment.id }\n" +
                 "  }\n" +
-                "}\n", formToScript.generateGroovyScriptFromForm(new FormContingencyList(null,
+                "}\n\n\n", formToScript.generateGroovyScriptFromForm(new FormContingencyList(null,
                 "LINE", null, null,
                     new HashSet<>(), countries2)));
     }

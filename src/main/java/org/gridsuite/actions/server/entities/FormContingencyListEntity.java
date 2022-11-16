@@ -69,7 +69,7 @@ public class FormContingencyListEntity extends AbstractContingencyEntity {
         EquipmentType type = EquipmentType.valueOf(this.equipmentType);
         this.nominalVoltage1 = NumericalFilterEntity.convert(formContingencyList.getNominalVoltage1());
         // protection against unrelevant input data
-        if (type == EquipmentType.TWO_WINDINGS_TRANSFORMER) {
+        if (type == EquipmentType.TWO_WINDINGS_TRANSFORMER || type == EquipmentType.LINE) {
             this.nominalVoltage2 = NumericalFilterEntity.convert(formContingencyList.getNominalVoltage2());
         } else {
             this.nominalVoltage2 = null;
