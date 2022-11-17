@@ -6,7 +6,6 @@
  */
 package org.gridsuite.actions.server;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -23,11 +22,13 @@ import org.gridsuite.actions.server.dto.ContingencyListAttributes;
 import org.gridsuite.actions.server.dto.FormContingencyList;
 import org.gridsuite.actions.server.dto.ScriptContingencyList;
 import org.gridsuite.actions.server.entities.FormContingencyListEntity;
+import org.gridsuite.actions.server.entities.NumericalFilterEntity;
 import org.gridsuite.actions.server.entities.ScriptContingencyListEntity;
 import org.gridsuite.actions.server.repositories.FormContingencyListRepository;
 import org.gridsuite.actions.server.repositories.ScriptContingencyListRepository;
 import org.gridsuite.actions.server.utils.ContingencyListType;
 import org.gridsuite.actions.server.utils.EquipmentType;
+import org.gridsuite.actions.server.utils.NumericalFilterOperator;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -46,11 +47,11 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
-import java.util.StringJoiner;
 import java.util.UUID;
 
 import static com.powsybl.network.store.model.NetworkStoreApi.VERSION;
 import static org.apache.commons.lang3.StringUtils.join;
+import static org.gridsuite.actions.server.utils.NumericalFilterOperator.*;
 import static org.junit.Assert.*;
 import static org.mockito.BDDMockito.given;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
@@ -72,6 +73,7 @@ public class ContingencyListControllerTest {
     private static final UUID NETWORK_UUID_2 = UUID.fromString("7928181c-7977-4592-ba19-88027e4254e5");
     private static final UUID NETWORK_UUID_3 = UUID.fromString("7928181c-7977-4592-ba19-88027e4254e6");
     private static final UUID NETWORK_UUID_4 = UUID.fromString("7928181c-7977-4592-ba19-88027e4254e7");
+    private static final UUID NETWORK_UUID_5 = UUID.fromString("0313daa6-9419-4d4f-8ed1-af555998665f");
     private static final String VARIANT_ID_1 = "variant_1";
 
     private Network network;
@@ -110,10 +112,12 @@ public class ContingencyListControllerTest {
         Network network2 = HvdcTestNetwork.createVsc(new NetworkFactoryImpl());
         Network network3 = SvcTestCaseFactory.createWithMoreSVCs(new NetworkFactoryImpl());
         Network network4 = ShuntTestCaseFactory.create(new NetworkFactoryImpl());
+        Network network5 = EurostagTutorialExample1Factory.createWithFixedCurrentLimits(new NetworkFactoryImpl());
         given(networkStoreService.getNetwork(NETWORK_UUID, PreloadingStrategy.COLLECTION)).willReturn(network);
         given(networkStoreService.getNetwork(NETWORK_UUID_2, PreloadingStrategy.COLLECTION)).willReturn(network2);
         given(networkStoreService.getNetwork(NETWORK_UUID_3, PreloadingStrategy.COLLECTION)).willReturn(network3);
         given(networkStoreService.getNetwork(NETWORK_UUID_4, PreloadingStrategy.COLLECTION)).willReturn(network4);
+        given(networkStoreService.getNetwork(NETWORK_UUID_5, PreloadingStrategy.COLLECTION)).willReturn(network5);
 
         objectMapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
         cleanDB();
@@ -121,9 +125,6 @@ public class ContingencyListControllerTest {
 
     @Test
     public void test() throws Exception {
-        UUID existingFormContengencyList;
-        UUID existingScriptContengencyList;
-
         UUID notFoundId = UUID.fromString("abcdef01-1234-5678-abcd-e123456789aa");
         String script = "{ \n" +
                 "\"script\" : \"contingency('NHV1_NHV2_1') {" +
@@ -132,23 +133,33 @@ public class ContingencyListControllerTest {
 
         String formContingencyList = "{\n" +
                 "  \"equipmentType\": \"GENERATOR\"," +
-                "  \"nominalVoltage\": \"100\"," +
-                "  \"nominalVoltageOperator\": \">\"," +
-                "  \"countries\": [\"FR\", \"BE\"]" +
+                "  \"nominalVoltage1\": {" +
+                "    \"type\": \"GREATER_THAN\"," +
+                "    \"value1\": \"100\"," +
+                "    \"value2\": \"null\"" +
+                "  }," +
+                "  \"countries1\": [\"FR\", \"BE\"]" +
                 "}";
 
         String formContingencyList2 = "{\n" +
                 "  \"equipmentType\": \"LINE\"," +
-                "  \"nominalVoltage\": \"225\"," +
-                "  \"nominalVoltageOperator\": \"<=\"," +
-                "  \"countries\": [\"FR\", \"IT\", \"NL\"]" +
+                "  \"nominalVoltage1\": {" +
+                "    \"type\": \"LESS_OR_EQUAL\"," +
+                "    \"value1\": \"225\"," +
+                "    \"value2\": \"null\"" +
+                "  }," +
+                "  \"countries1\": [\"FR\", \"IT\", \"NL\"]" +
                 "}";
 
-        String formContingencyList3 = "{\n" +
+        // LOAD is not a supported type => error case
+        String formContingencyListError = "{\n" +
                 "  \"equipmentType\": \"LOAD\"," +
-                "  \"nominalVoltage\": \"380\"," +
-                "  \"nominalVoltageOperator\": \"=\"," +
-                "  \"countries\": []" +
+                "  \"nominalVoltage1\": {" +
+                "    \"type\": \"EQUALITY\"," +
+                "    \"value1\": \"380\"," +
+                "    \"value2\": \"null\"" +
+                "  }," +
+                "  \"countries1\": []" +
                 "}";
 
         UUID scriptId = addNewScriptContingencyList(script);
@@ -160,23 +171,36 @@ public class ContingencyListControllerTest {
 
         UUID ticId = objectMapper.readValue(res, FormContingencyList.class).getId();
 
+        // check first form insert
+        mvc.perform(get("/" + VERSION + "/form-contingency-lists")
+                        .contentType(APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+                .andExpect(content().json("[{\"equipmentType\":\"GENERATOR\",\"nominalVoltage1\":{\"type\":\"GREATER_THAN\",\"value1\":100.0,\"value2\":null},\"nominalVoltage2\":null,\"countries1\":[\"BE\",\"FR\"],\"countries2\":[],\"type\":\"FORM\"}]", false));
+
         mvc.perform(post("/" + VERSION + "/form-contingency-lists/")
                 .content(formContingencyList2)
                 .contentType(APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andReturn().getResponse().getContentAsString();
 
-        mvc.perform(post("/" + VERSION + "/form-contingency-lists/")
-                .content(formContingencyList3)
-                .contentType(APPLICATION_JSON))
-                .andExpect(status().isOk());
+        Throwable e = null;
+        try {
+            mvc.perform(post("/" + VERSION + "/form-contingency-lists/")
+                            .content(formContingencyListError)
+                            .contentType(APPLICATION_JSON))
+                    .andExpect(status().isOk());
+        } catch (Throwable ex) {
+            e = ex;
+        }
+        assertTrue(e instanceof NestedServletException);
 
         // Check data
         mvc.perform(get("/" + VERSION + "/contingency-lists")
                 .contentType(APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-                .andExpect(content().json("[{\"type\":\"SCRIPT\"},{\"type\":\"FORM\"},{\"type\":\"FORM\"},{\"type\":\"FORM\"}]", false));
+                .andExpect(content().json("[{\"type\":\"SCRIPT\"},{\"type\":\"FORM\"},{\"type\":\"FORM\"}]", false));
 
         mvc.perform(get("/" + VERSION + "/script-contingency-lists")
                 .contentType(APPLICATION_JSON))
@@ -188,9 +212,8 @@ public class ContingencyListControllerTest {
                 .contentType(APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-                .andExpect(content().json("[{\"equipmentType\":\"GENERATOR\",\"nominalVoltage\":100.0,\"nominalVoltageOperator\":\">\",\"countries\":[\"BE\",\"FR\"],\"type\":\"FORM\"},{" +
-                        "\"equipmentType\":\"LOAD\",\"nominalVoltage\":380.0,\"nominalVoltageOperator\":\"=\",\"countries\":[],\"type\":\"FORM\"},{" +
-                        "\"equipmentType\":\"LINE\",\"nominalVoltage\":225.0,\"nominalVoltageOperator\":\"<=\",\"countries\":[\"IT\",\"FR\",\"NL\"],\"type\":\"FORM\"}]", false));
+                .andExpect(content().json("[{\"equipmentType\":\"GENERATOR\",\"nominalVoltage1\":{\"type\":\"GREATER_THAN\",\"value1\":100.0,\"value2\":null},\"nominalVoltage2\":null,\"countries1\":[\"BE\",\"FR\"],\"countries2\":[],\"type\":\"FORM\"},{" +
+                        "\"equipmentType\":\"LINE\",\"nominalVoltage1\":{\"type\":\"LESS_OR_EQUAL\",\"value1\":225.0,\"value2\":null},\"nominalVoltage2\":null,\"countries1\":[\"IT\",\"FR\",\"NL\"],\"countries2\":[],\"type\":\"FORM\"}]", false));
 
         mvc.perform(get("/" + VERSION + "/script-contingency-lists/" + scriptId)
                 .contentType(APPLICATION_JSON))
@@ -202,7 +225,7 @@ public class ContingencyListControllerTest {
                 .contentType(APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-                .andExpect(content().json("{\"equipmentType\":\"GENERATOR\",\"nominalVoltage\":100.0,\"nominalVoltageOperator\":\">\",\"countries\":[\"BE\",\"FR\"],\"type\":\"FORM\"}", false));
+                .andExpect(content().json("{\"equipmentType\":\"GENERATOR\",\"nominalVoltage1\":{\"type\":\"GREATER_THAN\",\"value1\":100.0,\"value2\":null},\"nominalVoltage2\":null,\"countries1\":[\"BE\",\"FR\"],\"countries2\":[],\"type\":\"FORM\"}", false));
 
         // check not found
         mvc.perform(get("/" + VERSION + "/script-contingency-lists/" + notFoundId)
@@ -256,22 +279,55 @@ public class ContingencyListControllerTest {
         return new StringBuilder("\"").append(id).append("\": ").append(val).append(trailingComma ? ", " : "");
     }
 
-    public String genFormContingencyList(EquipmentType type,
-                                         Integer nominalVoltage, String nominalVoltageOperator, Set<String> countries) {
-        return "{" +
-                jsonVal("equipmentType", type.name(), true) +
-                jsonVal("nominalVoltage", "" + nominalVoltage, true) +
-                jsonVal("nominalVoltageOperator", nominalVoltageOperator, true) +
-                "\"countries\": [" + (!countries.isEmpty() ? "\"" + join(countries, "\",\"") + "\"" : "") + "]}";
+    public String genFormContingencyList(EquipmentType type, Double nominalVoltage, NumericalFilterOperator nominalVoltageOperator, Set<String> countries) {
+        return genFormContingencyList(type, nominalVoltage, nominalVoltageOperator, countries, Collections.emptySet());
+    }
 
+    public String genFormContingencyList(EquipmentType type, Double nominalVoltage, NumericalFilterOperator nominalVoltageOperator,
+                                         Set<String> countries, Set<String> countries2) {
+        // single nominalVoltage => no range allowed
+        assertNotEquals(nominalVoltageOperator, RANGE);
+        return genFormContingencyList(type, nominalVoltage, -1.0, nominalVoltageOperator, -1.0, -1.0, EQUALITY, countries, countries2);
+    }
+
+    public String genFormContingencyList(EquipmentType type, Double value11, Double value12, NumericalFilterOperator operator1,
+                                         Double value21, Double value22, NumericalFilterOperator operator2,
+                                         Set<String> countries, Set<String> countries2) {
+        String jsonData = "{" + jsonVal("equipmentType", type.name(), true);
+        // value11 == -1 => no first filter on voltage-level
+        if (value11 == -1.) {
+            jsonData += "\"nominalVoltage1\": null,";
+        } else {
+            jsonData += "\"nominalVoltage1\": {"
+                    + jsonVal("type", operator1.name(), true)
+                    + jsonVal("value1", value11, operator1 == RANGE);
+            if (operator1 == RANGE) {
+                jsonData += jsonVal("value2", value12, false);
+            }
+            jsonData += "},";
+        }
+        // value21 == -1 => no second filter on voltage-level
+        if (value21 == -1.) {
+            jsonData += "\"nominalVoltage2\": null,";
+        } else {
+            jsonData += "\"nominalVoltage2\": {"
+                    + jsonVal("type", operator2.name(), true)
+                    + jsonVal("value1", value21, operator2 == RANGE);
+            if (operator2 == RANGE) {
+                jsonData += jsonVal("value2", value22, false);
+            }
+            jsonData += "},";
+        }
+        jsonData += "\"countries1\": [" + (!countries.isEmpty() ? "\"" + join(countries, "\",\"") + "\"" : "") + "], ";
+        jsonData += "\"countries2\": [" + (!countries2.isEmpty() ? "\"" + join(countries2, "\",\"") + "\"" : "") + "]}";
+        return jsonData;
     }
 
     ObjectMapper objectMapper = new ObjectMapper();
 
     @Test
     public void testDateFormContingencyList() throws Exception {
-        String list = genFormContingencyList(EquipmentType.LINE, 11, "=", Set.of());
-
+        String list = genFormContingencyList(EquipmentType.LINE, 11., EQUALITY, Set.of());
         UUID id = addNewFormContingencyList(list);
         ContingencyListAttributes attributes = getMetadata(id);
 
@@ -324,17 +380,17 @@ public class ContingencyListControllerTest {
     }
 
     @Test
-    public void testExportContingencies1() throws Exception {
+    public void testExportContingenciesLine() throws Exception {
         Set<String> noCountries = Collections.emptySet();
         Set<String> france = Collections.singleton("FR");
-        Set<String> belgium = Collections.singleton("BE");
-        String lineForm = genFormContingencyList(EquipmentType.LINE, -1, "=", noCountries);
-        String lineForm1 = genFormContingencyList(EquipmentType.LINE, 100, "<", noCountries);
-        String lineForm2 = genFormContingencyList(EquipmentType.LINE, 380, "=", noCountries);
-        String lineForm3 = genFormContingencyList(EquipmentType.LINE, 390, ">=", noCountries);
-        String lineForm4 = genFormContingencyList(EquipmentType.LINE, 390, "<=", noCountries);
-        String lineForm5 = genFormContingencyList(EquipmentType.LINE, 100, ">", noCountries);
-        String lineForm6 = genFormContingencyList(EquipmentType.LINE, -1, ">", france);
+
+        String lineForm = genFormContingencyList(EquipmentType.LINE, -1., EQUALITY, noCountries);
+        String lineForm1 = genFormContingencyList(EquipmentType.LINE, 100., LESS_THAN, noCountries);
+        String lineForm2 = genFormContingencyList(EquipmentType.LINE, 380., EQUALITY, noCountries);
+        String lineForm3 = genFormContingencyList(EquipmentType.LINE, 390., GREATER_OR_EQUAL, noCountries);
+        String lineForm4 = genFormContingencyList(EquipmentType.LINE, 390., LESS_OR_EQUAL, noCountries);
+        String lineForm5 = genFormContingencyList(EquipmentType.LINE, 100., GREATER_THAN, noCountries);
+        String lineForm6 = genFormContingencyList(EquipmentType.LINE, -1., GREATER_THAN, france);
 
         testExportContingencies(lineForm, " [{\"id\":\"NHV1_NHV2_2\",\"elements\":[{\"id\":\"NHV1_NHV2_2\",\"type\":\"BRANCH\"}]},{\"id\":\"NHV1_NHV2_1\",\"elements\":[{\"id\":\"NHV1_NHV2_1\",\"type\":\"BRANCH\"}]}]", NETWORK_UUID);
         testExportContingencies(lineForm1, " []", NETWORK_UUID);
@@ -343,18 +399,111 @@ public class ContingencyListControllerTest {
         testExportContingencies(lineForm4, " [{\"id\":\"NHV1_NHV2_2\",\"elements\":[{\"id\":\"NHV1_NHV2_2\",\"type\":\"BRANCH\"}]},{\"id\":\"NHV1_NHV2_1\",\"elements\":[{\"id\":\"NHV1_NHV2_1\",\"type\":\"BRANCH\"}]}]", NETWORK_UUID);
         testExportContingencies(lineForm5, " [{\"id\":\"NHV1_NHV2_2\",\"elements\":[{\"id\":\"NHV1_NHV2_2\",\"type\":\"BRANCH\"}]},{\"id\":\"NHV1_NHV2_1\",\"elements\":[{\"id\":\"NHV1_NHV2_1\",\"type\":\"BRANCH\"}]}]", NETWORK_UUID);
         testExportContingencies(lineForm6, " [{\"id\":\"NHV1_NHV2_2\",\"elements\":[{\"id\":\"NHV1_NHV2_2\",\"type\":\"BRANCH\"}]},{\"id\":\"NHV1_NHV2_1\",\"elements\":[{\"id\":\"NHV1_NHV2_1\",\"type\":\"BRANCH\"}]}]", NETWORK_UUID);
+    }
 
-        String twtForm0 = "{\"equipmentType\": \"TWO_WINDINGS_TRANSFORMER\", \"nominalVoltage\": \"-1\",\"nominalVoltageOperator\": \"*\"}";
-        String twtForm1 = "{\"equipmentType\": \"TWO_WINDINGS_TRANSFORMER\", \"nominalVoltage\": \"10\",\"nominalVoltageOperator\": \">\"}";
-        String twtForm2 = genFormContingencyList(EquipmentType.TWO_WINDINGS_TRANSFORMER, -1, ">", france);
-        testExportContingencies(twtForm0, " [{\"id\":\"NGEN_NHV1\",\"elements\":[{\"id\":\"NGEN_NHV1\",\"type\":\"BRANCH\"}]},{\"id\":\"NHV2_NLOAD\",\"elements\":[{\"id\":\"NHV2_NLOAD\",\"type\":\"BRANCH\"}]}]", NETWORK_UUID);
-        testExportContingencies(twtForm1, " [{\"id\":\"NGEN_NHV1\",\"elements\":[{\"id\":\"NGEN_NHV1\",\"type\":\"BRANCH\"}]},{\"id\":\"NHV2_NLOAD\",\"elements\":[{\"id\":\"NHV2_NLOAD\",\"type\":\"BRANCH\"}]}]", NETWORK_UUID);
-        testExportContingencies(twtForm2, " [{\"id\":\"NGEN_NHV1\",\"elements\":[{\"id\":\"NGEN_NHV1\",\"type\":\"BRANCH\"}]},{\"id\":\"NHV2_NLOAD\",\"elements\":[{\"id\":\"NHV2_NLOAD\",\"type\":\"BRANCH\"}]}]", NETWORK_UUID);
+    @Test
+    public void testExportContingencies2WTransfoWith1NumFilter() throws Exception {
+        Set<String> noCountries = Collections.emptySet();
+        // with this network (EurostagTutorialExample1Factory::create), we have 2 FR substations and 2 2WT Transfos:
+        // - NGEN_NHV1  term1: 24 kV term2: 380 kV
+        // - NHV2_NLOAD term1: 380 kV term2: 150 kV
+        final String bothMatch = "[{\"id\":\"NGEN_NHV1\",\"elements\":[{\"id\":\"NGEN_NHV1\",\"type\":\"BRANCH\"}]},{\"id\":\"NHV2_NLOAD\",\"elements\":[{\"id\":\"NHV2_NLOAD\",\"type\":\"BRANCH\"}]}]";
+        final String matchLOAD = "[{\"id\":\"NHV2_NLOAD\",\"elements\":[{\"id\":\"NHV2_NLOAD\",\"type\":\"BRANCH\"}]}]";
+        final String matchGEN = "[{\"id\":\"NGEN_NHV1\",\"elements\":[{\"id\":\"NGEN_NHV1\",\"type\":\"BRANCH\"}]}]";
+        final String noMatch = "[]";
 
-        String generatorForm1 = "{\"equipmentType\": \"GENERATOR\", \"nominalVoltage\": \"-1\",\"nominalVoltageOperator\": \"=\"}";
-        String generatorForm4 = "{\"equipmentType\": \"GENERATOR\", \"nominalVoltage\": \"10\",\"nominalVoltageOperator\": \"<\"}";
-        String generatorForm5 = genFormContingencyList(EquipmentType.GENERATOR, -1, ">", france);
-        String generatorForm6 = genFormContingencyList(EquipmentType.GENERATOR, -1, ">", belgium);
+        // single voltage filter
+        String twtForm = genFormContingencyList(EquipmentType.TWO_WINDINGS_TRANSFORMER, -1., EQUALITY, noCountries);
+        testExportContingencies(twtForm, bothMatch, NETWORK_UUID);
+        twtForm = genFormContingencyList(EquipmentType.TWO_WINDINGS_TRANSFORMER, 10., GREATER_THAN, noCountries);
+        testExportContingencies(twtForm, bothMatch, NETWORK_UUID);
+        twtForm = genFormContingencyList(EquipmentType.TWO_WINDINGS_TRANSFORMER, 10., EQUALITY, noCountries);
+        testExportContingencies(twtForm, noMatch, NETWORK_UUID);
+        twtForm = genFormContingencyList(EquipmentType.TWO_WINDINGS_TRANSFORMER, 24., EQUALITY, noCountries);
+        testExportContingencies(twtForm, matchGEN, NETWORK_UUID);
+        twtForm = genFormContingencyList(EquipmentType.TWO_WINDINGS_TRANSFORMER, 150., LESS_THAN, noCountries);
+        testExportContingencies(twtForm, matchGEN, NETWORK_UUID);
+        twtForm = genFormContingencyList(EquipmentType.TWO_WINDINGS_TRANSFORMER, 150., LESS_OR_EQUAL, noCountries);
+        testExportContingencies(twtForm, bothMatch, NETWORK_UUID);
+        twtForm = genFormContingencyList(EquipmentType.TWO_WINDINGS_TRANSFORMER, 150., EQUALITY, noCountries);
+        testExportContingencies(twtForm, matchLOAD, NETWORK_UUID);
+        twtForm = genFormContingencyList(EquipmentType.TWO_WINDINGS_TRANSFORMER, 380., GREATER_THAN, noCountries);
+        testExportContingencies(twtForm, noMatch, NETWORK_UUID);
+        twtForm = genFormContingencyList(EquipmentType.TWO_WINDINGS_TRANSFORMER, 380., GREATER_OR_EQUAL, noCountries);
+        testExportContingencies(twtForm, bothMatch, NETWORK_UUID);
+        twtForm = genFormContingencyList(EquipmentType.TWO_WINDINGS_TRANSFORMER, 400., GREATER_OR_EQUAL, noCountries);
+        testExportContingencies(twtForm, noMatch, NETWORK_UUID);
+        // range
+        twtForm = genFormContingencyList(EquipmentType.TWO_WINDINGS_TRANSFORMER, 0., 24., RANGE, -1., -1., EQUALITY, noCountries, noCountries);
+        testExportContingencies(twtForm, matchGEN, NETWORK_UUID);
+        twtForm = genFormContingencyList(EquipmentType.TWO_WINDINGS_TRANSFORMER, 24., 150., RANGE, -1., -1., EQUALITY, noCountries, noCountries);
+        testExportContingencies(twtForm, bothMatch, NETWORK_UUID);
+        twtForm = genFormContingencyList(EquipmentType.TWO_WINDINGS_TRANSFORMER, 225., 380., RANGE, -1., -1., EQUALITY, noCountries, noCountries);
+        testExportContingencies(twtForm, bothMatch, NETWORK_UUID);
+        twtForm = genFormContingencyList(EquipmentType.TWO_WINDINGS_TRANSFORMER, 400., 500., RANGE, -1., -1., EQUALITY, noCountries, noCountries);
+        testExportContingencies(twtForm, noMatch, NETWORK_UUID);
+    }
+
+    @Test
+    public void testExportContingencies2WTransfoWith2NumFilter() throws Exception {
+        Set<String> noCountries = Collections.emptySet();
+
+        final String matchLOAD = "[{\"id\":\"NHV2_NLOAD\",\"elements\":[{\"id\":\"NHV2_NLOAD\",\"type\":\"BRANCH\"}]}]";
+        final String matchGEN = "[{\"id\":\"NGEN_NHV1\",\"elements\":[{\"id\":\"NGEN_NHV1\",\"type\":\"BRANCH\"}]}]";
+        final String noMatch = "[]";
+
+        // 2 voltage filters
+        String twtForm = genFormContingencyList(EquipmentType.TWO_WINDINGS_TRANSFORMER, 400., 500., RANGE, 24., -1., EQUALITY, noCountries, noCountries);
+        testExportContingencies(twtForm, noMatch, NETWORK_UUID);
+        twtForm = genFormContingencyList(EquipmentType.TWO_WINDINGS_TRANSFORMER, 150., 400., RANGE, 24., -1., EQUALITY, noCountries, noCountries);
+        testExportContingencies(twtForm, matchGEN, NETWORK_UUID);
+        twtForm = genFormContingencyList(EquipmentType.TWO_WINDINGS_TRANSFORMER, 150., 400., RANGE, 150., -1., EQUALITY, noCountries, noCountries);
+        testExportContingencies(twtForm, matchLOAD, NETWORK_UUID);
+        twtForm = genFormContingencyList(EquipmentType.TWO_WINDINGS_TRANSFORMER, 150., 400., RANGE, 33., -1., EQUALITY, noCountries, noCountries);
+        testExportContingencies(twtForm, noMatch, NETWORK_UUID);
+    }
+
+    @Test
+    public void testExportContingencies2WTransfoWithCountryFilter() throws Exception {
+        Set<String> france = Collections.singleton("FR");
+        Set<String> franceAndMore = Set.of("FR", "ZA", "ES");
+        Set<String> belgium = Collections.singleton("BE");
+        Set<String> italy = Collections.singleton("IT");
+        Set<String> belgiumAndFrance = Set.of("FR", "BE");
+
+        final String bothMatch = "[{\"id\":\"NGEN_NHV1\",\"elements\":[{\"id\":\"NGEN_NHV1\",\"type\":\"BRANCH\"}]},{\"id\":\"NHV2_NLOAD\",\"elements\":[{\"id\":\"NHV2_NLOAD\",\"type\":\"BRANCH\"}]}]";
+        final String matchLOAD = "[{\"id\":\"NHV2_NLOAD\",\"elements\":[{\"id\":\"NHV2_NLOAD\",\"type\":\"BRANCH\"}]}]";
+        final String matchGEN = "[{\"id\":\"NGEN_NHV1\",\"elements\":[{\"id\":\"NGEN_NHV1\",\"type\":\"BRANCH\"}]}]";
+        final String noMatch = "[]";
+
+        String twtForm = genFormContingencyList(EquipmentType.TWO_WINDINGS_TRANSFORMER, -1., GREATER_THAN, france);
+        testExportContingencies(twtForm, bothMatch, NETWORK_UUID);
+        twtForm = genFormContingencyList(EquipmentType.TWO_WINDINGS_TRANSFORMER, -1., GREATER_THAN, franceAndMore);
+        testExportContingencies(twtForm, bothMatch, NETWORK_UUID);
+        twtForm = genFormContingencyList(EquipmentType.TWO_WINDINGS_TRANSFORMER, -1., GREATER_THAN, belgium);
+        testExportContingencies(twtForm, noMatch, NETWORK_UUID);
+
+        // NETWORK_UUID5 : a 2-country network (one substation FR, one BE)
+        twtForm = genFormContingencyList(EquipmentType.TWO_WINDINGS_TRANSFORMER, -1., GREATER_THAN, belgium);
+        testExportContingencies(twtForm, matchLOAD, NETWORK_UUID_5);
+        twtForm = genFormContingencyList(EquipmentType.TWO_WINDINGS_TRANSFORMER, -1., GREATER_THAN, france);
+        testExportContingencies(twtForm, matchGEN, NETWORK_UUID_5);
+        twtForm = genFormContingencyList(EquipmentType.TWO_WINDINGS_TRANSFORMER, -1., GREATER_THAN, belgiumAndFrance);
+        testExportContingencies(twtForm, bothMatch, NETWORK_UUID_5);
+        twtForm = genFormContingencyList(EquipmentType.TWO_WINDINGS_TRANSFORMER, -1., GREATER_THAN, italy);
+        testExportContingencies(twtForm, noMatch, NETWORK_UUID_5);
+    }
+
+    @Test
+    public void testExportContingenciesGenerator() throws Exception {
+        Set<String> noCountries = Collections.emptySet();
+        Set<String> france = Collections.singleton("FR");
+        Set<String> belgium = Collections.singleton("BE");
+
+        String generatorForm1 = genFormContingencyList(EquipmentType.GENERATOR, -1., EQUALITY, noCountries);
+        String generatorForm4 = genFormContingencyList(EquipmentType.GENERATOR, 10., LESS_THAN, noCountries);
+        String generatorForm5 = genFormContingencyList(EquipmentType.GENERATOR, -1., GREATER_THAN, france);
+        String generatorForm6 = genFormContingencyList(EquipmentType.GENERATOR, -1., GREATER_THAN, belgium);
         testExportContingencies(generatorForm1, " [{\"id\":\"GEN\",\"elements\":[{\"id\":\"GEN\",\"type\":\"GENERATOR\"}]},{\"id\":\"GEN2\",\"elements\":[{\"id\":\"GEN2\",\"type\":\"GENERATOR\"}]}]", NETWORK_UUID);
 
         // test export on specific variant where generator 'GEN2' has been removed
@@ -364,11 +513,18 @@ public class ContingencyListControllerTest {
         testExportContingencies(generatorForm4, " []", NETWORK_UUID);
         testExportContingencies(generatorForm5, " [{\"id\":\"GEN\",\"elements\":[{\"id\":\"GEN\",\"type\":\"GENERATOR\"}]},{\"id\":\"GEN2\",\"elements\":[{\"id\":\"GEN2\",\"type\":\"GENERATOR\"}]}]", NETWORK_UUID);
         testExportContingencies(generatorForm6, " []", NETWORK_UUID);
+    }
 
-        String svcForm1 = "{\"equipmentType\": \"STATIC_VAR_COMPENSATOR\", \"nominalVoltage\": \"-1\",\"nominalVoltageOperator\": \"=\"}";
-        String svcForm4 = "{\"equipmentType\": \"STATIC_VAR_COMPENSATOR\", \"nominalVoltage\": \"100\",\"nominalVoltageOperator\": \"<\"}";
-        String svcForm5 = genFormContingencyList(EquipmentType.STATIC_VAR_COMPENSATOR, -1, "<", france);
-        String svcForm6 = genFormContingencyList(EquipmentType.STATIC_VAR_COMPENSATOR, -1, "<", belgium);
+    @Test
+    public void testExportContingenciesSVC() throws Exception {
+        Set<String> noCountries = Collections.emptySet();
+        Set<String> france = Collections.singleton("FR");
+        Set<String> belgium = Collections.singleton("BE");
+
+        String svcForm1 = genFormContingencyList(EquipmentType.STATIC_VAR_COMPENSATOR, -1., EQUALITY, noCountries);
+        String svcForm4 = genFormContingencyList(EquipmentType.STATIC_VAR_COMPENSATOR, 100., LESS_THAN, noCountries);
+        String svcForm5 = genFormContingencyList(EquipmentType.STATIC_VAR_COMPENSATOR, -1., LESS_THAN, france);
+        String svcForm6 = genFormContingencyList(EquipmentType.STATIC_VAR_COMPENSATOR, -1., LESS_THAN, belgium);
         testExportContingencies(svcForm1, " [{\"id\":\"SVC3\",\"elements\":[{\"id\":\"SVC3\",\"type\":\"STATIC_VAR_COMPENSATOR\"}]}," +
                 "{\"id\":\"SVC2\",\"elements\":[{\"id\":\"SVC2\",\"type\":\"STATIC_VAR_COMPENSATOR\"}]}]", NETWORK_UUID_3);
         testExportContingencies(svcForm4, " []", NETWORK_UUID_3);
@@ -377,45 +533,64 @@ public class ContingencyListControllerTest {
     }
 
     @Test
-    public void testExportContingencies2() throws Exception {
-        String scForm1 = "{\"equipmentType\": \"SHUNT_COMPENSATOR\", \"nominalVoltage\": \"-1\",\"nominalVoltageOperator\": \"=\"}";
-        String scForm4 = "{\"equipmentType\": \"SHUNT_COMPENSATOR\", \"nominalVoltage\": \"300\",\"nominalVoltageOperator\": \"=\"}";
+    public void testExportContingenciesShuntCompensator() throws Exception {
+        Set<String> noCountries = Collections.emptySet();
+        String scForm1 = genFormContingencyList(EquipmentType.SHUNT_COMPENSATOR, -1., EQUALITY, noCountries);
+        String scForm4 = genFormContingencyList(EquipmentType.SHUNT_COMPENSATOR, 300., EQUALITY, noCountries);
         testExportContingencies(scForm1, " [{\"id\":\"SHUNT\",\"elements\":[{\"id\":\"SHUNT\",\"type\":\"SHUNT_COMPENSATOR\"}]}]", NETWORK_UUID_4);
         testExportContingencies(scForm4, " []", NETWORK_UUID_4);
+    }
 
-        String hvdcForm1 = "{\"equipmentType\": \"HVDC_LINE\", \"nominalVoltage\": \"-1\",\"nominalVoltageOperator\": \"=\"}";
-        String hvdcForm4 = "{\"equipmentType\": \"HVDC_LINE\", \"nominalVoltage\": \"400\",\"nominalVoltageOperator\": \"=\"}";
-        String hvdcForm5 = "{\"equipmentType\": \"HVDC_LINE\", \"nominalVoltage\": \"300\",\"nominalVoltageOperator\": \"<\"}";
+    @Test
+    public void testExportContingenciesHVDC() throws Exception {
+        Set<String> noCountries = Collections.emptySet();
+        String hvdcForm1 = genFormContingencyList(EquipmentType.HVDC_LINE, -1., EQUALITY, noCountries);
+        String hvdcForm4 = genFormContingencyList(EquipmentType.HVDC_LINE, 400., EQUALITY, noCountries);
+        String hvdcForm5 = genFormContingencyList(EquipmentType.HVDC_LINE, 300., LESS_THAN, noCountries);
         testExportContingencies(hvdcForm1, " [{\"id\":\"L\",\"elements\":[{\"id\":\"L\",\"type\":\"HVDC_LINE\"}]}]", NETWORK_UUID_2);
         testExportContingencies(hvdcForm4, " [{\"id\":\"L\",\"elements\":[{\"id\":\"L\",\"type\":\"HVDC_LINE\"}]}]", NETWORK_UUID_2);
         testExportContingencies(hvdcForm5, " []", NETWORK_UUID_2);
+    }
 
-        String bbsForm = "{\"equipmentType\": \"BUSBAR_SECTION\", \"nominalVoltage\": \"-1\",\"nominalVoltageOperator\": \"=\"}";
+    @Test
+    public void testExportContingenciesBusBar() throws Exception {
+        Set<String> noCountries = Collections.emptySet();
+
+        String bbsForm = genFormContingencyList(EquipmentType.BUSBAR_SECTION, -1., EQUALITY, noCountries);
         testExportContingencies(bbsForm, " []", NETWORK_UUID);
+    }
 
-        String dlForm = "{\"equipmentType\": \"DANGLING_LINE\", \"nominalVoltage\": \"-1\",\"nominalVoltageOperator\": \"=\"}";
+    @Test
+    public void testExportContingenciesDanglingLine() throws Exception {
+        Set<String> noCountries = Collections.emptySet();
+
+        String dlForm = genFormContingencyList(EquipmentType.DANGLING_LINE, -1., EQUALITY, noCountries);
         testExportContingencies(dlForm, " []", NETWORK_UUID);
     }
 
-    void compareFormContingencyList(FormContingencyList expected, FormContingencyList current) throws JsonProcessingException {
-        if (null == expected.getCountries()) {
-            assertTrue(current.getCountries().isEmpty());
+    void compareFormContingencyList(FormContingencyList expected, FormContingencyList current) {
+        if (null == expected.getCountries1()) {
+            assertTrue(current.getCountries1().isEmpty());
         } else {
-            assertEquals(expected.getCountries(), current.getCountries());
+            assertEquals(expected.getCountries1(), current.getCountries1());
         }
         assertEquals(expected.getEquipmentType(), current.getEquipmentType());
-        assertTrue(Math.abs(expected.getNominalVoltage() - current.getNominalVoltage()) < EPSILON);
-        assertEquals(expected.getNominalVoltageOperator(), current.getNominalVoltageOperator());
+        if (expected.getNominalVoltage1() == null || current.getNominalVoltage1() == null) {
+            assertNull(expected.getNominalVoltage1());
+            assertNull(current.getNominalVoltage1());
+        } else {
+            assertEquals(expected.getNominalVoltage1().getValue1(), current.getNominalVoltage1().getValue1());
+        }
     }
 
     @Test
     public void modifyFormContingencyList() throws Exception {
         UUID id = addNewFormContingencyList(genFormContingencyList(EquipmentType.LINE,
-                10, "=>",
+                10., GREATER_OR_EQUAL,
                 Collections.emptySet()));
 
         String newFilter = genFormContingencyList(EquipmentType.LINE,
-                12, "<=",
+                12., LESS_OR_EQUAL,
                 Collections.emptySet());
 
         mvc.perform(put("/" + VERSION + "/form-contingency-lists/" + id)
@@ -477,7 +652,7 @@ public class ContingencyListControllerTest {
     private void testExportContingencies(String content, String expectedContent, UUID networkId, String variantId) throws Exception {
         // put the data
         UUID formContingencyListId = addNewFormContingencyList(content);
-
+        // search matching equipments
         mvc.perform(get("/" + VERSION + "/contingency-lists/" + formContingencyListId + "/export?networkUuid=" + networkId + (variantId != null ? "&variantId=" + variantId : ""))
                 .contentType(APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -517,7 +692,7 @@ public class ContingencyListControllerTest {
     public void testExportContingencies3() {
         Throwable e = null;
         UUID id = UUID.fromString("7928181c-7977-4592-ba19-88027e4254e8");
-        String lineFilters = genFormContingencyList(EquipmentType.LINE, -1, "=", Collections.emptySet());
+        String lineFilters = genFormContingencyList(EquipmentType.LINE, -1., EQUALITY, Collections.emptySet());
         try {
             testExportContingencies(lineFilters, "", id);
         } catch (Throwable ex) {
@@ -528,16 +703,87 @@ public class ContingencyListControllerTest {
     }
 
     @Test
-    public void testExportContingencies4() {
-        Throwable e = null;
-        String lineFilters = genFormContingencyList(EquipmentType.LINE, 200, "$", Collections.emptySet());
-        try {
-            testExportContingencies(lineFilters, "", NETWORK_UUID);
-        } catch (Throwable ex) {
-            e = ex;
-        }
-        assertTrue(e instanceof NestedServletException);
-        assertEquals("Request processing failed; nested exception is com.powsybl.commons.PowsyblException: Unknown nominal voltage operator", e.getMessage());
+    public void testCreateContingencyBadOperator() throws Exception {
+        String lineFilters = "{\n" +
+                "  \"equipmentType\": \"LINE\"," +
+                "  \"nominalVoltage1\": {" +
+                "    \"type\": \"BAD_OP\"," +
+                "    \"value1\": \"100\"," +
+                "    \"value2\": \"null\"" +
+                "  }," +
+                "  \"countries1\": [\"FR\", \"BE\"]" +
+                "}";
+
+        mvc.perform(post("/" + VERSION + "/form-contingency-lists/")
+                        .content(lineFilters)
+                        .contentType(APPLICATION_JSON))
+                .andExpect(status().is4xxClientError());
+    }
+
+    @Test
+    public void testCreateContingencyNoValue1() throws Exception {
+        String formContingencyList = "{\n" +
+                "  \"equipmentType\": \"LINE\"," +
+                "  \"nominalVoltage1\": {" +
+                "    \"type\": \"EQUALITY\"," +
+                "    \"value1\": \"null\"," +
+                "    \"value2\": \"null\"" +
+                "  }," +
+                "  \"nominalVoltage2\": {" +
+                "    \"type\": \"LESS_OR_EQUAL\"," +
+                "    \"value1\": \"null\"," +
+                "    \"value2\": \"null\"" +
+                "  }," +
+                "  \"countries1\": [\"FR\", \"BE\"]" +
+                "}";
+        // creation
+        String res = mvc.perform(post("/" + VERSION + "/form-contingency-lists/")
+                        .content(formContingencyList)
+                        .contentType(APPLICATION_JSON))
+                .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
+        UUID clId = objectMapper.readValue(res, FormContingencyList.class).getId();
+        // retrieve it, no numeric filters created (because of null values)
+        String noNominalFilter1Response = "{\"equipmentType\":\"LINE\",\"nominalVoltage1\":null,\"nominalVoltage2\":null,\"countries1\":[\"BE\",\"FR\"],\"countries2\":[],\"type\":\"FORM\"}";
+        mvc.perform(get("/" + VERSION + "/form-contingency-lists/" + clId)
+                        .contentType(APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+                .andExpect(content().json(noNominalFilter1Response, false));
+
+        mvc.perform(delete("/" + VERSION + "/contingency-lists/" + clId)).andExpect(status().isOk());
+    }
+
+    @Test
+    public void testCreateContingencyNoValue2ForRange() throws Exception {
+        String formContingencyList = "{\n" +
+                "  \"equipmentType\": \"LINE\"," +
+                "  \"nominalVoltage1\": {" +
+                "    \"type\": \"RANGE\"," +
+                "    \"value1\": \"63.\"," +
+                "    \"value2\": \"null\"" +
+                "  }," +
+                "  \"nominalVoltage2\": {" +
+                "    \"type\": \"RANGE\"," +
+                "    \"value1\": \"44.\"," +
+                "    \"value2\": \"null\"" +
+                "  }," +
+                "  \"countries1\": [\"FR\", \"BE\"]" +
+                "}";
+        // creation
+        String res = mvc.perform(post("/" + VERSION + "/form-contingency-lists/")
+                        .content(formContingencyList)
+                        .contentType(APPLICATION_JSON))
+                .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
+        UUID clId = objectMapper.readValue(res, FormContingencyList.class).getId();
+        // retrieve it, no numeric filters created (because of null values)
+        String noNominalFilter1Response = "{\"equipmentType\":\"LINE\",\"nominalVoltage1\":null,\"nominalVoltage2\":null,\"countries1\":[\"BE\",\"FR\"],\"countries2\":[],\"type\":\"FORM\"}";
+        mvc.perform(get("/" + VERSION + "/form-contingency-lists/" + clId)
+                        .contentType(APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+                .andExpect(content().json(noNominalFilter1Response, false));
+
+        mvc.perform(delete("/" + VERSION + "/contingency-lists/" + clId)).andExpect(status().isOk());
     }
 
     @Test
@@ -563,24 +809,26 @@ public class ContingencyListControllerTest {
     public void formContingencyListEntityTest() {
         FormContingencyListEntity entity = new FormContingencyListEntity();
         entity.setEquipmentType("LINE");
-        entity.setNominalVoltage(225.);
-        entity.setNominalVoltageOperator("=");
-        entity.setCountries(Set.of("FRANCE", "ITALY"));
+        entity.setNominalVoltage1(new NumericalFilterEntity(null, EQUALITY, 225., null));
+        entity.setCountries1(Set.of("FRANCE", "ITALY"));
 
         assertEquals("LINE", entity.getEquipmentType());
-        assertEquals(225., entity.getNominalVoltage(), 0.1);
-        assertEquals("=", entity.getNominalVoltageOperator());
-        assertTrue(entity.getCountries().contains("FRANCE"));
-        assertTrue(entity.getCountries().contains("ITALY"));
+        assertEquals(225., entity.getNominalVoltage1().getValue1(), 0.1);
+        assertEquals(EQUALITY, entity.getNominalVoltage1().getOperator());
+        assertTrue(entity.getCountries1().contains("FRANCE"));
+        assertTrue(entity.getCountries1().contains("ITALY"));
     }
 
     @Test
     public void replaceFormWithScriptTest() throws Exception {
         String form = "{\n" +
                 "  \"equipmentType\": \"GENERATOR\"," +
-                "  \"nominalVoltage\": \"100\"," +
-                "  \"nominalVoltageOperator\": \">\"," +
-                "  \"countries\": [\"FR\", \"BE\"]" +
+                "  \"nominalVoltage1\": {" +
+                "    \"type\": \"GREATER_THAN\"," +
+                "    \"value1\": \"100\"," +
+                "    \"value2\": \"null\"" +
+                "  }," +
+                "  \"countries1\": [\"FR\", \"BE\"]" +
                 "}";
 
         // Put data
@@ -606,13 +854,15 @@ public class ContingencyListControllerTest {
 
     @Test
     public void copyFormToScriptTest() throws Exception {
-        String form = new StringJoiner(",\n", "{\n", "\n}")
-                .add("  \"equipmentType\": \"GENERATOR\"")
-                .add("  \"nominalVoltage\": \"100\"")
-                .add("  \"nominalVoltageOperator\": \">\"")
-                .add("  \"countries\": [\"FR\", \"BE\"]")
-                .toString();
-
+        String form = "{\n" +
+                "  \"equipmentType\": \"GENERATOR\"," +
+                "  \"nominalVoltage1\": {" +
+                "    \"type\": \"GREATER_THAN\"," +
+                "    \"value1\": \"100\"," +
+                "    \"value2\": \"null\"" +
+                "  }," +
+                "  \"countries1\": [\"FR\", \"BE\"]" +
+                "}";
         // Put data
         UUID firstUUID = addNewFormContingencyList(form);
 
@@ -647,7 +897,7 @@ public class ContingencyListControllerTest {
 
     @Test
     public void duplicateFormContingencyList() throws Exception {
-        String list = genFormContingencyList(EquipmentType.LINE, 11, "=", Set.of());
+        String list = genFormContingencyList(EquipmentType.LINE, 11., EQUALITY, Set.of());
         UUID id = addNewFormContingencyList(list);
 
         String res = mvc.perform(post("/" + VERSION + "/form-contingency-lists?duplicateFrom=" + id + "&id=" + UUID.randomUUID()))

@@ -30,14 +30,17 @@ public class FormContingencyList implements ContingencyList {
     @Schema(description = "Equipment type")
     private String equipmentType;
 
-    @Schema(description = "Nominal voltage")
-    private double nominalVoltage;
+    @Schema(description = "Nominal voltage 1")
+    private NumericalFilter nominalVoltage1;
 
-    @Schema(description = "Nominal voltage operator")
-    private String nominalVoltageOperator;
+    @Schema(description = "Nominal voltage 2")
+    private NumericalFilter nominalVoltage2;
 
-    @Schema(description = "Countries")
-    private Set<String> countries;
+    @Schema(description = "Countries 1")
+    private Set<String> countries1;
+
+    @Schema(description = "Countries 2")
+    private Set<String> countries2;
 
     @Schema(description = "Type")
     @Override
