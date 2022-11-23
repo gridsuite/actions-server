@@ -332,7 +332,6 @@ public class ContingencyListControllerTest {
         ContingencyListAttributes attributes = getMetadata(id);
 
         assertEquals(id, attributes.getId());
-        Date baseCreationDate = attributes.getCreationDate();
         Date baseModificationDate = attributes.getModificationDate();
 
         mvc.perform(put("/" + VERSION + "/form-contingency-lists/" + id)
@@ -341,7 +340,6 @@ public class ContingencyListControllerTest {
                 .andExpect(status().isOk());
 
         attributes = getMetadata(id);
-        assertEquals(baseCreationDate, attributes.getCreationDate());
         assertTrue(baseModificationDate.getTime() < attributes.getModificationDate().getTime());
     }
 
@@ -789,7 +787,7 @@ public class ContingencyListControllerTest {
     @Test
     public void contingencyListAttributesTest() {
         UUID contingencyListAttrId = UUID.randomUUID();
-        ContingencyListAttributes contingencyListAttributes = new ContingencyListAttributes(contingencyListAttrId, ContingencyListType.SCRIPT, null, null);
+        ContingencyListAttributes contingencyListAttributes = new ContingencyListAttributes(contingencyListAttrId, ContingencyListType.SCRIPT, null);
         assertEquals(contingencyListAttrId, contingencyListAttributes.getId());
         assertEquals(ContingencyListType.SCRIPT, contingencyListAttributes.getType());
         ContingencyListAttributes contingencyListAttributes2 = new ContingencyListAttributes();

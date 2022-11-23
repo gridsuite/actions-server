@@ -31,9 +31,6 @@ public class ContingencyListAttributes implements ContingencyList {
     @Schema(description = "List type")
     private ContingencyListType type;
 
-    @Schema(description = "Creation Date")
-    Date creationDate;
-
     @Schema(description = "Modification Date")
     Date modificationDate;
 }
