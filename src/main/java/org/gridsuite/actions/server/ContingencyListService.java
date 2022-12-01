@@ -49,6 +49,8 @@ public class ContingencyListService {
 
     private NetworkStoreService networkStoreService;
 
+    private NotificationService notificationService;
+
     private final FormToGroovyScript formToScript = new FormToGroovyScript();
 
     // Self injection for @transactional support in internal calls to other methods of this service
@@ -57,10 +59,12 @@ public class ContingencyListService {
 
     public ContingencyListService(ScriptContingencyListRepository scriptContingencyListRepository,
                                   FormContingencyListRepository formContingencyListRepository,
-                                  NetworkStoreService networkStoreService) {
+                                  NetworkStoreService networkStoreService,
+                                  NotificationService notificationService) {
         this.scriptContingencyListRepository = scriptContingencyListRepository;
         this.formContingencyListRepository = formContingencyListRepository;
         this.networkStoreService = networkStoreService;
+        this.notificationService = notificationService;
     }
 
     private static ScriptContingencyList fromScriptContingencyListEntity(ScriptContingencyListEntity entity) {
@@ -320,8 +324,9 @@ public class ContingencyListService {
         return Optional.empty();
     }
 
-    void modifyScriptContingencyList(UUID id, ScriptContingencyList script) {
+    void modifyScriptContingencyList(UUID id, ScriptContingencyList script, String userId) {
         scriptContingencyListRepository.save(scriptContingencyListRepository.getOne(id).update(script));
+        notificationService.emitElementUpdated(id, userId);
     }
 
     public FormContingencyList createFormContingencyList(UUID id, FormContingencyList formContingencyList) {
@@ -340,9 +345,10 @@ public class ContingencyListService {
         return Optional.empty();
     }
 
-    public void modifyFormContingencyList(UUID id, FormContingencyList formContingencyList) {
+    public void modifyFormContingencyList(UUID id, FormContingencyList formContingencyList, String userId) {
         // throw if not found
         formContingencyListRepository.save(formContingencyListRepository.getOne(id).update(formContingencyList));
+        notificationService.emitElementUpdated(id, userId);
     }
 
     @Transactional
@@ -359,10 +365,10 @@ public class ContingencyListService {
     }
 
     @Transactional
-    public ScriptContingencyList replaceFormContingencyListWithScript(UUID id) {
+    public ScriptContingencyList replaceFormContingencyListWithScript(UUID id, String userId) {
         Objects.requireNonNull(id);
         Optional<FormContingencyListEntity> formContingencyList = self.doGetFormContingencyListWithPreFetchedCountries(id);
-        return formContingencyList.map(entity -> {
+        ScriptContingencyList result = formContingencyList.map(entity -> {
             String script = generateGroovyScriptFromForm(fromFormContingencyListEntity(entity));
             var scriptContingencyListEntity = new ScriptContingencyListEntity(new ScriptContingencyList(id, script));
             scriptContingencyListEntity.setId(id);
@@ -372,6 +378,8 @@ public class ContingencyListService {
         }).orElseThrow(() -> {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Contingency list " + id + " not found");
         });
+        notificationService.emitElementUpdated(id, userId);
+        return result;
     }
 
     @Transactional
