@@ -906,7 +906,6 @@ public class ContingencyListControllerTest {
 
     @Test
     public void copyFormToScriptTest() throws Exception {
-        String userId = "userId";
         String form = "{\n" +
                 "  \"equipmentType\": \"GENERATOR\"," +
                 "  \"nominalVoltage1\": {" +
@@ -920,8 +919,7 @@ public class ContingencyListControllerTest {
         UUID firstUUID = addNewFormContingencyList(form);
 
         // new script from form
-        String res = mvc.perform(post("/" + VERSION + "/form-contingency-lists/" + firstUUID + "/new-script")
-                .header(USER_ID_HEADER, "userId"))
+        String res = mvc.perform(post("/" + VERSION + "/form-contingency-lists/" + firstUUID + "/new-script"))
                 .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
         UUID newId = objectMapper.readValue(res, ScriptContingencyList.class).getId();
 
