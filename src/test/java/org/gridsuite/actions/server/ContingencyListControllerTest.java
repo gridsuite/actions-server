@@ -38,6 +38,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.cloud.stream.binder.test.OutputDestination;
+import org.springframework.cloud.stream.binder.test.TestChannelBinderConfiguration;
+import org.springframework.messaging.Message;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
@@ -66,8 +69,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @RunWith(SpringRunner.class)
 @SpringBootTest
 @AutoConfigureMockMvc
-@ContextConfiguration(classes = {ActionsApplication.class})
+@ContextConfiguration(classes = {ActionsApplication.class, TestChannelBinderConfiguration.class})
 public class ContingencyListControllerTest {
+
+    private static final long TIMEOUT = 1000;
 
     private static final UUID NETWORK_UUID = UUID.fromString("7928181c-7977-4592-ba19-88027e4254e4");
     private static final UUID NETWORK_UUID_2 = UUID.fromString("7928181c-7977-4592-ba19-88027e4254e5");
@@ -75,6 +80,9 @@ public class ContingencyListControllerTest {
     private static final UUID NETWORK_UUID_4 = UUID.fromString("7928181c-7977-4592-ba19-88027e4254e7");
     private static final UUID NETWORK_UUID_5 = UUID.fromString("0313daa6-9419-4d4f-8ed1-af555998665f");
     private static final String VARIANT_ID_1 = "variant_1";
+    private static final String USER_ID_HEADER = "userId";
+
+    private String elementUpdateDestination = "element.update";
 
     private Network network;
 
@@ -92,10 +100,30 @@ public class ContingencyListControllerTest {
     @MockBean
     private NetworkStoreService networkStoreService;
 
+    @Autowired
+    private OutputDestination output;
+
     @After
-    public void cleanDB() {
+    public void tearDown() {
+        List<String> destinations = List.of(elementUpdateDestination);
+
+        cleanDB();
+        assertQueuesEmptyThenClear(destinations, output);
+    }
+
+    private void cleanDB() {
         scriptContingencyListRepository.deleteAll();
         formContingencyListRepository.deleteAll();
+    }
+
+    private void assertQueuesEmptyThenClear(List<String> destinations, OutputDestination output) {
+        try {
+            destinations.forEach(destination -> assertNull("Should not be any messages in queue " + destination + " : ", output.receive(TIMEOUT, destination)));
+        } catch (NullPointerException e) {
+            // Ignoring
+        } finally {
+            output.clear(); // purge in order to not fail the other tests
+        }
     }
 
     @Before
@@ -327,6 +355,7 @@ public class ContingencyListControllerTest {
 
     @Test
     public void testDateFormContingencyList() throws Exception {
+        String userId = "userId";
         String list = genFormContingencyList(EquipmentType.LINE, 11., EQUALITY, Set.of());
         UUID id = addNewFormContingencyList(list);
         ContingencyListAttributes attributes = getMetadata(id);
@@ -336,8 +365,13 @@ public class ContingencyListControllerTest {
 
         mvc.perform(put("/" + VERSION + "/form-contingency-lists/" + id)
                 .content(list)
-                .contentType(APPLICATION_JSON))
+                .contentType(APPLICATION_JSON)
+                .header(USER_ID_HEADER, "userId"))
                 .andExpect(status().isOk());
+
+        Message<byte[]> message = output.receive(TIMEOUT, elementUpdateDestination);
+        assertEquals(id, message.getHeaders().get(NotificationService.HEADER_ELEMENT_UUID));
+        assertEquals(userId, message.getHeaders().get(NotificationService.HEADER_MODIFIED_BY));
 
         attributes = getMetadata(id);
         assertTrue(baseModificationDate.getTime() < attributes.getModificationDate().getTime());
@@ -583,6 +617,7 @@ public class ContingencyListControllerTest {
 
     @Test
     public void modifyFormContingencyList() throws Exception {
+        String userId = "userId";
         UUID id = addNewFormContingencyList(genFormContingencyList(EquipmentType.LINE,
                 10., GREATER_OR_EQUAL,
                 Collections.emptySet()));
@@ -593,8 +628,13 @@ public class ContingencyListControllerTest {
 
         mvc.perform(put("/" + VERSION + "/form-contingency-lists/" + id)
                 .content(newFilter)
-                .contentType(APPLICATION_JSON))
+                .contentType(APPLICATION_JSON)
+                .header(USER_ID_HEADER, userId))
                 .andExpect(status().isOk());
+
+        Message<byte[]> message = output.receive(TIMEOUT, elementUpdateDestination);
+        assertEquals(id, message.getHeaders().get(NotificationService.HEADER_ELEMENT_UUID));
+        assertEquals(userId, message.getHeaders().get(NotificationService.HEADER_MODIFIED_BY));
 
         String res = mvc.perform(get("/" + VERSION + "/form-contingency-lists/" + id)
                 .contentType(APPLICATION_JSON))
@@ -605,12 +645,14 @@ public class ContingencyListControllerTest {
 
         mvc.perform(put("/" + VERSION + "/form-contingency-lists/" + UUID.randomUUID())
                 .content(newFilter)
-                .contentType(APPLICATION_JSON))
+                .contentType(APPLICATION_JSON)
+                .header(USER_ID_HEADER, userId))
                 .andExpect(status().isNotFound());
     }
 
     @Test
     public void modifyScriptContingencyList() throws Exception {
+        String userId = "userId";
         UUID id = addNewScriptContingencyList("{ \n" +
                 "\"script\" : \"contingency('NHV1_NHV2_1') {" +
                 "     equipments 'NHV1_NHV2_1'}\"" +
@@ -623,8 +665,13 @@ public class ContingencyListControllerTest {
 
         mvc.perform(put("/" + VERSION + "/script-contingency-lists/" + id)
                 .content(newScript)
-                .contentType(APPLICATION_JSON))
+                .contentType(APPLICATION_JSON)
+                .header(USER_ID_HEADER, userId))
                 .andExpect(status().isOk());
+
+        Message<byte[]> message = output.receive(TIMEOUT, elementUpdateDestination);
+        assertEquals(id, message.getHeaders().get(NotificationService.HEADER_ELEMENT_UUID));
+        assertEquals(userId, message.getHeaders().get(NotificationService.HEADER_MODIFIED_BY));
 
         String res = mvc.perform(get("/" + VERSION + "/script-contingency-lists/" + id)
                 .contentType(APPLICATION_JSON))
@@ -635,7 +682,8 @@ public class ContingencyListControllerTest {
 
         mvc.perform(put("/" + VERSION + "/script-contingency-lists/" + UUID.randomUUID())
                 .content(newScript)
-                .contentType(APPLICATION_JSON))
+                .contentType(APPLICATION_JSON)
+                .header(USER_ID_HEADER, userId))
                 .andExpect(status().isNotFound());
     }
 
@@ -819,6 +867,7 @@ public class ContingencyListControllerTest {
 
     @Test
     public void replaceFormWithScriptTest() throws Exception {
+        String userId = "userId";
         String form = "{\n" +
                 "  \"equipmentType\": \"GENERATOR\"," +
                 "  \"nominalVoltage1\": {" +
@@ -833,8 +882,13 @@ public class ContingencyListControllerTest {
         UUID id = addNewFormContingencyList(form);
 
         // replace with groovy script
-        String res = mvc.perform(post("/" + VERSION + "/form-contingency-lists/" + id + "/replace-with-script"))
+        String res = mvc.perform(post("/" + VERSION + "/form-contingency-lists/" + id + "/replace-with-script")
+                .header(USER_ID_HEADER, userId))
                 .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
+
+        Message<byte[]> message = output.receive(TIMEOUT, elementUpdateDestination);
+        assertEquals(id, message.getHeaders().get(NotificationService.HEADER_ELEMENT_UUID));
+        assertEquals(userId, message.getHeaders().get(NotificationService.HEADER_MODIFIED_BY));
 
         UUID newId = objectMapper.readValue(res, ScriptContingencyList.class).getId();
 
