@@ -10,7 +10,11 @@ package org.gridsuite.actions.server.utils;
  * @author Chamseddine benhamed <chamseddine.benhamed at rte-france.com>
  */
 
-public enum ContingencyListType {
-    SCRIPT,
-    FORM
+public enum NumericalFilterOperator {
+    EQUALITY,
+    GREATER_THAN,
+    GREATER_OR_EQUAL,
+    LESS_THAN,
+    LESS_OR_EQUAL,
+    RANGE
 }

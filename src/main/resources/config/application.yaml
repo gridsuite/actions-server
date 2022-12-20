@@ -1,5 +1,18 @@
 spring:
   application:
     name: actions-server
+  cloud:
+    stream:
+      bindings:
+        publishElementUpdate-out-0:
+          destination:  ${powsybl-ws.rabbitmq.destination.prefix:}element.update
+      output-bindings: publishElementUpdate
+  main:
+    allow-circular-references: true
 
-dbName: actions
+powsybl-ws:
+  database:
+    name: actions
+
+server:
+  max-http-header-size: 64000
