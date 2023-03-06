@@ -8,6 +8,9 @@ package org.gridsuite.actions.server;
 
 import com.powsybl.commons.PowsyblException;
 import com.powsybl.contingency.*;
+import com.powsybl.contingency.contingency.list.identifier.IdBasedNetworkElementIdentifier;
+import com.powsybl.contingency.contingency.list.identifier.NetworkElementIdentifier;
+import com.powsybl.contingency.contingency.list.identifier.NetworkElementIdentifierList;
 import com.powsybl.contingency.dsl.ContingencyDslLoader;
 import com.powsybl.iidm.network.*;
 import com.powsybl.network.store.client.NetworkStoreService;
@@ -19,8 +22,10 @@ import org.gridsuite.actions.server.dto.*;
 import org.gridsuite.actions.server.dto.ContingencyList;
 import org.gridsuite.actions.server.entities.FormContingencyListEntity;
 import org.gridsuite.actions.server.entities.NumericalFilterEntity;
+import org.gridsuite.actions.server.entities.IdentifierContingencyListEntity;
 import org.gridsuite.actions.server.entities.ScriptContingencyListEntity;
 import org.gridsuite.actions.server.repositories.FormContingencyListRepository;
+import org.gridsuite.actions.server.repositories.IdentifierContingencyListRepository;
 import org.gridsuite.actions.server.repositories.ScriptContingencyListRepository;
 import org.gridsuite.actions.server.utils.ContingencyListType;
 import org.gridsuite.actions.server.utils.EquipmentType;
@@ -46,6 +51,8 @@ public class ContingencyListService {
     private ScriptContingencyListRepository scriptContingencyListRepository;
 
     private FormContingencyListRepository formContingencyListRepository;
+
+    private IdentifierContingencyListRepository identifierContingencyListRepository;
 
     private NetworkStoreService networkStoreService;
 
@@ -395,4 +402,20 @@ public class ContingencyListService {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Contingency list " + id + " not found");
         });
     }
+
+    private static IdentifierContingencyList fromIdentifierContingencyListEntity(IdentifierContingencyListEntity entity) {
+        List<NetworkElementIdentifierList> listOfNetworkElementIdentifierList = new ArrayList<>();
+        entity.getIdentifiersListEntities().forEach(identifierList -> {
+            List<NetworkElementIdentifier> networkElementIdentifiers = new ArrayList<>();
+            identifierList.getEquipmentIds().forEach(equipmentId -> networkElementIdentifiers.add(new IdBasedNetworkElementIdentifier(equipmentId)));
+            listOfNetworkElementIdentifierList.add(new NetworkElementIdentifierList(networkElementIdentifiers));
+        });
+        return new IdentifierContingencyList(entity.getId(), listOfNetworkElementIdentifierList);
+    }
+    public IdentifierContingencyList createIdentifierListContingencyList(UUID id, IdentifierContingencyList identifierContingencyList) {
+        IdentifierContingencyListEntity entity = new IdentifierContingencyListEntity(identifierContingencyList);
+        entity.setId(id == null ? UUID.randomUUID() : id);
+        return fromIdentifierContingencyListEntity(identifierContingencyListRepository.save(entity));
+    }
+
 }

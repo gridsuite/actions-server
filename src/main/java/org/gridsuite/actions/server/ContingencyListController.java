@@ -141,6 +141,16 @@ public class ContingencyListController {
             .body(service.createFormContingencyList(id, formContingencyList));
     }
 
+    @PostMapping(value = "/identifier-contingency-lists", consumes = MediaType.APPLICATION_JSON_VALUE)
+    @Operation(summary = "Create an identifiers contingency list")
+    @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "The form contingency list have been created successfully")})
+    public ResponseEntity<IdentifierContingencyList> createIdentifiersContingencyList(@RequestParam(required = false, value = "id") UUID id,
+                                                                                      @RequestBody IdentifierContingencyList identifierContingencyList) {
+        return ResponseEntity.ok()
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(service.createIdentifierListContingencyList(id, identifierContingencyList));
+    }
+
     @PostMapping(value = "/form-contingency-lists")
     @Operation(summary = "Create a form contingency list from another existing one")
     @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "The form contingency list have been duplicated successfully"),
