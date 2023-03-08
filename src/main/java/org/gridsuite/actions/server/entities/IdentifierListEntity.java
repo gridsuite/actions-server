@@ -22,6 +22,6 @@ public class IdentifierListEntity {
 
     @Column(name = "equipmentIds")
     @ElementCollection
-    @CollectionTable(foreignKey = @ForeignKey(name = "identifierListEntity_equipmentIds_fk1"), indexes = {@Index(name = "identifierListEntity_equipmentIds_idx1", columnList = "identifier_list_id")})
+    @CollectionTable(foreignKey = @ForeignKey(name = "identifierListEntity_equipmentIds_fk1"), indexes = {@Index(name = "identifierListEntity_equipmentIds_idx1", columnList = "identifier_list_entity_id")})
     Set<String> equipmentIds;
 }

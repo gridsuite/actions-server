@@ -14,7 +14,7 @@ import java.util.UUID;
 @AllArgsConstructor
 @NoArgsConstructor
 @Schema(description = "Identifiers contingency list")
-public class IdentifierContingencyList implements ContingencyList{
+public class IdentifierContingencyList implements ContingencyList {
     @Schema(description = "Contingency list id")
     private UUID id;
 

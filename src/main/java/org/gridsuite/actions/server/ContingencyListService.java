@@ -66,10 +66,12 @@ public class ContingencyListService {
 
     public ContingencyListService(ScriptContingencyListRepository scriptContingencyListRepository,
                                   FormContingencyListRepository formContingencyListRepository,
+                                  IdentifierContingencyListRepository identifierContingencyListRepository,
                                   NetworkStoreService networkStoreService,
                                   NotificationService notificationService) {
         this.scriptContingencyListRepository = scriptContingencyListRepository;
         this.formContingencyListRepository = formContingencyListRepository;
+        this.identifierContingencyListRepository = identifierContingencyListRepository;
         this.networkStoreService = networkStoreService;
         this.notificationService = notificationService;
     }
@@ -127,6 +129,11 @@ public class ContingencyListService {
         return self.doGetFormContingencyListWithPreFetchedCountries(id).map(ContingencyListService::fromFormContingencyListEntity);
     }
 
+    public Optional<IdentifierContingencyList> getIdentifierContingencyList(UUID id) {
+        Objects.requireNonNull(id);
+        return identifierContingencyListRepository.findById(id).map(ContingencyListService::fromIdentifierContingencyListEntity);
+    }
+
     private List<Contingency> toPowSyBlContingencyList(ContingencyList contingencyList, UUID networkUuid, String variantId) {
         Network network;
         if (networkUuid == null) {
@@ -151,6 +158,9 @@ public class ContingencyListService {
         } else if (contingencyList instanceof FormContingencyList) {
             FormContingencyList formContingencyList = (FormContingencyList) contingencyList;
             return getContingencies(formContingencyList, network);
+        } else if (contingencyList instanceof IdentifierContingencyList) {
+            IdentifierContingencyList identifierContingencyList = (IdentifierContingencyList) contingencyList;
+            return getContingencies(identifierContingencyList, network);
         } else {
             throw new PowsyblException("Contingency list implementation not yet supported: " + contingencyList.getClass().getSimpleName());
         }
@@ -286,6 +296,12 @@ public class ContingencyListService {
         return contingencies;
     }
 
+    private List<Contingency> getContingencies(IdentifierContingencyList identifierContingencyList, Network network) {
+        List<Contingency> contingencies = null;
+        // TODO ?
+        return contingencies;
+    }
+
     private boolean filterByVoltage(double equipmentNominalVoltage, NumericalFilter numericalFilter) {
         if (numericalFilter == null) {
             return true;
@@ -412,6 +428,7 @@ public class ContingencyListService {
         });
         return new IdentifierContingencyList(entity.getId(), listOfNetworkElementIdentifierList);
     }
+
     public IdentifierContingencyList createIdentifierListContingencyList(UUID id, IdentifierContingencyList identifierContingencyList) {
         IdentifierContingencyListEntity entity = new IdentifierContingencyListEntity(identifierContingencyList);
         entity.setId(id == null ? UUID.randomUUID() : id);
