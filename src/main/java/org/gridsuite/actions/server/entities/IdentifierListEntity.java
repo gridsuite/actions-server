@@ -20,6 +20,9 @@ public class IdentifierListEntity {
     @Column(name = "id")
     private UUID id;
 
+    @Column(name = "name")
+    private String name;
+
     @Column(name = "equipmentIds")
     @ElementCollection
     @CollectionTable(foreignKey = @ForeignKey(name = "identifierListEntity_equipmentIds_fk1"), indexes = {@Index(name = "identifierListEntity_equipmentIds_idx1", columnList = "identifier_list_entity_id")})

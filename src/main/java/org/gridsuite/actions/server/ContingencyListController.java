@@ -142,21 +142,33 @@ public class ContingencyListController {
     }
 
     @PostMapping(value = "/identifier-contingency-lists", consumes = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(summary = "Create an identifiers contingency list")
+    @Operation(summary = "Create an identifier contingency list")
     @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "The identifier contingency list have been created successfully")})
     public ResponseEntity<IdentifierContingencyList> createIdentifierContingencyList(@RequestParam(required = false, value = "id") UUID id,
-                                                                                      @RequestBody IdentifierContingencyList identifierContingencyList) {
+                                                                                     @RequestBody com.powsybl.contingency.contingency.list.IdentifierContingencyList identifierContingencyList) {
         return ResponseEntity.ok()
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(service.createIdentifierListContingencyList(id, identifierContingencyList));
     }
 
     @GetMapping(value = "/identifier-contingency-lists/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(summary = "Get form contingency list by id")
+    @Operation(summary = "Get identifier contingency list by id")
     @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "The identifier contingency list"),
-            @ApiResponse(responseCode = "404", description = "The form contingency list does not exists")})
+            @ApiResponse(responseCode = "404", description = "The identifier contingency list does not exists")})
     public ResponseEntity<IdentifierContingencyList> getIdentifierContingencyList(@PathVariable("id") UUID id) {
         return service.getIdentifierContingencyList(id).map(contingencyList -> ResponseEntity.ok()
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .body(contingencyList))
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    @PostMapping(value = "/identifier-contingency-lists")
+    @Operation(summary = "Create a identifier contingency list from another existing one")
+    @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "The identifier contingency list have been duplicated successfully"),
+            @ApiResponse(responseCode = "404", description = "Source script contingency list not found")})
+    public ResponseEntity<IdentifierContingencyList> createIdentifierContingencyList(@RequestParam("duplicateFrom") UUID sourceListId,
+                                                                             @RequestParam(value = "id") UUID id) {
+        return service.createIdentifierContingencyList(sourceListId, id).map(contingencyList -> ResponseEntity.ok()
                         .contentType(MediaType.APPLICATION_JSON)
                         .body(contingencyList))
                 .orElse(ResponseEntity.notFound().build());

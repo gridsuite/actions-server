@@ -9,6 +9,12 @@ package org.gridsuite.actions.server;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.jayway.jsonpath.Configuration;
+import com.jayway.jsonpath.Option;
+import com.jayway.jsonpath.spi.json.JacksonJsonProvider;
+import com.jayway.jsonpath.spi.json.JsonProvider;
+import com.jayway.jsonpath.spi.mapper.JacksonMappingProvider;
+import com.jayway.jsonpath.spi.mapper.MappingProvider;
 import com.powsybl.iidm.network.Network;
 import com.powsybl.iidm.network.VariantManagerConstants;
 import com.powsybl.iidm.network.test.EurostagTutorialExample1Factory;
@@ -20,11 +26,13 @@ import com.powsybl.network.store.client.PreloadingStrategy;
 import com.powsybl.network.store.iidm.impl.NetworkFactoryImpl;
 import org.gridsuite.actions.server.dto.ContingencyListAttributes;
 import org.gridsuite.actions.server.dto.FormContingencyList;
+import org.gridsuite.actions.server.dto.IdentifierContingencyList;
 import org.gridsuite.actions.server.dto.ScriptContingencyList;
 import org.gridsuite.actions.server.entities.FormContingencyListEntity;
 import org.gridsuite.actions.server.entities.NumericalFilterEntity;
 import org.gridsuite.actions.server.entities.ScriptContingencyListEntity;
 import org.gridsuite.actions.server.repositories.FormContingencyListRepository;
+import org.gridsuite.actions.server.repositories.IdentifierContingencyListRepository;
 import org.gridsuite.actions.server.repositories.ScriptContingencyListRepository;
 import org.gridsuite.actions.server.utils.ContingencyListType;
 import org.gridsuite.actions.server.utils.EquipmentType;
@@ -46,11 +54,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.util.NestedServletException;
 
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 import static com.powsybl.network.store.model.NetworkStoreApi.VERSION;
 import static org.apache.commons.lang3.StringUtils.join;
@@ -95,6 +99,9 @@ public class ContingencyListControllerTest {
     private FormContingencyListRepository formContingencyListRepository;
 
     @Autowired
+    private IdentifierContingencyListRepository identifierContingencyListRepository;
+
+    @Autowired
     private MockMvc mvc;
 
     @MockBean
@@ -114,6 +121,7 @@ public class ContingencyListControllerTest {
     private void cleanDB() {
         scriptContingencyListRepository.deleteAll();
         formContingencyListRepository.deleteAll();
+        identifierContingencyListRepository.deleteAll();
     }
 
     private void assertQueuesEmptyThenClear(List<String> destinations, OutputDestination output) {
@@ -148,6 +156,27 @@ public class ContingencyListControllerTest {
         given(networkStoreService.getNetwork(NETWORK_UUID_5, PreloadingStrategy.COLLECTION)).willReturn(network5);
 
         objectMapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
+        Configuration.setDefaults(new Configuration.Defaults() {
+
+            private final JsonProvider jsonProvider = new JacksonJsonProvider(objectMapper);
+            private final MappingProvider mappingProvider = new JacksonMappingProvider(objectMapper);
+
+            @Override
+            public JsonProvider jsonProvider() {
+                return jsonProvider;
+            }
+
+            @Override
+            public MappingProvider mappingProvider() {
+                return mappingProvider;
+            }
+
+            @Override
+            public Set<Option> options() {
+                return EnumSet.noneOf(Option.class);
+            }
+        });
+
         cleanDB();
     }
 
@@ -975,5 +1004,38 @@ public class ContingencyListControllerTest {
 
         mvc.perform(post("/" + VERSION + "/script-contingency-lists?duplicateFrom=" + UUID.randomUUID() + "&id=" + UUID.randomUUID()))
                 .andExpect(status().isNotFound());
+    }
+
+    @Test
+    public void createIdentifierContingencyList() throws Exception {
+        String identifierContingencyList = "{\n" +
+                "\"name\" : \"C1\",\n" +
+                "\"identifiableType\": \"LINE\",\n" +
+                "  \"identifiers\": [\n" +
+                "  {\"type\": \"LIST\", \"identifierList\": [{\"identifier\": \"bibi\", \"type\" : \"ID_BASED\"}]},\n" +
+                "  {\"type\": \"LIST\", \"identifierList\": [{\"identifier\": \"bobo\", \"type\" : \"ID_BASED\"}]},\n" +
+                "  {\"type\": \"LIST\", \"identifierList\": [{\"identifier\": \"baba\", \"type\" : \"ID_BASED\"}, {\"identifier\": \"tata\", \"type\" : \"ID_BASED\"}]}\n" +
+                "  ]\n" +
+                "}";
+
+        String res = mvc.perform(post("/" + VERSION + "/identifier-contingency-lists/")
+                        .content(identifierContingencyList)
+                        .contentType(APPLICATION_JSON))
+                .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
+
+        System.out.println("res=" + res);
+        UUID id = objectMapper.readValue(res, IdentifierContingencyList.class).getId();
+
+        mvc.perform(get("/" + VERSION + "/identifier-contingency-lists/" + id)
+                        .contentType(APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+                .andExpect(content().json("{\"id\":\"50bfc2ba-738c-4c1c-997b-8ec3d28ba618\",\"identifierContingencyList\":{\"type\":\"identifier\",\"version\":\"1.0\",\"name\":\"C1\",\"identifiableType\":\"LINE\",\"identifiers\":[{\"type\":\"LIST\",\"identifierList\":[{\"type\":\"ID_BASED\",\"identifier\":\"bibi\"}]},{\"type\":\"LIST\",\"identifierList\":[{\"type\":\"ID_BASED\",\"identifier\":\"bobo\"}]},{\"type\":\"LIST\",\"identifierList\":[{\"type\":\"ID_BASED\",\"identifier\":\"baba\"},{\"type\":\"ID_BASED\",\"identifier\":\"tata\"}]}]},\"type\":\"IDENTIFIERS\"}", false));
+
+        mvc.perform(post("/" + VERSION + "/identifier-contingency-lists/")
+                        .content(identifierContingencyList)
+                        .contentType(APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString();
     }
 }

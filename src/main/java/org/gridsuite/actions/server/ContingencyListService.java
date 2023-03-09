@@ -37,6 +37,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -98,12 +99,14 @@ public class ContingencyListService {
     }
 
     List<ContingencyListAttributes> getContingencyLists(List<UUID> ids) {
-        return Stream.concat(
+        return Stream.of(
             scriptContingencyListRepository.findAllById(ids).stream().map(scriptContingencyListEntity ->
                 new ContingencyListAttributes(scriptContingencyListEntity.getId(), ContingencyListType.SCRIPT, scriptContingencyListEntity.getModificationDate())),
             formContingencyListRepository.findAllById(ids).stream().map(formContingencyListEntity ->
-                new ContingencyListAttributes(formContingencyListEntity.getId(), ContingencyListType.FORM, formContingencyListEntity.getModificationDate()))
-        ).collect(Collectors.toList());
+                new ContingencyListAttributes(formContingencyListEntity.getId(), ContingencyListType.FORM, formContingencyListEntity.getModificationDate())),
+            identifierContingencyListRepository.findAllById(ids).stream().map(formContingencyListEntity ->
+                new ContingencyListAttributes(formContingencyListEntity.getId(), ContingencyListType.IDENTIFIERS, formContingencyListEntity.getModificationDate()))
+        ).flatMap(Function.identity()).collect(Collectors.toList());
     }
 
     List<FormContingencyList> getFormContingencyLists() {
@@ -368,6 +371,16 @@ public class ContingencyListService {
         return Optional.empty();
     }
 
+    public Optional<IdentifierContingencyList> createIdentifierContingencyList(UUID sourceListId, UUID id) {
+        IdentifierContingencyList sourceFormContingencyList = getIdentifierContingencyList(sourceListId).orElse(null);
+        if (sourceFormContingencyList != null) {
+            IdentifierContingencyListEntity entity = new IdentifierContingencyListEntity(sourceFormContingencyList.getIdentifierContingencyList());
+            entity.setId(id == null ? UUID.randomUUID() : id);
+            return Optional.of(fromIdentifierContingencyListEntity(identifierContingencyListRepository.save(entity)));
+        }
+        return Optional.empty();
+    }
+
     public void modifyFormContingencyList(UUID id, FormContingencyList formContingencyList, String userId) {
         // throw if not found
         formContingencyListRepository.save(formContingencyListRepository.getOne(id).update(formContingencyList));
@@ -420,16 +433,17 @@ public class ContingencyListService {
     }
 
     private static IdentifierContingencyList fromIdentifierContingencyListEntity(IdentifierContingencyListEntity entity) {
-        List<NetworkElementIdentifierList> listOfNetworkElementIdentifierList = new ArrayList<>();
+        List<NetworkElementIdentifier> listOfNetworkElementIdentifierList = new ArrayList<>();
         entity.getIdentifiersListEntities().forEach(identifierList -> {
             List<NetworkElementIdentifier> networkElementIdentifiers = new ArrayList<>();
             identifierList.getEquipmentIds().forEach(equipmentId -> networkElementIdentifiers.add(new IdBasedNetworkElementIdentifier(equipmentId)));
             listOfNetworkElementIdentifierList.add(new NetworkElementIdentifierList(networkElementIdentifiers));
         });
-        return new IdentifierContingencyList(entity.getId(), listOfNetworkElementIdentifierList);
+        //TODO: identifiableType to be removed
+        return new IdentifierContingencyList(entity.getId(), new com.powsybl.contingency.contingency.list.IdentifierContingencyList(entity.getName(), "LINE", listOfNetworkElementIdentifierList));
     }
 
-    public IdentifierContingencyList createIdentifierListContingencyList(UUID id, IdentifierContingencyList identifierContingencyList) {
+    public IdentifierContingencyList createIdentifierListContingencyList(UUID id, com.powsybl.contingency.contingency.list.IdentifierContingencyList identifierContingencyList) {
         IdentifierContingencyListEntity entity = new IdentifierContingencyListEntity(identifierContingencyList);
         entity.setId(id == null ? UUID.randomUUID() : id);
         return fromIdentifierContingencyListEntity(identifierContingencyListRepository.save(entity));
