@@ -1067,7 +1067,6 @@ public class ContingencyListControllerTest {
                 .andExpect(status().isOk())
                 .andReturn().getResponse().getContentAsString();
 
-
         //TODO: clean test
         System.out.println("res=>" + res);
 //                .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
