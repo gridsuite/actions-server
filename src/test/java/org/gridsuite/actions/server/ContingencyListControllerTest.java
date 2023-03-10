@@ -989,9 +989,9 @@ public class ContingencyListControllerTest {
                 "\"name\" : \"C1\",\n" +
                 "\"identifiableType\": \"LINE\",\n" +
                 "  \"identifiers\": [\n" +
-                "  {\"type\": \"LIST\", \"identifierList\": [{\"identifier\": \"bibi\", \"type\" : \"ID_BASED\"}]},\n" +
-                "  {\"type\": \"LIST\", \"identifierList\": [{\"identifier\": \"bobo\", \"type\" : \"ID_BASED\"}]},\n" +
-                "  {\"type\": \"LIST\", \"identifierList\": [{\"identifier\": \"baba\", \"type\" : \"ID_BASED\"}, {\"identifier\": \"tata\", \"type\" : \"ID_BASED\"}]}\n" +
+                "  {\"type\": \"LIST\", \"identifierList\": [{\"identifier\": \"id1\", \"type\" : \"ID_BASED\"}]},\n" +
+                "  {\"type\": \"LIST\", \"identifierList\": [{\"identifier\": \"id2\", \"type\" : \"ID_BASED\"}]},\n" +
+                "  {\"type\": \"LIST\", \"identifierList\": [{\"identifier\": \"id3_1\", \"type\" : \"ID_BASED\"}, {\"identifier\": \"id3_2\", \"type\" : \"ID_BASED\"}]}\n" +
                 "  ]\n" +
                 "}";
 
@@ -1000,14 +1000,13 @@ public class ContingencyListControllerTest {
                         .contentType(APPLICATION_JSON))
                 .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
 
-
         UUID contingencyListId = objectMapper.readValue(res, IdentifierContingencyList.class).getId();
 
         mvc.perform(get("/" + VERSION + "/identifier-contingency-lists/" + contingencyListId)
                         .contentType(APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-                .andExpect(content().json("{\"id\":\"" + contingencyListId + "\",\"identifierContingencyList\":{\"type\":\"identifier\",\"version\":\"1.0\",\"name\":\"C1\",\"identifiableType\":\"LINE\",\"identifiers\":[{\"type\":\"LIST\",\"identifierList\":[{\"type\":\"ID_BASED\",\"identifier\":\"bibi\"}]},{\"type\":\"LIST\",\"identifierList\":[{\"type\":\"ID_BASED\",\"identifier\":\"bobo\"}]},{\"type\":\"LIST\",\"identifierList\":[{\"type\":\"ID_BASED\",\"identifier\":\"baba\"},{\"type\":\"ID_BASED\",\"identifier\":\"tata\"}]}]},\"type\":\"IDENTIFIERS\"}", false));
+                .andExpect(content().json("{\"id\":\"" + contingencyListId + "\",\"identifierContingencyList\":{\"type\":\"identifier\",\"version\":\"1.0\",\"name\":\"C1\",\"identifiableType\":\"LINE\",\"identifiers\":[{\"type\":\"LIST\",\"identifierList\":[{\"type\":\"ID_BASED\",\"identifier\":\"id1\"}]},{\"type\":\"LIST\",\"identifierList\":[{\"type\":\"ID_BASED\",\"identifier\":\"id2\"}]},{\"type\":\"LIST\",\"identifierList\":[{\"type\":\"ID_BASED\",\"identifier\":\"id3_1\"},{\"type\":\"ID_BASED\",\"identifier\":\"id3_2\"}]}]},\"type\":\"IDENTIFIERS\"}", false));
 
         mvc.perform(post("/" + VERSION + "/identifier-contingency-lists/")
                         .content(identifierContingencyList)
