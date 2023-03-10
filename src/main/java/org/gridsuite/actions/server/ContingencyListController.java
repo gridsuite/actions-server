@@ -167,7 +167,7 @@ public class ContingencyListController {
     @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "The identifier contingency list have been duplicated successfully"),
             @ApiResponse(responseCode = "404", description = "Source script contingency list not found")})
     public ResponseEntity<IdentifierContingencyList> createIdentifierContingencyList(@RequestParam("duplicateFrom") UUID sourceListId,
-                                                                             @RequestParam(value = "id") UUID id) {
+                                                                                     @RequestParam(value = "id") UUID id) {
         return service.createIdentifierContingencyList(sourceListId, id).map(contingencyList -> ResponseEntity.ok()
                         .contentType(MediaType.APPLICATION_JSON)
                         .body(contingencyList))

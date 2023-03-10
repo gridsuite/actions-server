@@ -1,6 +1,7 @@
 package org.gridsuite.actions.server.entities;
 
 import com.powsybl.contingency.contingency.list.identifier.IdBasedNetworkElementIdentifier;
+import com.powsybl.contingency.contingency.list.identifier.NetworkElementIdentifier;
 import com.powsybl.contingency.contingency.list.identifier.NetworkElementIdentifierList;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -32,9 +33,12 @@ public class IdentifierContingencyListEntity extends AbstractContingencyEntity {
 
     final void init(com.powsybl.contingency.contingency.list.IdentifierContingencyList identifierContingencyList) {
         this.name = identifierContingencyList.getName();
-        identifierContingencyList.getIdentifiants().forEach(networkElementIdentifierList ->
-            //TODO: set IdentifierListEntity ?
-            identifiersListEntities.add(new IdentifierListEntity(UUID.randomUUID(), UUID.randomUUID().toString(), ((NetworkElementIdentifierList) networkElementIdentifierList).getIdentifiers().stream().map(identifier -> ((IdBasedNetworkElementIdentifier) identifier).getIdentifier()).collect(Collectors.toSet())))
+        identifierContingencyList.getIdentifiants().forEach(networkElementIdentifier -> {
+            List<NetworkElementIdentifier> identifierList = ((NetworkElementIdentifierList) networkElementIdentifier).getIdentifiers();
+            String firstIdentifier = ((IdBasedNetworkElementIdentifier) identifierList.stream().findFirst().get()).getIdentifier();
+            //TODO: set NetworkIdentifierList name when it will be available in powsybl-core
+            identifiersListEntities.add(new IdentifierListEntity(UUID.randomUUID(), firstIdentifier, identifierList.stream().map(identifier -> ((IdBasedNetworkElementIdentifier) identifier).getIdentifier()).collect(Collectors.toSet())));
+            }
         );
     }
 }

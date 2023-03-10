@@ -8,4 +8,5 @@ import java.util.UUID;
 
 @Repository
 public interface IdentifierContingencyListRepository extends JpaRepository<IdentifierContingencyListEntity, UUID> {
+    Integer deleteIdentifierContingencyListEntityById(UUID id);
 }

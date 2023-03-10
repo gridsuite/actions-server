@@ -392,7 +392,9 @@ public class ContingencyListService {
         Objects.requireNonNull(id);
         // if there is no form contingency list by this Id, deleted count == 0
         if (formContingencyListRepository.deleteFormContingencyListEntityById(id) == 0) {
-            scriptContingencyListRepository.deleteById(id);
+            if (identifierContingencyListRepository.deleteIdentifierContingencyListEntityById(id) == 0) {
+                scriptContingencyListRepository.deleteById(id);
+            }
         }
     }
 
@@ -437,6 +439,7 @@ public class ContingencyListService {
         entity.getIdentifiersListEntities().forEach(identifierList -> {
             List<NetworkElementIdentifier> networkElementIdentifiers = new ArrayList<>();
             identifierList.getEquipmentIds().forEach(equipmentId -> networkElementIdentifiers.add(new IdBasedNetworkElementIdentifier(equipmentId)));
+            //TODO: NetworkElementIdentifierList name will have to be filled with identifierList.getName() when it's available in powsybl-core
             listOfNetworkElementIdentifierList.add(new NetworkElementIdentifierList(networkElementIdentifiers));
         });
         //TODO: identifiableType to be removed

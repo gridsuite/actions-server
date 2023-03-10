@@ -9,12 +9,7 @@ package org.gridsuite.actions.server;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.jayway.jsonpath.Configuration;
-import com.jayway.jsonpath.Option;
-import com.jayway.jsonpath.spi.json.JacksonJsonProvider;
-import com.jayway.jsonpath.spi.json.JsonProvider;
-import com.jayway.jsonpath.spi.mapper.JacksonMappingProvider;
-import com.jayway.jsonpath.spi.mapper.MappingProvider;
+import com.powsybl.contingency.json.ContingencyJsonModule;
 import com.powsybl.iidm.network.Network;
 import com.powsybl.iidm.network.VariantManagerConstants;
 import com.powsybl.iidm.network.test.EurostagTutorialExample1Factory;
@@ -156,26 +151,7 @@ public class ContingencyListControllerTest {
         given(networkStoreService.getNetwork(NETWORK_UUID_5, PreloadingStrategy.COLLECTION)).willReturn(network5);
 
         objectMapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
-        Configuration.setDefaults(new Configuration.Defaults() {
-
-            private final JsonProvider jsonProvider = new JacksonJsonProvider(objectMapper);
-            private final MappingProvider mappingProvider = new JacksonMappingProvider(objectMapper);
-
-            @Override
-            public JsonProvider jsonProvider() {
-                return jsonProvider;
-            }
-
-            @Override
-            public MappingProvider mappingProvider() {
-                return mappingProvider;
-            }
-
-            @Override
-            public Set<Option> options() {
-                return EnumSet.noneOf(Option.class);
-            }
-        });
+        objectMapper.registerModule(new ContingencyJsonModule());
 
         cleanDB();
     }
@@ -1009,6 +985,7 @@ public class ContingencyListControllerTest {
     @Test
     public void createIdentifierContingencyList() throws Exception {
         String identifierContingencyList = "{\n" +
+                "\"type\" : \"identifier\",\n" +
                 "\"name\" : \"C1\",\n" +
                 "\"identifiableType\": \"LINE\",\n" +
                 "  \"identifiers\": [\n" +
@@ -1023,19 +1000,22 @@ public class ContingencyListControllerTest {
                         .contentType(APPLICATION_JSON))
                 .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
 
-        System.out.println("res=" + res);
-        UUID id = objectMapper.readValue(res, IdentifierContingencyList.class).getId();
 
-        mvc.perform(get("/" + VERSION + "/identifier-contingency-lists/" + id)
+        UUID contingencyListId = objectMapper.readValue(res, IdentifierContingencyList.class).getId();
+
+        mvc.perform(get("/" + VERSION + "/identifier-contingency-lists/" + contingencyListId)
                         .contentType(APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-                .andExpect(content().json("{\"id\":\"50bfc2ba-738c-4c1c-997b-8ec3d28ba618\",\"identifierContingencyList\":{\"type\":\"identifier\",\"version\":\"1.0\",\"name\":\"C1\",\"identifiableType\":\"LINE\",\"identifiers\":[{\"type\":\"LIST\",\"identifierList\":[{\"type\":\"ID_BASED\",\"identifier\":\"bibi\"}]},{\"type\":\"LIST\",\"identifierList\":[{\"type\":\"ID_BASED\",\"identifier\":\"bobo\"}]},{\"type\":\"LIST\",\"identifierList\":[{\"type\":\"ID_BASED\",\"identifier\":\"baba\"},{\"type\":\"ID_BASED\",\"identifier\":\"tata\"}]}]},\"type\":\"IDENTIFIERS\"}", false));
+                .andExpect(content().json("{\"id\":\"" + contingencyListId + "\",\"identifierContingencyList\":{\"type\":\"identifier\",\"version\":\"1.0\",\"name\":\"C1\",\"identifiableType\":\"LINE\",\"identifiers\":[{\"type\":\"LIST\",\"identifierList\":[{\"type\":\"ID_BASED\",\"identifier\":\"bibi\"}]},{\"type\":\"LIST\",\"identifierList\":[{\"type\":\"ID_BASED\",\"identifier\":\"bobo\"}]},{\"type\":\"LIST\",\"identifierList\":[{\"type\":\"ID_BASED\",\"identifier\":\"baba\"},{\"type\":\"ID_BASED\",\"identifier\":\"tata\"}]}]},\"type\":\"IDENTIFIERS\"}", false));
 
         mvc.perform(post("/" + VERSION + "/identifier-contingency-lists/")
                         .content(identifierContingencyList)
                         .contentType(APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andReturn().getResponse().getContentAsString();
+
+        mvc.perform(delete("/" + VERSION + "/contingency-lists/" + contingencyListId))
+                .andExpect(status().isOk());
     }
 }
