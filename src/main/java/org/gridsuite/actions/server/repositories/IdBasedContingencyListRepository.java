@@ -7,6 +7,6 @@ import org.springframework.stereotype.Repository;
 import java.util.UUID;
 
 @Repository
-public interface IdentifierContingencyListRepository extends JpaRepository<IdBasedContingencyListEntity, UUID> {
-    Integer deleteIdentifierContingencyListEntityById(UUID id);
+public interface IdBasedContingencyListRepository extends JpaRepository<IdBasedContingencyListEntity, UUID> {
+    Integer deleteIdBasedContingencyListEntityById(UUID id);
 }

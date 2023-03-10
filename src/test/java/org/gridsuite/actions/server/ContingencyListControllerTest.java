@@ -27,7 +27,7 @@ import org.gridsuite.actions.server.entities.FormContingencyListEntity;
 import org.gridsuite.actions.server.entities.NumericalFilterEntity;
 import org.gridsuite.actions.server.entities.ScriptContingencyListEntity;
 import org.gridsuite.actions.server.repositories.FormContingencyListRepository;
-import org.gridsuite.actions.server.repositories.IdentifierContingencyListRepository;
+import org.gridsuite.actions.server.repositories.IdBasedContingencyListRepository;
 import org.gridsuite.actions.server.repositories.ScriptContingencyListRepository;
 import org.gridsuite.actions.server.utils.ContingencyListType;
 import org.gridsuite.actions.server.utils.EquipmentType;
@@ -94,7 +94,7 @@ public class ContingencyListControllerTest {
     private FormContingencyListRepository formContingencyListRepository;
 
     @Autowired
-    private IdentifierContingencyListRepository identifierContingencyListRepository;
+    private IdBasedContingencyListRepository idBasedContingencyListRepository;
 
     @Autowired
     private MockMvc mvc;
@@ -116,7 +116,7 @@ public class ContingencyListControllerTest {
     private void cleanDB() {
         scriptContingencyListRepository.deleteAll();
         formContingencyListRepository.deleteAll();
-        identifierContingencyListRepository.deleteAll();
+        idBasedContingencyListRepository.deleteAll();
     }
 
     private void assertQueuesEmptyThenClear(List<String> destinations, OutputDestination output) {
@@ -983,7 +983,7 @@ public class ContingencyListControllerTest {
     }
 
     @Test
-    public void createIdentifierContingencyList() throws Exception {
+    public void createIdBasedContingencyList() throws Exception {
         String identifierContingencyList = "{\n" +
                 "\"type\" : \"identifier\",\n" +
                 "\"name\" : \"C1\",\n" +
@@ -1016,5 +1016,30 @@ public class ContingencyListControllerTest {
 
         mvc.perform(delete("/" + VERSION + "/contingency-lists/" + contingencyListId))
                 .andExpect(status().isOk());
+    }
+
+    @Test
+    public void duplicateBasedContingencyList() throws Exception {
+        String list = "{\n" +
+                "\"type\" : \"identifier\",\n" +
+                "\"name\" : \"C1\",\n" +
+                "\"identifiableType\": \"LINE\",\n" +
+                "  \"identifiers\": [\n" +
+                "  {\"type\": \"LIST\", \"identifierList\": [{\"identifier\": \"id1\", \"type\" : \"ID_BASED\"}]}\n" +
+                "  ]\n" +
+                "}";
+        String res = mvc.perform(post("/" + VERSION + "/identifier-contingency-lists/")
+                        .content(list)
+                        .contentType(APPLICATION_JSON))
+                .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
+
+        UUID id = objectMapper.readValue(res, IdBasedContingencyList.class).getId();
+
+        res = mvc.perform(post("/" + VERSION + "/identifier-contingency-lists?duplicateFrom=" + id + "&id=" + UUID.randomUUID()))
+                .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
+        assertEquals(objectMapper.readValue(res, IdBasedContingencyList.class).getIdentifierContingencyList().getIdentifiants().size(), 1);
+
+        mvc.perform(post("/" + VERSION + "/identifier-contingency-lists?duplicateFrom=" + UUID.randomUUID() + "&id=" + UUID.randomUUID()))
+                .andExpect(status().isNotFound());
     }
 }

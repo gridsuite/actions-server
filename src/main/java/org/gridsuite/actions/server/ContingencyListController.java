@@ -149,7 +149,7 @@ public class ContingencyListController {
                                                                                   @RequestBody IdentifierContingencyList identifierContingencyList) {
         return ResponseEntity.ok()
                 .contentType(MediaType.APPLICATION_JSON)
-                .body(service.createIdentifierListContingencyList(id, identifierContingencyList));
+                .body(service.createIdBasedContingencyList(id, identifierContingencyList));
     }
 
     @GetMapping(value = "/identifier-contingency-lists/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -157,7 +157,7 @@ public class ContingencyListController {
     @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "The identifier contingency list"),
             @ApiResponse(responseCode = "404", description = "The identifier contingency list does not exists")})
     public ResponseEntity<IdBasedContingencyList> getIdentifierContingencyList(@PathVariable("id") UUID id) {
-        return service.getIdentifierContingencyList(id).map(contingencyList -> ResponseEntity.ok()
+        return service.getIdBasedContingencyList(id).map(contingencyList -> ResponseEntity.ok()
                         .contentType(MediaType.APPLICATION_JSON)
                         .body(contingencyList))
                 .orElse(ResponseEntity.notFound().build());
@@ -169,7 +169,7 @@ public class ContingencyListController {
             @ApiResponse(responseCode = "404", description = "Source script contingency list not found")})
     public ResponseEntity<IdBasedContingencyList> createIdentifierContingencyList(@RequestParam("duplicateFrom") UUID sourceListId,
                                                                                   @RequestParam(value = "id") UUID id) {
-        return service.createIdentifierContingencyList(sourceListId, id).map(contingencyList -> ResponseEntity.ok()
+        return service.createIdBasedContingencyList(sourceListId, id).map(contingencyList -> ResponseEntity.ok()
                         .contentType(MediaType.APPLICATION_JSON)
                         .body(contingencyList))
                 .orElse(ResponseEntity.notFound().build());
