@@ -16,7 +16,6 @@ import java.util.stream.Collectors;
 
 @NoArgsConstructor
 @Getter
-@Setter
 @Entity
 @Table(name = "id_based_contingency_list")
 public class IdBasedContingencyListEntity extends AbstractContingencyEntity {
