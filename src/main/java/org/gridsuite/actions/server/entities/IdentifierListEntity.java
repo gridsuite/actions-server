@@ -11,7 +11,6 @@ import java.util.UUID;
 
 @Getter
 @NoArgsConstructor
-@SuperBuilder
 @AllArgsConstructor
 @Entity
 @Table(name = "identifier_list")
