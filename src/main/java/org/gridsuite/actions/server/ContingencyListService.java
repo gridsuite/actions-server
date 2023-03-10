@@ -330,7 +330,8 @@ public class ContingencyListService {
         Objects.requireNonNull(id);
 
         return getScriptContingencyList(id).map(contingencyList -> toPowSyBlContingencyList(contingencyList, networkUuid, variantId))
-            .or(() -> getFormContingencyList(id).map(contingencyList -> toPowSyBlContingencyList(contingencyList, networkUuid, variantId)));
+            .or(() -> getFormContingencyList(id).map(contingencyList -> toPowSyBlContingencyList(contingencyList, networkUuid, variantId)))
+                    .or(() -> getIdBasedContingencyList(id).map(contingencyList -> toPowSyBlContingencyList(contingencyList, networkUuid, variantId)));
     }
 
     ScriptContingencyList createScriptContingencyList(UUID id, ScriptContingencyList script) {

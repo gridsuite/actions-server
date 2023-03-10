@@ -1041,5 +1041,39 @@ public class ContingencyListControllerTest {
 
         mvc.perform(post("/" + VERSION + "/identifier-contingency-lists?duplicateFrom=" + UUID.randomUUID() + "&id=" + UUID.randomUUID()))
                 .andExpect(status().isNotFound());
+
+
+    }
+
+    @Test
+    public void exportIdBasedContingencyList() throws Exception {
+        String list = "{\n" +
+                "\"type\" : \"identifier\",\n" +
+                "\"name\" : \"C1\",\n" +
+                "\"identifiableType\": \"LINE\",\n" +
+                "  \"identifiers\": [\n" +
+                "  {\"type\": \"LIST\", \"identifierList\": [{\"identifier\": \"NHV1_NHV2_1\", \"type\" : \"ID_BASED\"}]}\n" +
+                "  ]\n" +
+                "}";
+        String res = mvc.perform(post("/" + VERSION + "/identifier-contingency-lists/")
+                        .content(list)
+                        .contentType(APPLICATION_JSON))
+                .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
+
+        UUID idBasedContingencyList = objectMapper.readValue(res, IdBasedContingencyList.class).getId();
+
+        res = mvc.perform(get("/" + VERSION + "/contingency-lists/" + idBasedContingencyList + "/export?networkUuid=" + NETWORK_UUID + (VARIANT_ID_1 != null ? "&variantId=" + VARIANT_ID_1 : ""))
+                        .contentType(APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString();
+
+
+        //TODO: clean test
+        System.out.println("res=>" + res);
+//                .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+//                .andExpect(content().json(list));
+        // delete data
+        mvc.perform(delete("/" + VERSION + "/contingency-lists/" + idBasedContingencyList))
+                .andExpect(status().isOk());
     }
 }
