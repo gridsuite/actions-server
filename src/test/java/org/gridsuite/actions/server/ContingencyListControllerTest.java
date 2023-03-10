@@ -1041,8 +1041,6 @@ public class ContingencyListControllerTest {
 
         mvc.perform(post("/" + VERSION + "/identifier-contingency-lists?duplicateFrom=" + UUID.randomUUID() + "&id=" + UUID.randomUUID()))
                 .andExpect(status().isNotFound());
-
-
     }
 
     @Test
