@@ -3,7 +3,6 @@ package org.gridsuite.actions.server.entities;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.experimental.SuperBuilder;
 
 import javax.persistence.*;
 import java.util.Set;
