@@ -1,5 +1,6 @@
 package org.gridsuite.actions.server.dto;
 
+import com.powsybl.contingency.contingency.list.IdentifierContingencyList;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -11,14 +12,14 @@ import java.util.UUID;
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
-@Schema(description = "Identifier contingency list")
-public class IdentifierContingencyList implements ContingencyList {
+@Schema(description = "Id based contingency list")
+public class IdBasedContingencyList implements ContingencyList {
 
     @Schema(description = "List id")
     private UUID id;
 
     @Schema(description = "Identifier list")
-    private com.powsybl.contingency.contingency.list.IdentifierContingencyList identifierContingencyList;
+    private IdentifierContingencyList identifierContingencyList;
 
     @Schema(description = "Type")
     @Override

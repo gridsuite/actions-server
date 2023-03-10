@@ -21,7 +21,7 @@ import com.powsybl.network.store.client.PreloadingStrategy;
 import com.powsybl.network.store.iidm.impl.NetworkFactoryImpl;
 import org.gridsuite.actions.server.dto.ContingencyListAttributes;
 import org.gridsuite.actions.server.dto.FormContingencyList;
-import org.gridsuite.actions.server.dto.IdentifierContingencyList;
+import org.gridsuite.actions.server.dto.IdBasedContingencyList;
 import org.gridsuite.actions.server.dto.ScriptContingencyList;
 import org.gridsuite.actions.server.entities.FormContingencyListEntity;
 import org.gridsuite.actions.server.entities.NumericalFilterEntity;
@@ -1000,7 +1000,7 @@ public class ContingencyListControllerTest {
                         .contentType(APPLICATION_JSON))
                 .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
 
-        UUID contingencyListId = objectMapper.readValue(res, IdentifierContingencyList.class).getId();
+        UUID contingencyListId = objectMapper.readValue(res, IdBasedContingencyList.class).getId();
 
         mvc.perform(get("/" + VERSION + "/identifier-contingency-lists/" + contingencyListId)
                         .contentType(APPLICATION_JSON))
