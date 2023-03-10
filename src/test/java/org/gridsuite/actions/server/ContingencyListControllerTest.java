@@ -1037,7 +1037,7 @@ public class ContingencyListControllerTest {
 
         res = mvc.perform(post("/" + VERSION + "/identifier-contingency-lists?duplicateFrom=" + id + "&id=" + UUID.randomUUID()))
                 .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
-        assertEquals(objectMapper.readValue(res, IdBasedContingencyList.class).getIdentifierContingencyList().getIdentifiants().size(), 1);
+        assertEquals(1, objectMapper.readValue(res, IdBasedContingencyList.class).getIdentifierContingencyList().getIdentifiants().size());
 
         mvc.perform(post("/" + VERSION + "/identifier-contingency-lists?duplicateFrom=" + UUID.randomUUID() + "&id=" + UUID.randomUUID()))
                 .andExpect(status().isNotFound());
