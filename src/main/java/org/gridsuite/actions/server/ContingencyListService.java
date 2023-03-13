@@ -442,7 +442,6 @@ public class ContingencyListService {
             //TODO: NetworkElementIdentifierList name will have to be filled with identifierList.getName() when it's available in powsybl-core
             listOfNetworkElementIdentifierList.add(new NetworkElementIdentifierList(networkElementIdentifiers));
         });
-        //TODO: identifiableType to be removed
         return new IdBasedContingencyList(entity.getId(), new IdentifierContingencyList(entity.getName(), "LINE", listOfNetworkElementIdentifierList));
     }
 
