@@ -91,12 +91,14 @@ public class ContingencyListService {
     }
 
     List<ContingencyListAttributes> getContingencyLists() {
-        return Stream.concat(
+        return Stream.of(
             scriptContingencyListRepository.findAll().stream().map(scriptContingencyListEntity ->
                 new ContingencyListAttributes(scriptContingencyListEntity.getId(), ContingencyListType.SCRIPT, scriptContingencyListEntity.getModificationDate())),
             formContingencyListRepository.findAll().stream().map(formContingencyListEntity ->
-                new ContingencyListAttributes(formContingencyListEntity.getId(), ContingencyListType.FORM, formContingencyListEntity.getModificationDate()))
-        ).collect(Collectors.toList());
+                new ContingencyListAttributes(formContingencyListEntity.getId(), ContingencyListType.FORM, formContingencyListEntity.getModificationDate())),
+            idBasedContingencyListRepository.findAll().stream().map(idBasedContingencyListEntity ->
+                    new ContingencyListAttributes(idBasedContingencyListEntity.getId(), ContingencyListType.IDENTIFIERS, idBasedContingencyListEntity.getModificationDate()))
+        ).flatMap(Function.identity()).collect(Collectors.toList());
     }
 
     List<ContingencyListAttributes> getContingencyLists(List<UUID> ids) {
