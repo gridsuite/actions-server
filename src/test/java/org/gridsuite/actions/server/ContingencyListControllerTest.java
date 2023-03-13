@@ -1023,7 +1023,7 @@ public class ContingencyListControllerTest {
 
     @Test
     public void duplicateBasedContingencyList() throws Exception {
-        IdBasedContingencyList idBasedContingencyList = createIdBasedContingencyList(null,"id1");
+        IdBasedContingencyList idBasedContingencyList = createIdBasedContingencyList(null, "id1");
         String res = mvc.perform(post("/" + VERSION + "/identifier-contingency-lists/")
                         .content(objectMapper.writeValueAsString(idBasedContingencyList))
                         .contentType(APPLICATION_JSON))
@@ -1063,7 +1063,7 @@ public class ContingencyListControllerTest {
 
     @Test
     public void modifyIdBasedContingencyList() throws Exception {
-        IdBasedContingencyList idBasedContingencyList = createIdBasedContingencyList(null,"C1", "LINE1");
+        IdBasedContingencyList idBasedContingencyList = createIdBasedContingencyList(null, "LINE1");
 
         String res = mvc.perform(post("/" + VERSION + "/identifier-contingency-lists/")
                         .content(objectMapper.writeValueAsString(idBasedContingencyList))
