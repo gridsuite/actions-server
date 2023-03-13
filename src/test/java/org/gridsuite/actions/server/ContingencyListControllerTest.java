@@ -1065,10 +1065,6 @@ public class ContingencyListControllerTest {
                 .andExpect(status().isOk())
                 .andReturn().getResponse().getContentAsString();
 
-        //TODO: clean test
-        System.out.println("res=>" + res);
-//                .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-//                .andExpect(content().json(list));
         // delete data
         mvc.perform(delete("/" + VERSION + "/contingency-lists/" + idBasedContingencyList))
                 .andExpect(status().isOk());
