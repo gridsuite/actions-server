@@ -376,7 +376,7 @@ public class ContingencyListService {
     public Optional<IdBasedContingencyList> createIdBasedContingencyList(UUID sourceListId, UUID id) {
         IdBasedContingencyList sourceIdBasedContingencyList = getIdBasedContingencyList(sourceListId).orElse(null);
         if (sourceIdBasedContingencyList != null) {
-            IdBasedContingencyListEntity entity = new IdBasedContingencyListEntity(sourceIdBasedContingencyList.getIdentifierContingencyList());
+            IdBasedContingencyListEntity entity = new IdBasedContingencyListEntity(sourceIdBasedContingencyList);
             entity.setId(id == null ? UUID.randomUUID() : id);
             return Optional.of(fromIdBasedContingencyListEntity(idBasedContingencyListRepository.save(entity)));
         }
@@ -447,8 +447,8 @@ public class ContingencyListService {
         return new IdBasedContingencyList(entity.getId(), new IdentifierContingencyList(entity.getName(), "LINE", listOfNetworkElementIdentifierList));
     }
 
-    public IdBasedContingencyList createIdBasedContingencyList(UUID id, IdentifierContingencyList identifierContingencyList) {
-        IdBasedContingencyListEntity entity = new IdBasedContingencyListEntity(identifierContingencyList);
+    public IdBasedContingencyList createIdBasedContingencyList(UUID id, IdBasedContingencyList idBasedContingencyList) {
+        IdBasedContingencyListEntity entity = new IdBasedContingencyListEntity(idBasedContingencyList);
         entity.setId(id == null ? UUID.randomUUID() : id);
         return fromIdBasedContingencyListEntity(idBasedContingencyListRepository.save(entity));
     }

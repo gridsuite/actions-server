@@ -8,7 +8,6 @@ package org.gridsuite.actions.server;
 
 import com.powsybl.contingency.Contingency;
 
-import com.powsybl.contingency.contingency.list.IdentifierContingencyList;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -146,10 +145,10 @@ public class ContingencyListController {
     @Operation(summary = "Create an identifier contingency list")
     @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "The identifier contingency list have been created successfully")})
     public ResponseEntity<IdBasedContingencyList> createIdentifierContingencyList(@RequestParam(required = false, value = "id") UUID id,
-                                                                                  @RequestBody IdentifierContingencyList identifierContingencyList) {
+                                                                                  @RequestBody IdBasedContingencyList idBasedContingencyList) {
         return ResponseEntity.ok()
                 .contentType(MediaType.APPLICATION_JSON)
-                .body(service.createIdBasedContingencyList(id, identifierContingencyList));
+                .body(service.createIdBasedContingencyList(id, idBasedContingencyList));
     }
 
     @GetMapping(value = "/identifier-contingency-lists/{id}", produces = MediaType.APPLICATION_JSON_VALUE)

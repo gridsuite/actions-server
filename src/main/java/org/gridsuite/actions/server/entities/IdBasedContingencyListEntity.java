@@ -12,6 +12,7 @@ import com.powsybl.contingency.contingency.list.identifier.NetworkElementIdentif
 import com.powsybl.contingency.contingency.list.identifier.NetworkElementIdentifierList;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.gridsuite.actions.server.dto.IdBasedContingencyList;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -34,9 +35,9 @@ public class IdBasedContingencyListEntity extends AbstractContingencyEntity {
     @OneToMany(cascade = CascadeType.ALL)
     private List<IdentifierListEntity> identifiersListEntities = new ArrayList<>();
 
-    public IdBasedContingencyListEntity(IdentifierContingencyList identifierContingencyList) {
+    public IdBasedContingencyListEntity(IdBasedContingencyList idBasedContingencyList) {
         super();
-        init(identifierContingencyList);
+        init(idBasedContingencyList.getIdentifierContingencyList());
     }
 
     final void init(IdentifierContingencyList identifierContingencyList) {
