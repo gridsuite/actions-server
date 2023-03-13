@@ -345,9 +345,7 @@ public class ContingencyListService {
     Optional<ScriptContingencyList> createScriptContingencyList(UUID sourceListId, UUID id) {
         ScriptContingencyList sourceScriptContingencyList = getScriptContingencyList(sourceListId).orElse(null);
         if (sourceScriptContingencyList != null) {
-            ScriptContingencyListEntity entity = new ScriptContingencyListEntity(sourceScriptContingencyList);
-            entity.setId(id == null ? UUID.randomUUID() : id);
-            return Optional.of(fromScriptContingencyListEntity(scriptContingencyListRepository.save(entity)));
+            return Optional.of(createScriptContingencyList(id, sourceScriptContingencyList));
         }
         return Optional.empty();
     }
@@ -366,9 +364,7 @@ public class ContingencyListService {
     public Optional<FormContingencyList> createFormContingencyList(UUID sourceListId, UUID id) {
         FormContingencyList sourceFormContingencyList = getFormContingencyList(sourceListId).orElse(null);
         if (sourceFormContingencyList != null) {
-            FormContingencyListEntity entity = new FormContingencyListEntity(sourceFormContingencyList);
-            entity.setId(id == null ? UUID.randomUUID() : id);
-            return Optional.of(fromFormContingencyListEntity(formContingencyListRepository.save(entity)));
+            return Optional.of(createFormContingencyList(id, sourceFormContingencyList));
         }
         return Optional.empty();
     }
@@ -376,9 +372,7 @@ public class ContingencyListService {
     public Optional<IdBasedContingencyList> createIdBasedContingencyList(UUID sourceListId, UUID id) {
         IdBasedContingencyList sourceIdBasedContingencyList = getIdBasedContingencyList(sourceListId).orElse(null);
         if (sourceIdBasedContingencyList != null) {
-            IdBasedContingencyListEntity entity = new IdBasedContingencyListEntity(sourceIdBasedContingencyList);
-            entity.setId(id == null ? UUID.randomUUID() : id);
-            return Optional.of(fromIdBasedContingencyListEntity(idBasedContingencyListRepository.save(entity)));
+            return Optional.of(createIdBasedContingencyList(id, sourceIdBasedContingencyList));
         }
         return Optional.empty();
     }
