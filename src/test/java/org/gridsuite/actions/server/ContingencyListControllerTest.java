@@ -1060,4 +1060,40 @@ public class ContingencyListControllerTest {
         mvc.perform(delete("/" + VERSION + "/contingency-lists/" + contingencyListId))
                 .andExpect(status().isOk());
     }
+
+    @Test
+    public void modifyIdBasedContingencyList() throws Exception {
+        IdBasedContingencyList idBasedContingencyList = createIdBasedContingencyList("C1", "LINE1");
+
+        String res = mvc.perform(post("/" + VERSION + "/identifier-contingency-lists/")
+                        .content(objectMapper.writeValueAsString(idBasedContingencyList))
+                        .contentType(APPLICATION_JSON))
+                .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
+
+        UUID contingencyListId = objectMapper.readValue(res, IdBasedContingencyList.class).getId();
+
+        IdBasedContingencyList newList = createIdBasedContingencyList("C2", "LINE2");
+
+        mvc.perform(put("/" + VERSION + "/identifier-contingency-lists/" + contingencyListId)
+                        .content(objectMapper.writeValueAsString(newList))
+                        .contentType(APPLICATION_JSON)
+                        .header(USER_ID_HEADER, USER_ID_HEADER))
+                .andExpect(status().isOk());
+
+        Message<byte[]> message = output.receive(TIMEOUT, elementUpdateDestination);
+        assertEquals(contingencyListId, message.getHeaders().get(NotificationService.HEADER_ELEMENT_UUID));
+        assertEquals(USER_ID_HEADER, message.getHeaders().get(NotificationService.HEADER_MODIFIED_BY));
+
+        newList.setId(contingencyListId);
+        mvc.perform(get("/" + VERSION + "/identifier-contingency-lists/" + contingencyListId)
+                        .contentType(APPLICATION_JSON))
+                .andExpect(content().json(objectMapper.writeValueAsString(newList), false))
+                .andReturn().getResponse().getContentAsString();
+
+        mvc.perform(put("/" + VERSION + "/identifier-contingency-lists/" + UUID.randomUUID())
+                        .content(objectMapper.writeValueAsString(newList))
+                        .contentType(APPLICATION_JSON)
+                        .header(USER_ID_HEADER, USER_ID_HEADER))
+                .andExpect(status().isNotFound());
+    }
 }

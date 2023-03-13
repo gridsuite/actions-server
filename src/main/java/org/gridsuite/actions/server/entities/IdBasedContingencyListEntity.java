@@ -29,11 +29,8 @@ import java.util.stream.Collectors;
 @Table(name = "id_based_contingency_list")
 public class IdBasedContingencyListEntity extends AbstractContingencyEntity {
 
-    @Column(name = "name")
-    private String name;
-
     @OneToMany(cascade = CascadeType.ALL)
-    private List<IdentifierListEntity> identifiersListEntities = new ArrayList<>();
+    private List<IdentifierListEntity> identifiersListEntities;
 
     public IdBasedContingencyListEntity(IdBasedContingencyList idBasedContingencyList) {
         super();
@@ -41,7 +38,7 @@ public class IdBasedContingencyListEntity extends AbstractContingencyEntity {
     }
 
     final void init(IdentifierContingencyList identifierContingencyList) {
-        this.name = identifierContingencyList.getName();
+        this.identifiersListEntities = new ArrayList<>();
         identifierContingencyList.getIdentifiants().forEach(networkElementIdentifier -> {
             List<NetworkElementIdentifier> identifierList = ((NetworkElementIdentifierList) networkElementIdentifier).getIdentifiers();
             String firstIdentifier = ((IdBasedNetworkElementIdentifier) identifierList.stream().findFirst().get()).getIdentifier();
@@ -49,5 +46,10 @@ public class IdBasedContingencyListEntity extends AbstractContingencyEntity {
             identifiersListEntities.add(new IdentifierListEntity(UUID.randomUUID(), firstIdentifier, identifierList.stream().map(identifier -> ((IdBasedNetworkElementIdentifier) identifier).getIdentifier()).collect(Collectors.toSet())));
             }
         );
+    }
+
+    public IdBasedContingencyListEntity update(IdBasedContingencyList idBasedContingencyList) {
+        init(idBasedContingencyList.getIdentifierContingencyList());
+        return this;
     }
 }

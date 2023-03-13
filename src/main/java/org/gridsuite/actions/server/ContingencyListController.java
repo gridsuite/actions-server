@@ -174,6 +174,21 @@ public class ContingencyListController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
+    @PutMapping(value = "/identifier-contingency-lists/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
+    @Operation(summary = "Modify a identifier contingency list")
+    @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "The identifier contingency list have been modified successfully")})
+    public ResponseEntity<Void> modifyIdentifierContingencyList(
+            @PathVariable UUID id,
+            @RequestBody IdBasedContingencyList idBasedContingencyList,
+            @RequestHeader("userId") String userId) {
+        try {
+            service.modifyIdBasedContingencyList(id, idBasedContingencyList, userId);
+            return ResponseEntity.ok().build();
+        } catch (EntityNotFoundException ignored) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
     @PostMapping(value = "/form-contingency-lists")
     @Operation(summary = "Create a form contingency list from another existing one")
     @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "The form contingency list have been duplicated successfully"),

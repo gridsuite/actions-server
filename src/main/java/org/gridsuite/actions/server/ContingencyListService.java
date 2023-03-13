@@ -383,6 +383,12 @@ public class ContingencyListService {
         notificationService.emitElementUpdated(id, userId);
     }
 
+    public void modifyIdBasedContingencyList(UUID id, IdBasedContingencyList idBasedContingencyList, String userId) {
+        // throw if not found
+        idBasedContingencyListRepository.save(idBasedContingencyListRepository.getOne(id).update(idBasedContingencyList));
+        notificationService.emitElementUpdated(id, userId);
+    }
+
     @Transactional
     public void deleteContingencyList(UUID id) {
         Objects.requireNonNull(id);
@@ -438,7 +444,7 @@ public class ContingencyListService {
             //TODO: NetworkElementIdentifierList name will have to be filled with identifierList.getName() when it's available in powsybl-core
             listOfNetworkElementIdentifierList.add(new NetworkElementIdentifierList(networkElementIdentifiers));
         });
-        return new IdBasedContingencyList(entity.getId(), new IdentifierContingencyList(entity.getName(), "LINE", listOfNetworkElementIdentifierList));
+        return new IdBasedContingencyList(entity.getId(), new IdentifierContingencyList(entity.getId().toString(), "LINE", listOfNetworkElementIdentifierList));
     }
 
     public IdBasedContingencyList createIdBasedContingencyList(UUID id, IdBasedContingencyList idBasedContingencyList) {
