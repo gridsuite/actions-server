@@ -110,7 +110,7 @@ public class ContingencyListController {
                            @ApiResponse(responseCode = "404", description = "Source script contingency list not found")})
     public ResponseEntity<ScriptContingencyList> duplicateScriptContingencyList(@RequestParam("duplicateFrom") UUID sourceListId,
                                                                                 @RequestParam(value = "id") UUID id) {
-        return service.createScriptContingencyList(sourceListId, id).map(contingencyList -> ResponseEntity.ok()
+        return service.duplicateScriptContingencyList(sourceListId, id).map(contingencyList -> ResponseEntity.ok()
                         .contentType(MediaType.APPLICATION_JSON)
                         .body(contingencyList))
                 .orElse(ResponseEntity.notFound().build());
@@ -168,7 +168,7 @@ public class ContingencyListController {
             @ApiResponse(responseCode = "404", description = "Source script contingency list not found")})
     public ResponseEntity<IdBasedContingencyList> duplicateIdentifierContingencyList(@RequestParam("duplicateFrom") UUID sourceListId,
                                                                                   @RequestParam(value = "id") UUID id) {
-        return service.createIdBasedContingencyList(sourceListId, id).map(contingencyList -> ResponseEntity.ok()
+        return service.duplicateIdentifierContingencyList(sourceListId, id).map(contingencyList -> ResponseEntity.ok()
                         .contentType(MediaType.APPLICATION_JSON)
                         .body(contingencyList))
                 .orElse(ResponseEntity.notFound().build());
@@ -195,7 +195,7 @@ public class ContingencyListController {
                            @ApiResponse(responseCode = "404", description = "Source form contingency list not found")})
     public ResponseEntity<FormContingencyList> duplicateFormContingencyList(@RequestParam("duplicateFrom") UUID sourceListId,
                                                                              @RequestParam(value = "id") UUID id) {
-        return service.createFormContingencyList(sourceListId, id).map(contingencyList -> ResponseEntity.ok()
+        return service.duplicateFormContingencyList(sourceListId, id).map(contingencyList -> ResponseEntity.ok()
                         .contentType(MediaType.APPLICATION_JSON)
                         .body(contingencyList))
                 .orElse(ResponseEntity.notFound().build());
