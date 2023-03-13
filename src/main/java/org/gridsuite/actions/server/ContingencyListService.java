@@ -351,7 +351,7 @@ public class ContingencyListService {
     }
 
     void modifyScriptContingencyList(UUID id, ScriptContingencyList script, String userId) {
-        scriptContingencyListRepository.save(scriptContingencyListRepository.getOne(id).update(script));
+        scriptContingencyListRepository.save(scriptContingencyListRepository.getReferenceById(id).update(script));
         notificationService.emitElementUpdated(id, userId);
     }
 
@@ -379,13 +379,13 @@ public class ContingencyListService {
 
     public void modifyFormContingencyList(UUID id, FormContingencyList formContingencyList, String userId) {
         // throw if not found
-        formContingencyListRepository.save(formContingencyListRepository.getOne(id).update(formContingencyList));
+        formContingencyListRepository.save(formContingencyListRepository.getReferenceById(id).update(formContingencyList));
         notificationService.emitElementUpdated(id, userId);
     }
 
     public void modifyIdBasedContingencyList(UUID id, IdBasedContingencyList idBasedContingencyList, String userId) {
         // throw if not found
-        idBasedContingencyListRepository.save(idBasedContingencyListRepository.getOne(id).update(idBasedContingencyList));
+        idBasedContingencyListRepository.save(idBasedContingencyListRepository.getReferenceById(id).update(idBasedContingencyList));
         notificationService.emitElementUpdated(id, userId);
     }
 
