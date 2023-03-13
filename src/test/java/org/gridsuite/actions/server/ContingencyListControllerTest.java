@@ -9,7 +9,12 @@ package org.gridsuite.actions.server;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.powsybl.contingency.contingency.list.IdentifierContingencyList;
+import com.powsybl.contingency.contingency.list.identifier.IdBasedNetworkElementIdentifier;
+import com.powsybl.contingency.contingency.list.identifier.NetworkElementIdentifier;
+import com.powsybl.contingency.contingency.list.identifier.NetworkElementIdentifierList;
 import com.powsybl.contingency.json.ContingencyJsonModule;
+import com.powsybl.iidm.network.IdentifiableType;
 import com.powsybl.iidm.network.Network;
 import com.powsybl.iidm.network.VariantManagerConstants;
 import com.powsybl.iidm.network.test.EurostagTutorialExample1Factory;
@@ -50,6 +55,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.util.NestedServletException;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static com.powsybl.network.store.model.NetworkStoreApi.VERSION;
 import static org.apache.commons.lang3.StringUtils.join;
@@ -982,34 +988,32 @@ public class ContingencyListControllerTest {
                 .andExpect(status().isNotFound());
     }
 
+    public IdentifierContingencyList createIdBasedContingencyList(String name, String... identifiers) {
+        List< NetworkElementIdentifier > networkElementIdentifiers = Arrays.stream(identifiers).map(id -> new NetworkElementIdentifierList(List.of(new IdBasedNetworkElementIdentifier(id)))).collect(Collectors.toList());
+        return new IdentifierContingencyList(name, IdentifiableType.LINE, networkElementIdentifiers);
+    }
+
     @Test
     public void createIdBasedContingencyList() throws Exception {
-        String identifierContingencyList = "{\n" +
-                "\"type\" : \"identifier\",\n" +
-                "\"name\" : \"C1\",\n" +
-                "\"identifiableType\": \"LINE\",\n" +
-                "  \"identifiers\": [\n" +
-                "  {\"type\": \"LIST\", \"identifierList\": [{\"identifier\": \"id1\", \"type\" : \"ID_BASED\"}]},\n" +
-                "  {\"type\": \"LIST\", \"identifierList\": [{\"identifier\": \"id2\", \"type\" : \"ID_BASED\"}]},\n" +
-                "  {\"type\": \"LIST\", \"identifierList\": [{\"identifier\": \"id3_1\", \"type\" : \"ID_BASED\"}, {\"identifier\": \"id3_2\", \"type\" : \"ID_BASED\"}]}\n" +
-                "  ]\n" +
-                "}";
+        IdentifierContingencyList identifierContingencyList = createIdBasedContingencyList("C1", "NHV1_NHV2_1");
 
         String res = mvc.perform(post("/" + VERSION + "/identifier-contingency-lists/")
-                        .content(identifierContingencyList)
+                        .content(objectMapper.writeValueAsString(identifierContingencyList))
                         .contentType(APPLICATION_JSON))
                 .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
 
         UUID contingencyListId = objectMapper.readValue(res, IdBasedContingencyList.class).getId();
 
+        IdBasedContingencyList expectedResult = new IdBasedContingencyList(contingencyListId, identifierContingencyList);
+
         mvc.perform(get("/" + VERSION + "/identifier-contingency-lists/" + contingencyListId)
                         .contentType(APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-                .andExpect(content().json("{\"id\":\"" + contingencyListId + "\",\"identifierContingencyList\":{\"type\":\"identifier\",\"version\":\"1.0\",\"name\":\"C1\",\"identifiableType\":\"LINE\",\"identifiers\":[{\"type\":\"LIST\",\"identifierList\":[{\"type\":\"ID_BASED\",\"identifier\":\"id1\"}]},{\"type\":\"LIST\",\"identifierList\":[{\"type\":\"ID_BASED\",\"identifier\":\"id2\"}]},{\"type\":\"LIST\",\"identifierList\":[{\"type\":\"ID_BASED\",\"identifier\":\"id3_1\"},{\"type\":\"ID_BASED\",\"identifier\":\"id3_2\"}]}]},\"type\":\"IDENTIFIERS\"}", false));
+                .andExpect(content().json(objectMapper.writeValueAsString(expectedResult), false));
 
         mvc.perform(post("/" + VERSION + "/identifier-contingency-lists/")
-                        .content(identifierContingencyList)
+                        .content(objectMapper.writeValueAsString(identifierContingencyList))
                         .contentType(APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andReturn().getResponse().getContentAsString();
@@ -1020,16 +1024,9 @@ public class ContingencyListControllerTest {
 
     @Test
     public void duplicateBasedContingencyList() throws Exception {
-        String list = "{\n" +
-                "\"type\" : \"identifier\",\n" +
-                "\"name\" : \"C1\",\n" +
-                "\"identifiableType\": \"LINE\",\n" +
-                "  \"identifiers\": [\n" +
-                "  {\"type\": \"LIST\", \"identifierList\": [{\"identifier\": \"id1\", \"type\" : \"ID_BASED\"}]}\n" +
-                "  ]\n" +
-                "}";
+        IdentifierContingencyList identifierContingencyList = createIdBasedContingencyList("C1bis", "id1");
         String res = mvc.perform(post("/" + VERSION + "/identifier-contingency-lists/")
-                        .content(list)
+                        .content(objectMapper.writeValueAsString(identifierContingencyList))
                         .contentType(APPLICATION_JSON))
                 .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
 
@@ -1037,6 +1034,7 @@ public class ContingencyListControllerTest {
 
         res = mvc.perform(post("/" + VERSION + "/identifier-contingency-lists?duplicateFrom=" + id + "&id=" + UUID.randomUUID()))
                 .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
+
         assertEquals(1, objectMapper.readValue(res, IdBasedContingencyList.class).getIdentifierContingencyList().getIdentifiants().size());
 
         mvc.perform(post("/" + VERSION + "/identifier-contingency-lists?duplicateFrom=" + UUID.randomUUID() + "&id=" + UUID.randomUUID()))
@@ -1045,16 +1043,10 @@ public class ContingencyListControllerTest {
 
     @Test
     public void exportIdBasedContingencyList() throws Exception {
-        String list = "{\n" +
-                "\"type\" : \"identifier\",\n" +
-                "\"name\" : \"C1\",\n" +
-                "\"identifiableType\": \"LINE\",\n" +
-                "  \"identifiers\": [\n" +
-                "  {\"type\": \"LIST\", \"identifierList\": [{\"identifier\": \"NHV1_NHV2_1\", \"type\" : \"ID_BASED\"}]}\n" +
-                "  ]\n" +
-                "}";
+        IdentifierContingencyList identifierContingencyList = createIdBasedContingencyList("C1", "NHV1_NHV2_1");
+
         String res = mvc.perform(post("/" + VERSION + "/identifier-contingency-lists/")
-                        .content(list)
+                        .content(objectMapper.writeValueAsString(identifierContingencyList))
                         .contentType(APPLICATION_JSON))
                 .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
 
