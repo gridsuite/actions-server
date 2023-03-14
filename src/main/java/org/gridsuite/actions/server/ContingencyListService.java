@@ -343,11 +343,7 @@ public class ContingencyListService {
     }
 
     Optional<ScriptContingencyList> duplicateScriptContingencyList(UUID sourceListId, UUID id) {
-        ScriptContingencyList sourceScriptContingencyList = getScriptContingencyList(sourceListId).orElse(null);
-        if (sourceScriptContingencyList != null) {
-            return Optional.of(createScriptContingencyList(id, sourceScriptContingencyList));
-        }
-        return Optional.empty();
+        return getScriptContingencyList(sourceListId).map(s -> createScriptContingencyList(id, s));
     }
 
     void modifyScriptContingencyList(UUID id, ScriptContingencyList script, String userId) {
@@ -362,19 +358,11 @@ public class ContingencyListService {
     }
 
     public Optional<FormContingencyList> duplicateFormContingencyList(UUID sourceListId, UUID id) {
-        FormContingencyList sourceFormContingencyList = getFormContingencyList(sourceListId).orElse(null);
-        if (sourceFormContingencyList != null) {
-            return Optional.of(createFormContingencyList(id, sourceFormContingencyList));
-        }
-        return Optional.empty();
+        return getFormContingencyList(sourceListId).map(s -> createFormContingencyList(id, s));
     }
 
     public Optional<IdBasedContingencyList> duplicateIdentifierContingencyList(UUID sourceListId, UUID id) {
-        IdBasedContingencyList sourceIdBasedContingencyList = getIdBasedContingencyList(sourceListId).orElse(null);
-        if (sourceIdBasedContingencyList != null) {
-            return Optional.of(createIdBasedContingencyList(id, sourceIdBasedContingencyList));
-        }
-        return Optional.empty();
+        return getIdBasedContingencyList(sourceListId).map(s -> createIdBasedContingencyList(id, s));
     }
 
     public void modifyFormContingencyList(UUID id, FormContingencyList formContingencyList, String userId) {
