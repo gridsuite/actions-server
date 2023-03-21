@@ -9,6 +9,12 @@ package org.gridsuite.actions.server;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.powsybl.contingency.contingency.list.IdentifierContingencyList;
+import com.powsybl.contingency.contingency.list.identifier.IdBasedNetworkElementIdentifier;
+import com.powsybl.contingency.contingency.list.identifier.NetworkElementIdentifier;
+import com.powsybl.contingency.contingency.list.identifier.NetworkElementIdentifierList;
+import com.powsybl.contingency.json.ContingencyJsonModule;
+import com.powsybl.iidm.network.IdentifiableType;
 import com.powsybl.iidm.network.Network;
 import com.powsybl.iidm.network.VariantManagerConstants;
 import com.powsybl.iidm.network.test.EurostagTutorialExample1Factory;
@@ -20,11 +26,13 @@ import com.powsybl.network.store.client.PreloadingStrategy;
 import com.powsybl.network.store.iidm.impl.NetworkFactoryImpl;
 import org.gridsuite.actions.server.dto.ContingencyListAttributes;
 import org.gridsuite.actions.server.dto.FormContingencyList;
+import org.gridsuite.actions.server.dto.IdBasedContingencyList;
 import org.gridsuite.actions.server.dto.ScriptContingencyList;
 import org.gridsuite.actions.server.entities.FormContingencyListEntity;
 import org.gridsuite.actions.server.entities.NumericalFilterEntity;
 import org.gridsuite.actions.server.entities.ScriptContingencyListEntity;
 import org.gridsuite.actions.server.repositories.FormContingencyListRepository;
+import org.gridsuite.actions.server.repositories.IdBasedContingencyListRepository;
 import org.gridsuite.actions.server.repositories.ScriptContingencyListRepository;
 import org.gridsuite.actions.server.utils.ContingencyListType;
 import org.gridsuite.actions.server.utils.EquipmentType;
@@ -46,11 +54,8 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.util.NestedServletException;
 
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import static com.powsybl.network.store.model.NetworkStoreApi.VERSION;
 import static org.apache.commons.lang3.StringUtils.join;
@@ -95,6 +100,9 @@ public class ContingencyListControllerTest {
     private FormContingencyListRepository formContingencyListRepository;
 
     @Autowired
+    private IdBasedContingencyListRepository idBasedContingencyListRepository;
+
+    @Autowired
     private MockMvc mvc;
 
     @MockBean
@@ -114,6 +122,7 @@ public class ContingencyListControllerTest {
     private void cleanDB() {
         scriptContingencyListRepository.deleteAll();
         formContingencyListRepository.deleteAll();
+        idBasedContingencyListRepository.deleteAll();
     }
 
     private void assertQueuesEmptyThenClear(List<String> destinations, OutputDestination output) {
@@ -148,6 +157,8 @@ public class ContingencyListControllerTest {
         given(networkStoreService.getNetwork(NETWORK_UUID_5, PreloadingStrategy.COLLECTION)).willReturn(network5);
 
         objectMapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
+        objectMapper.registerModule(new ContingencyJsonModule());
+
         cleanDB();
     }
 
@@ -974,6 +985,116 @@ public class ContingencyListControllerTest {
         assertTrue(returnedScript.contains("equipments 'NHV1_NHV2_1'"));
 
         mvc.perform(post("/" + VERSION + "/script-contingency-lists?duplicateFrom=" + UUID.randomUUID() + "&id=" + UUID.randomUUID()))
+                .andExpect(status().isNotFound());
+    }
+
+    public IdBasedContingencyList createIdBasedContingencyList(UUID listId, String... identifiers) {
+        List< NetworkElementIdentifier > networkElementIdentifiers = Arrays.stream(identifiers).map(id -> new NetworkElementIdentifierList(List.of(new IdBasedNetworkElementIdentifier(id)))).collect(Collectors.toList());
+        return new IdBasedContingencyList(listId, new IdentifierContingencyList(listId != null ? listId.toString() : "defaultName", IdentifiableType.LINE, networkElementIdentifiers));
+    }
+
+    @Test
+    public void createIdBasedContingencyList() throws Exception {
+        IdBasedContingencyList idBasedContingencyList = createIdBasedContingencyList(null, "NHV1_NHV2_1");
+
+        String res = mvc.perform(post("/" + VERSION + "/identifier-contingency-lists/")
+                        .content(objectMapper.writeValueAsString(idBasedContingencyList))
+                        .contentType(APPLICATION_JSON))
+                .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
+
+        UUID contingencyListId = objectMapper.readValue(res, IdBasedContingencyList.class).getId();
+        IdBasedContingencyList resultList = createIdBasedContingencyList(contingencyListId, "NHV1_NHV2_1");
+
+        mvc.perform(get("/" + VERSION + "/identifier-contingency-lists/" + contingencyListId)
+                        .contentType(APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+                .andExpect(content().json(objectMapper.writeValueAsString(resultList), false));
+
+        mvc.perform(post("/" + VERSION + "/identifier-contingency-lists/")
+                        .content(objectMapper.writeValueAsString(idBasedContingencyList))
+                        .contentType(APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString();
+
+        mvc.perform(delete("/" + VERSION + "/contingency-lists/" + contingencyListId))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    public void duplicateBasedContingencyList() throws Exception {
+        IdBasedContingencyList idBasedContingencyList = createIdBasedContingencyList(null, "id1");
+        String res = mvc.perform(post("/" + VERSION + "/identifier-contingency-lists/")
+                        .content(objectMapper.writeValueAsString(idBasedContingencyList))
+                        .contentType(APPLICATION_JSON))
+                .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
+
+        UUID id = objectMapper.readValue(res, IdBasedContingencyList.class).getId();
+
+        res = mvc.perform(post("/" + VERSION + "/identifier-contingency-lists?duplicateFrom=" + id + "&id=" + UUID.randomUUID()))
+                .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
+
+        assertEquals(1, objectMapper.readValue(res, IdBasedContingencyList.class).getIdentifierContingencyList().getIdentifiants().size());
+
+        mvc.perform(post("/" + VERSION + "/identifier-contingency-lists?duplicateFrom=" + UUID.randomUUID() + "&id=" + UUID.randomUUID()))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    public void exportIdBasedContingencyList() throws Exception {
+        IdBasedContingencyList idBasedContingencyList = createIdBasedContingencyList(null, "NHV1_NHV2_1");
+
+        String res = mvc.perform(post("/" + VERSION + "/identifier-contingency-lists/")
+                        .content(objectMapper.writeValueAsString(idBasedContingencyList))
+                        .contentType(APPLICATION_JSON))
+                .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
+
+        UUID contingencyListId = objectMapper.readValue(res, IdBasedContingencyList.class).getId();
+
+        mvc.perform(get("/" + VERSION + "/contingency-lists/" + contingencyListId + "/export?networkUuid=" + NETWORK_UUID + (VARIANT_ID_1 != null ? "&variantId=" + VARIANT_ID_1 : ""))
+                        .contentType(APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString();
+
+        // delete data
+        mvc.perform(delete("/" + VERSION + "/contingency-lists/" + contingencyListId))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    public void modifyIdBasedContingencyList() throws Exception {
+        IdBasedContingencyList idBasedContingencyList = createIdBasedContingencyList(null, "LINE1");
+
+        String res = mvc.perform(post("/" + VERSION + "/identifier-contingency-lists/")
+                        .content(objectMapper.writeValueAsString(idBasedContingencyList))
+                        .contentType(APPLICATION_JSON))
+                .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
+
+        UUID contingencyListId = objectMapper.readValue(res, IdBasedContingencyList.class).getId();
+
+        IdBasedContingencyList newList = createIdBasedContingencyList(contingencyListId, "LINE2");
+
+        mvc.perform(put("/" + VERSION + "/identifier-contingency-lists/" + newList.getId())
+                        .content(objectMapper.writeValueAsString(newList))
+                        .contentType(APPLICATION_JSON)
+                        .header(USER_ID_HEADER, USER_ID_HEADER))
+                .andExpect(status().isOk());
+
+        Message<byte[]> message = output.receive(TIMEOUT, elementUpdateDestination);
+        assertEquals(contingencyListId, message.getHeaders().get(NotificationService.HEADER_ELEMENT_UUID));
+        assertEquals(USER_ID_HEADER, message.getHeaders().get(NotificationService.HEADER_MODIFIED_BY));
+
+        contingencyListId = objectMapper.readValue(res, IdBasedContingencyList.class).getId();
+        IdBasedContingencyList resultList = createIdBasedContingencyList(contingencyListId, "LINE2");
+        mvc.perform(get("/" + VERSION + "/identifier-contingency-lists/" + contingencyListId)
+                        .contentType(APPLICATION_JSON))
+                .andExpect(content().json(objectMapper.writeValueAsString(resultList), false))
+                .andReturn().getResponse().getContentAsString();
+
+        mvc.perform(put("/" + VERSION + "/identifier-contingency-lists/" + UUID.randomUUID())
+                        .content(objectMapper.writeValueAsString(newList))
+                        .contentType(APPLICATION_JSON)
+                        .header(USER_ID_HEADER, USER_ID_HEADER))
                 .andExpect(status().isNotFound());
     }
 }

@@ -8,6 +8,10 @@ package org.gridsuite.actions.server;
 
 import com.powsybl.commons.PowsyblException;
 import com.powsybl.contingency.*;
+import com.powsybl.contingency.contingency.list.IdentifierContingencyList;
+import com.powsybl.contingency.contingency.list.identifier.IdBasedNetworkElementIdentifier;
+import com.powsybl.contingency.contingency.list.identifier.NetworkElementIdentifier;
+import com.powsybl.contingency.contingency.list.identifier.NetworkElementIdentifierList;
 import com.powsybl.contingency.dsl.ContingencyDslLoader;
 import com.powsybl.iidm.network.*;
 import com.powsybl.network.store.client.NetworkStoreService;
@@ -19,8 +23,10 @@ import org.gridsuite.actions.server.dto.*;
 import org.gridsuite.actions.server.dto.ContingencyList;
 import org.gridsuite.actions.server.entities.FormContingencyListEntity;
 import org.gridsuite.actions.server.entities.NumericalFilterEntity;
+import org.gridsuite.actions.server.entities.IdBasedContingencyListEntity;
 import org.gridsuite.actions.server.entities.ScriptContingencyListEntity;
 import org.gridsuite.actions.server.repositories.FormContingencyListRepository;
+import org.gridsuite.actions.server.repositories.IdBasedContingencyListRepository;
 import org.gridsuite.actions.server.repositories.ScriptContingencyListRepository;
 import org.gridsuite.actions.server.utils.ContingencyListType;
 import org.gridsuite.actions.server.utils.EquipmentType;
@@ -32,6 +38,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -47,6 +54,8 @@ public class ContingencyListService {
 
     private FormContingencyListRepository formContingencyListRepository;
 
+    private IdBasedContingencyListRepository idBasedContingencyListRepository;
+
     private NetworkStoreService networkStoreService;
 
     private NotificationService notificationService;
@@ -59,10 +68,12 @@ public class ContingencyListService {
 
     public ContingencyListService(ScriptContingencyListRepository scriptContingencyListRepository,
                                   FormContingencyListRepository formContingencyListRepository,
+                                  IdBasedContingencyListRepository idBasedContingencyListRepository,
                                   NetworkStoreService networkStoreService,
                                   NotificationService notificationService) {
         this.scriptContingencyListRepository = scriptContingencyListRepository;
         this.formContingencyListRepository = formContingencyListRepository;
+        this.idBasedContingencyListRepository = idBasedContingencyListRepository;
         this.networkStoreService = networkStoreService;
         this.notificationService = notificationService;
     }
@@ -80,21 +91,25 @@ public class ContingencyListService {
     }
 
     List<ContingencyListAttributes> getContingencyLists() {
-        return Stream.concat(
+        return Stream.of(
             scriptContingencyListRepository.findAll().stream().map(scriptContingencyListEntity ->
                 new ContingencyListAttributes(scriptContingencyListEntity.getId(), ContingencyListType.SCRIPT, scriptContingencyListEntity.getModificationDate())),
             formContingencyListRepository.findAll().stream().map(formContingencyListEntity ->
-                new ContingencyListAttributes(formContingencyListEntity.getId(), ContingencyListType.FORM, formContingencyListEntity.getModificationDate()))
-        ).collect(Collectors.toList());
+                new ContingencyListAttributes(formContingencyListEntity.getId(), ContingencyListType.FORM, formContingencyListEntity.getModificationDate())),
+            idBasedContingencyListRepository.findAll().stream().map(idBasedContingencyListEntity ->
+                    new ContingencyListAttributes(idBasedContingencyListEntity.getId(), ContingencyListType.IDENTIFIERS, idBasedContingencyListEntity.getModificationDate()))
+        ).flatMap(Function.identity()).collect(Collectors.toList());
     }
 
     List<ContingencyListAttributes> getContingencyLists(List<UUID> ids) {
-        return Stream.concat(
+        return Stream.of(
             scriptContingencyListRepository.findAllById(ids).stream().map(scriptContingencyListEntity ->
                 new ContingencyListAttributes(scriptContingencyListEntity.getId(), ContingencyListType.SCRIPT, scriptContingencyListEntity.getModificationDate())),
             formContingencyListRepository.findAllById(ids).stream().map(formContingencyListEntity ->
-                new ContingencyListAttributes(formContingencyListEntity.getId(), ContingencyListType.FORM, formContingencyListEntity.getModificationDate()))
-        ).collect(Collectors.toList());
+                new ContingencyListAttributes(formContingencyListEntity.getId(), ContingencyListType.FORM, formContingencyListEntity.getModificationDate())),
+            idBasedContingencyListRepository.findAllById(ids).stream().map(formContingencyListEntity ->
+                new ContingencyListAttributes(formContingencyListEntity.getId(), ContingencyListType.IDENTIFIERS, formContingencyListEntity.getModificationDate()))
+        ).flatMap(Function.identity()).collect(Collectors.toList());
     }
 
     List<FormContingencyList> getFormContingencyLists() {
@@ -118,6 +133,11 @@ public class ContingencyListService {
     public Optional<FormContingencyList> getFormContingencyList(UUID id) {
         Objects.requireNonNull(id);
         return self.doGetFormContingencyListWithPreFetchedCountries(id).map(ContingencyListService::fromFormContingencyListEntity);
+    }
+
+    public Optional<IdBasedContingencyList> getIdBasedContingencyList(UUID id) {
+        Objects.requireNonNull(id);
+        return idBasedContingencyListRepository.findById(id).map(ContingencyListService::fromIdBasedContingencyListEntity);
     }
 
     private List<Contingency> toPowSyBlContingencyList(ContingencyList contingencyList, UUID networkUuid, String variantId) {
@@ -144,6 +164,9 @@ public class ContingencyListService {
         } else if (contingencyList instanceof FormContingencyList) {
             FormContingencyList formContingencyList = (FormContingencyList) contingencyList;
             return getContingencies(formContingencyList, network);
+        } else if (contingencyList instanceof IdBasedContingencyList) {
+            IdBasedContingencyList idBasedContingencyList = (IdBasedContingencyList) contingencyList;
+            return getContingencies(idBasedContingencyList, network);
         } else {
             throw new PowsyblException("Contingency list implementation not yet supported: " + contingencyList.getClass().getSimpleName());
         }
@@ -279,6 +302,10 @@ public class ContingencyListService {
         return contingencies;
     }
 
+    private List<Contingency> getContingencies(IdBasedContingencyList idBasedContingencyList, Network network) {
+        return idBasedContingencyList.getIdentifierContingencyList().getContingencies(network);
+    }
+
     private boolean filterByVoltage(double equipmentNominalVoltage, NumericalFilter numericalFilter) {
         if (numericalFilter == null) {
             return true;
@@ -305,7 +332,8 @@ public class ContingencyListService {
         Objects.requireNonNull(id);
 
         return getScriptContingencyList(id).map(contingencyList -> toPowSyBlContingencyList(contingencyList, networkUuid, variantId))
-            .or(() -> getFormContingencyList(id).map(contingencyList -> toPowSyBlContingencyList(contingencyList, networkUuid, variantId)));
+            .or(() -> getFormContingencyList(id).map(contingencyList -> toPowSyBlContingencyList(contingencyList, networkUuid, variantId)))
+                    .or(() -> getIdBasedContingencyList(id).map(contingencyList -> toPowSyBlContingencyList(contingencyList, networkUuid, variantId)));
     }
 
     ScriptContingencyList createScriptContingencyList(UUID id, ScriptContingencyList script) {
@@ -314,18 +342,12 @@ public class ContingencyListService {
         return fromScriptContingencyListEntity(scriptContingencyListRepository.save(entity));
     }
 
-    Optional<ScriptContingencyList> createScriptContingencyList(UUID sourceListId, UUID id) {
-        ScriptContingencyList sourceScriptContingencyList = getScriptContingencyList(sourceListId).orElse(null);
-        if (sourceScriptContingencyList != null) {
-            ScriptContingencyListEntity entity = new ScriptContingencyListEntity(sourceScriptContingencyList);
-            entity.setId(id == null ? UUID.randomUUID() : id);
-            return Optional.of(fromScriptContingencyListEntity(scriptContingencyListRepository.save(entity)));
-        }
-        return Optional.empty();
+    Optional<ScriptContingencyList> duplicateScriptContingencyList(UUID sourceListId, UUID id) {
+        return getScriptContingencyList(sourceListId).map(s -> createScriptContingencyList(id, s));
     }
 
     void modifyScriptContingencyList(UUID id, ScriptContingencyList script, String userId) {
-        scriptContingencyListRepository.save(scriptContingencyListRepository.getOne(id).update(script));
+        scriptContingencyListRepository.save(scriptContingencyListRepository.getReferenceById(id).update(script));
         notificationService.emitElementUpdated(id, userId);
     }
 
@@ -335,19 +357,23 @@ public class ContingencyListService {
         return fromFormContingencyListEntity(formContingencyListRepository.save(entity));
     }
 
-    public Optional<FormContingencyList> createFormContingencyList(UUID sourceListId, UUID id) {
-        FormContingencyList sourceFormContingencyList = getFormContingencyList(sourceListId).orElse(null);
-        if (sourceFormContingencyList != null) {
-            FormContingencyListEntity entity = new FormContingencyListEntity(sourceFormContingencyList);
-            entity.setId(id == null ? UUID.randomUUID() : id);
-            return Optional.of(fromFormContingencyListEntity(formContingencyListRepository.save(entity)));
-        }
-        return Optional.empty();
+    public Optional<FormContingencyList> duplicateFormContingencyList(UUID sourceListId, UUID id) {
+        return getFormContingencyList(sourceListId).map(s -> createFormContingencyList(id, s));
+    }
+
+    public Optional<IdBasedContingencyList> duplicateIdentifierContingencyList(UUID sourceListId, UUID id) {
+        return getIdBasedContingencyList(sourceListId).map(s -> createIdBasedContingencyList(id, s));
     }
 
     public void modifyFormContingencyList(UUID id, FormContingencyList formContingencyList, String userId) {
         // throw if not found
-        formContingencyListRepository.save(formContingencyListRepository.getOne(id).update(formContingencyList));
+        formContingencyListRepository.save(formContingencyListRepository.getReferenceById(id).update(formContingencyList));
+        notificationService.emitElementUpdated(id, userId);
+    }
+
+    public void modifyIdBasedContingencyList(UUID id, IdBasedContingencyList idBasedContingencyList, String userId) {
+        // throw if not found
+        idBasedContingencyListRepository.save(idBasedContingencyListRepository.getReferenceById(id).update(idBasedContingencyList));
         notificationService.emitElementUpdated(id, userId);
     }
 
@@ -356,7 +382,9 @@ public class ContingencyListService {
         Objects.requireNonNull(id);
         // if there is no form contingency list by this Id, deleted count == 0
         if (formContingencyListRepository.deleteFormContingencyListEntityById(id) == 0) {
-            scriptContingencyListRepository.deleteById(id);
+            if (idBasedContingencyListRepository.deleteIdBasedContingencyListEntityById(id) == 0) {
+                scriptContingencyListRepository.deleteById(id);
+            }
         }
     }
 
@@ -395,4 +423,22 @@ public class ContingencyListService {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Contingency list " + id + " not found");
         });
     }
+
+    private static IdBasedContingencyList fromIdBasedContingencyListEntity(IdBasedContingencyListEntity entity) {
+        List<NetworkElementIdentifier> listOfNetworkElementIdentifierList = new ArrayList<>();
+        entity.getIdentifiersListEntities().forEach(identifierList -> {
+            List<NetworkElementIdentifier> networkElementIdentifiers = new ArrayList<>();
+            identifierList.getEquipmentIds().forEach(equipmentId -> networkElementIdentifiers.add(new IdBasedNetworkElementIdentifier(equipmentId)));
+            //TODO: NetworkElementIdentifierList name will have to be filled with identifierList.getName() when it's available in powsybl-core
+            listOfNetworkElementIdentifierList.add(new NetworkElementIdentifierList(networkElementIdentifiers));
+        });
+        return new IdBasedContingencyList(entity.getId(), new IdentifierContingencyList(entity.getId().toString(), "LINE", listOfNetworkElementIdentifierList));
+    }
+
+    public IdBasedContingencyList createIdBasedContingencyList(UUID id, IdBasedContingencyList idBasedContingencyList) {
+        IdBasedContingencyListEntity entity = new IdBasedContingencyListEntity(idBasedContingencyList);
+        entity.setId(id == null ? UUID.randomUUID() : id);
+        return fromIdBasedContingencyListEntity(idBasedContingencyListRepository.save(entity));
+    }
+
 }
