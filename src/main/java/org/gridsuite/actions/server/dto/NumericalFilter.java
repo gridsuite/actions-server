@@ -6,6 +6,7 @@
  */
 package org.gridsuite.actions.server.dto;
 
+import com.powsybl.contingency.contingency.list.criterion.SingleNominalVoltageCriterion;
 import lombok.*;
 import org.gridsuite.actions.server.utils.NumericalFilterOperator;
 
@@ -35,6 +36,30 @@ public class NumericalFilter {
                 return ">=";
             default:
                 return "";
+        }
+    }
+
+    public static SingleNominalVoltageCriterion toNominalVoltageCriterion(NumericalFilter numericalFilter) {
+        if (numericalFilter == null) {
+            return new SingleNominalVoltageCriterion(new SingleNominalVoltageCriterion.VoltageInterval());
+        }
+        System.out.println("numericalFilter.getType()" + numericalFilter.getType().name());
+        switch (numericalFilter.getType()) {
+            case EQUALITY:
+                System.out.println("EQUALITY");
+                return new SingleNominalVoltageCriterion(new SingleNominalVoltageCriterion.VoltageInterval(numericalFilter.getValue1(), numericalFilter.getValue1(), true, true));
+            case LESS_THAN:
+                return new SingleNominalVoltageCriterion(new SingleNominalVoltageCriterion.VoltageInterval(Double.MIN_VALUE, numericalFilter.getValue1(), true, false));
+            case LESS_OR_EQUAL:
+                return new SingleNominalVoltageCriterion(new SingleNominalVoltageCriterion.VoltageInterval(Double.MIN_VALUE, numericalFilter.getValue1(), true, true));
+            case GREATER_THAN:
+                return new SingleNominalVoltageCriterion(new SingleNominalVoltageCriterion.VoltageInterval(numericalFilter.getValue1(), Double.MAX_VALUE, false, true));
+            case GREATER_OR_EQUAL:
+                return new SingleNominalVoltageCriterion(new SingleNominalVoltageCriterion.VoltageInterval(numericalFilter.getValue1(), Double.MAX_VALUE, true, true));
+            case RANGE:
+                return new SingleNominalVoltageCriterion(new SingleNominalVoltageCriterion.VoltageInterval(numericalFilter.getValue1(), numericalFilter.getValue2(), true, true));
+            default:
+                return new SingleNominalVoltageCriterion(new SingleNominalVoltageCriterion.VoltageInterval());
         }
     }
 }

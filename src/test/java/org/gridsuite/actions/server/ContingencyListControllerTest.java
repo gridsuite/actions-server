@@ -24,7 +24,7 @@ import com.powsybl.iidm.network.test.SvcTestCaseFactory;
 import com.powsybl.network.store.client.NetworkStoreService;
 import com.powsybl.network.store.client.PreloadingStrategy;
 import com.powsybl.network.store.iidm.impl.NetworkFactoryImpl;
-import org.gridsuite.actions.server.dto.ContingencyListAttributes;
+import org.gridsuite.actions.server.dto.ContingencyListBaseAttributes;
 import org.gridsuite.actions.server.dto.FormContingencyList;
 import org.gridsuite.actions.server.dto.IdBasedContingencyList;
 import org.gridsuite.actions.server.dto.ScriptContingencyList;
@@ -369,7 +369,7 @@ public class ContingencyListControllerTest {
         String userId = "userId";
         String list = genFormContingencyList(EquipmentType.LINE, 11., EQUALITY, Set.of());
         UUID id = addNewFormContingencyList(list);
-        ContingencyListAttributes attributes = getMetadata(id);
+        ContingencyListBaseAttributes attributes = getMetadata(id);
 
         assertEquals(id, attributes.getId());
         Date baseModificationDate = attributes.getModificationDate();
@@ -543,10 +543,14 @@ public class ContingencyListControllerTest {
         Set<String> france = Collections.singleton("FR");
         Set<String> belgium = Collections.singleton("BE");
 
-        String generatorForm1 = genFormContingencyList(EquipmentType.GENERATOR, -1., EQUALITY, noCountries);
+        String generatorForm1 = genFormContingencyList(EquipmentType.GENERATOR, -1., GREATER_THAN, france);
         String generatorForm4 = genFormContingencyList(EquipmentType.GENERATOR, 10., LESS_THAN, noCountries);
         String generatorForm5 = genFormContingencyList(EquipmentType.GENERATOR, -1., GREATER_THAN, france);
         String generatorForm6 = genFormContingencyList(EquipmentType.GENERATOR, -1., GREATER_THAN, belgium);
+        System.out.println("generatorForm1=>" + generatorForm1);
+        System.out.println("generatorForm4=>" + generatorForm4);
+        System.out.println("generatorForm5=>" + generatorForm5);
+        System.out.println("generatorForm6=>" + generatorForm6);
         testExportContingencies(generatorForm1, " [{\"id\":\"GEN\",\"elements\":[{\"id\":\"GEN\",\"type\":\"GENERATOR\"}]},{\"id\":\"GEN2\",\"elements\":[{\"id\":\"GEN2\",\"type\":\"GENERATOR\"}]}]", NETWORK_UUID);
 
         // test export on specific variant where generator 'GEN2' has been removed
@@ -731,15 +735,15 @@ public class ContingencyListControllerTest {
                 .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
                 .andExpect(content().json("[]"));
 
-        ContingencyListAttributes attributes = getMetadata(id);
+        ContingencyListBaseAttributes attributes = getMetadata(id);
         assertEquals(attributes.getId(), id);
     }
 
-    private ContingencyListAttributes getMetadata(UUID id) throws Exception {
+    private ContingencyListBaseAttributes getMetadata(UUID id) throws Exception {
         var res = mvc.perform(get("/" + VERSION + "/contingency-lists/metadata?ids=" + id))
                 .andExpect(status().isOk())
                 .andReturn().getResponse().getContentAsString();
-        List<ContingencyListAttributes> contingencyListAttributes = objectMapper.readValue(res, new TypeReference<>() {
+        List<ContingencyListBaseAttributes> contingencyListAttributes = objectMapper.readValue(res, new TypeReference<>() {
         });
         assertEquals(1, contingencyListAttributes.size());
         return contingencyListAttributes.get(0);
@@ -846,10 +850,10 @@ public class ContingencyListControllerTest {
     @Test
     public void contingencyListAttributesTest() {
         UUID contingencyListAttrId = UUID.randomUUID();
-        ContingencyListAttributes contingencyListAttributes = new ContingencyListAttributes(contingencyListAttrId, ContingencyListType.SCRIPT, null);
+        ContingencyListBaseAttributes contingencyListAttributes = new ContingencyListBaseAttributes(contingencyListAttrId, ContingencyListType.SCRIPT, null);
         assertEquals(contingencyListAttrId, contingencyListAttributes.getId());
         assertEquals(ContingencyListType.SCRIPT, contingencyListAttributes.getType());
-        ContingencyListAttributes contingencyListAttributes2 = new ContingencyListAttributes();
+        ContingencyListBaseAttributes contingencyListAttributes2 = new ContingencyListBaseAttributes();
         assertNull(contingencyListAttributes2.getId());
         assertNull(contingencyListAttributes2.getType());
     }
