@@ -12,7 +12,6 @@ import com.powsybl.contingency.contingency.list.criterion.SingleCountryCriterion
 import com.powsybl.contingency.contingency.list.criterion.TwoCountriesCriterion;
 import com.powsybl.contingency.contingency.list.criterion.TwoNominalVoltageCriterion;
 import com.powsybl.iidm.network.Country;
-import com.powsybl.iidm.network.IdentifiableType;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -20,7 +19,6 @@ import org.gridsuite.actions.server.utils.ContingencyListType;
 import org.gridsuite.actions.server.utils.EquipmentType;
 
 import java.util.Collections;
-import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -76,10 +74,11 @@ public class FormContingencyList extends AbstractContingencyList {
             case STATIC_VAR_COMPENSATOR:
             case SHUNT_COMPENSATOR:
             case BUSBAR_SECTION:
+            case DANGLING_LINE:
                 contingencyList = new InjectionCriterionContingencyList(
                         this.getId().toString(),
-                        IdentifiableType.GENERATOR,
-                        new SingleCountryCriterion(this.getCountries1().stream().map(c -> Country.valueOf(c)).collect(Collectors.toList())),
+                        this.getEquipmentType(),
+                        this.getCountries1().isEmpty() ? null : new SingleCountryCriterion(this.getCountries1().stream().map(c -> Country.valueOf(c)).collect(Collectors.toList())),
                         NumericalFilter.toNominalVoltageCriterion(this.getNominalVoltage1()),
                         Collections.emptyList(),
                         null
@@ -113,23 +112,10 @@ public class FormContingencyList extends AbstractContingencyList {
                         null
                 );
                 break;
-            case DANGLING_LINE:
-                //TODO change to DanglingLineCriterionContingencyList
-                contingencyList = new LineCriterionContingencyList(
-                        this.getId().toString(),
-                        new TwoCountriesCriterion(
-                                this.getCountries1().stream().map(c -> Country.valueOf(c)).collect(Collectors.toList()),
-                                this.getCountries2().stream().map(c -> Country.valueOf(c)).collect(Collectors.toList())
-                        ),
-                        NumericalFilter.toNominalVoltageCriterion(this.getNominalVoltage1()),
-                        Collections.emptyList(),
-                        null
-                );
-                break;
             case TWO_WINDINGS_TRANSFORMER:
                 contingencyList = new TwoWindingsTransformerCriterionContingencyList(
                         this.getId().toString(),
-                        new SingleCountryCriterion(this.getCountries1().stream().map(c -> Country.valueOf(c)).collect(Collectors.toList())),
+                        this.getCountries1().isEmpty() ? null : new SingleCountryCriterion(this.getCountries1().stream().map(c -> Country.valueOf(c)).collect(Collectors.toList())),
                         new TwoNominalVoltageCriterion(
                                 NumericalFilter.toNominalVoltageCriterion(this.getNominalVoltage1()).getVoltageInterval(),
                                 NumericalFilter.toNominalVoltageCriterion(this.getNominalVoltage2()).getVoltageInterval()
