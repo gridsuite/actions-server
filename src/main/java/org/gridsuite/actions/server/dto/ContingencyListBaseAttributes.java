@@ -7,7 +7,6 @@
 package org.gridsuite.actions.server.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.gridsuite.actions.server.utils.ContingencyListType;
@@ -21,16 +20,19 @@ import java.util.UUID;
 
 @Getter
 @NoArgsConstructor
-@AllArgsConstructor
 @Schema(description = "Contingency list attributes")
 public class ContingencyListBaseAttributes extends AbstractContingencyList {
 
-    @Schema(description = "list id")
-    private UUID id;
+    public ContingencyListBaseAttributes(UUID id, ContingencyListType type, Date modificationDate) {
+        super(id);
+        this.type = type;
+        this.modificationDate = modificationDate;
+    }
 
     @Schema(description = "List type")
     private ContingencyListType type;
 
     @Schema(description = "Modification Date")
     Date modificationDate;
+
 }
