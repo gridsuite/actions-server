@@ -103,8 +103,8 @@ public class ContingencyListService {
                 new ContingencyListBaseAttributes(scriptContingencyListEntity.getId(), ContingencyListType.SCRIPT, scriptContingencyListEntity.getModificationDate())),
             formContingencyListRepository.findAllById(ids).stream().map(formContingencyListEntity ->
                 new ContingencyListBaseAttributes(formContingencyListEntity.getId(), ContingencyListType.FORM, formContingencyListEntity.getModificationDate())),
-            idBasedContingencyListRepository.findAllById(ids).stream().map(formContingencyListEntity ->
-                new ContingencyListBaseAttributes(formContingencyListEntity.getId(), ContingencyListType.IDENTIFIERS, formContingencyListEntity.getModificationDate()))
+            idBasedContingencyListRepository.findAllById(ids).stream().map(idBasedContingencyListEntity ->
+                new ContingencyListBaseAttributes(idBasedContingencyListEntity.getId(), ContingencyListType.IDENTIFIERS, idBasedContingencyListEntity.getModificationDate()))
         ).flatMap(Function.identity()).collect(Collectors.toList());
     }
 

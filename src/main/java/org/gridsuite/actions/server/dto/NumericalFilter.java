@@ -43,10 +43,8 @@ public class NumericalFilter {
         if (numericalFilter == null) {
             return new SingleNominalVoltageCriterion(new SingleNominalVoltageCriterion.VoltageInterval());
         }
-        System.out.println("numericalFilter.getType()" + numericalFilter.getType().name());
         switch (numericalFilter.getType()) {
             case EQUALITY:
-                System.out.println("EQUALITY");
                 return new SingleNominalVoltageCriterion(new SingleNominalVoltageCriterion.VoltageInterval(numericalFilter.getValue1(), numericalFilter.getValue1(), true, true));
             case LESS_THAN:
                 return new SingleNominalVoltageCriterion(new SingleNominalVoltageCriterion.VoltageInterval(Double.MIN_VALUE, numericalFilter.getValue1(), true, false));

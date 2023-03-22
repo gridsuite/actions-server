@@ -91,7 +91,6 @@ public class FormContingencyList extends AbstractContingencyList {
                                 this.getCountries1().stream().map(c -> Country.valueOf(c)).collect(Collectors.toList()),
                                 this.getCountries2().stream().map(c -> Country.valueOf(c)).collect(Collectors.toList())
                         ),
-                        // TODO: enrich front with 2 nominal voltages ?
                         new TwoNominalVoltageCriterion(
                                 NumericalFilter.toNominalVoltageCriterion(this.getNominalVoltage1()).getVoltageInterval(),
                                 NumericalFilter.toNominalVoltageCriterion(this.getNominalVoltage2()).getVoltageInterval()

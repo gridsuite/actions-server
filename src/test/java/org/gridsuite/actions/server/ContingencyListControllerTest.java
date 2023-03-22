@@ -997,6 +997,18 @@ public class ContingencyListControllerTest {
         return new IdBasedContingencyList(listId, new IdentifierContingencyList(listId != null ? listId.toString() : "defaultName", IdentifiableType.LINE, networkElementIdentifiers));
     }
 
+    public int getContingencyListsCount() throws Exception {
+        String res = mvc.perform(get("/" + VERSION + "/contingency-lists")
+                        .contentType(APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+                .andReturn().getResponse().getContentAsString();
+
+        List<IdBasedContingencyList> contingencyListAttributes = objectMapper.readValue(res, new TypeReference<>() {
+        });
+        return contingencyListAttributes.size();
+    }
+
     @Test
     public void createIdBasedContingencyList() throws Exception {
         IdBasedContingencyList idBasedContingencyList = createIdBasedContingencyList(null, "NHV1_NHV2_1");
@@ -1021,8 +1033,15 @@ public class ContingencyListControllerTest {
                 .andExpect(status().isOk())
                 .andReturn().getResponse().getContentAsString();
 
+        ContingencyListBaseAttributes attributes = getMetadata(contingencyListId);
+        assertEquals(attributes.getId(), contingencyListId);
+
+        assertEquals(2, getContingencyListsCount());
+
         mvc.perform(delete("/" + VERSION + "/contingency-lists/" + contingencyListId))
                 .andExpect(status().isOk());
+
+        assertEquals(1, getContingencyListsCount());
     }
 
     @Test

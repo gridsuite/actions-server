@@ -38,6 +38,7 @@ public class IdBasedContingencyList extends AbstractContingencyList {
         return ContingencyListType.IDENTIFIERS;
     }
 
+    @Override
     public ContingencyList toPowsyblContingencyList() {
         return identifierContingencyList;
     }
