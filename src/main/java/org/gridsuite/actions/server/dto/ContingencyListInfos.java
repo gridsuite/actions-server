@@ -20,10 +20,10 @@ import java.util.UUID;
 
 @Getter
 @NoArgsConstructor
-@Schema(description = "Contingency list attributes")
-public class ContingencyListBaseAttributes extends AbstractContingencyList {
+@Schema(description = "Contingency list infos")
+public class ContingencyListInfos extends AbstractContingencyList {
 
-    public ContingencyListBaseAttributes(UUID id, ContingencyListType type, Date modificationDate) {
+    public ContingencyListInfos(UUID id, ContingencyListType type, Date modificationDate) {
         super(id);
         this.type = type;
         this.modificationDate = modificationDate;

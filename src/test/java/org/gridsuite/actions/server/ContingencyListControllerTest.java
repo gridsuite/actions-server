@@ -24,7 +24,7 @@ import com.powsybl.iidm.network.test.SvcTestCaseFactory;
 import com.powsybl.network.store.client.NetworkStoreService;
 import com.powsybl.network.store.client.PreloadingStrategy;
 import com.powsybl.network.store.iidm.impl.NetworkFactoryImpl;
-import org.gridsuite.actions.server.dto.ContingencyListBaseAttributes;
+import org.gridsuite.actions.server.dto.ContingencyListInfos;
 import org.gridsuite.actions.server.dto.FormContingencyList;
 import org.gridsuite.actions.server.dto.IdBasedContingencyList;
 import org.gridsuite.actions.server.dto.ScriptContingencyList;
@@ -369,7 +369,7 @@ public class ContingencyListControllerTest {
         String userId = "userId";
         String list = genFormContingencyList(EquipmentType.LINE, 11., EQUALITY, Set.of());
         UUID id = addNewFormContingencyList(list);
-        ContingencyListBaseAttributes attributes = getMetadata(id);
+        ContingencyListInfos attributes = getMetadata(id);
 
         assertEquals(id, attributes.getId());
         Date baseModificationDate = attributes.getModificationDate();
@@ -735,15 +735,15 @@ public class ContingencyListControllerTest {
                 .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
                 .andExpect(content().json("[]"));
 
-        ContingencyListBaseAttributes attributes = getMetadata(id);
+        ContingencyListInfos attributes = getMetadata(id);
         assertEquals(attributes.getId(), id);
     }
 
-    private ContingencyListBaseAttributes getMetadata(UUID id) throws Exception {
+    private ContingencyListInfos getMetadata(UUID id) throws Exception {
         var res = mvc.perform(get("/" + VERSION + "/contingency-lists/metadata?ids=" + id))
                 .andExpect(status().isOk())
                 .andReturn().getResponse().getContentAsString();
-        List<ContingencyListBaseAttributes> contingencyListAttributes = objectMapper.readValue(res, new TypeReference<>() {
+        List<ContingencyListInfos> contingencyListAttributes = objectMapper.readValue(res, new TypeReference<>() {
         });
         assertEquals(1, contingencyListAttributes.size());
         return contingencyListAttributes.get(0);
@@ -850,10 +850,10 @@ public class ContingencyListControllerTest {
     @Test
     public void contingencyListAttributesTest() {
         UUID contingencyListAttrId = UUID.randomUUID();
-        ContingencyListBaseAttributes contingencyListAttributes = new ContingencyListBaseAttributes(contingencyListAttrId, ContingencyListType.SCRIPT, null);
+        ContingencyListInfos contingencyListAttributes = new ContingencyListInfos(contingencyListAttrId, ContingencyListType.SCRIPT, null);
         assertEquals(contingencyListAttrId, contingencyListAttributes.getId());
         assertEquals(ContingencyListType.SCRIPT, contingencyListAttributes.getType());
-        ContingencyListBaseAttributes contingencyListAttributes2 = new ContingencyListBaseAttributes();
+        ContingencyListInfos contingencyListAttributes2 = new ContingencyListInfos();
         assertNull(contingencyListAttributes2.getId());
         assertNull(contingencyListAttributes2.getType());
     }
@@ -1033,7 +1033,7 @@ public class ContingencyListControllerTest {
                 .andExpect(status().isOk())
                 .andReturn().getResponse().getContentAsString();
 
-        ContingencyListBaseAttributes attributes = getMetadata(contingencyListId);
+        ContingencyListInfos attributes = getMetadata(contingencyListId);
         assertEquals(attributes.getId(), contingencyListId);
 
         assertEquals(2, getContingencyListsCount());

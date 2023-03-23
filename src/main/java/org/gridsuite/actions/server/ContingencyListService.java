@@ -86,25 +86,25 @@ public class ContingencyListService {
         return scriptContingencyListRepository.findAll().stream().map(ContingencyListService::fromScriptContingencyListEntity).collect(Collectors.toList());
     }
 
-    List<ContingencyListBaseAttributes> getContingencyLists() {
+    List<ContingencyListInfos> getContingencyLists() {
         return Stream.of(
             scriptContingencyListRepository.findAll().stream().map(scriptContingencyListEntity ->
-                new ContingencyListBaseAttributes(scriptContingencyListEntity.getId(), ContingencyListType.SCRIPT, scriptContingencyListEntity.getModificationDate())),
+                new ContingencyListInfos(scriptContingencyListEntity.getId(), ContingencyListType.SCRIPT, scriptContingencyListEntity.getModificationDate())),
             formContingencyListRepository.findAll().stream().map(formContingencyListEntity ->
-                new ContingencyListBaseAttributes(formContingencyListEntity.getId(), ContingencyListType.FORM, formContingencyListEntity.getModificationDate())),
+                new ContingencyListInfos(formContingencyListEntity.getId(), ContingencyListType.FORM, formContingencyListEntity.getModificationDate())),
             idBasedContingencyListRepository.findAll().stream().map(idBasedContingencyListEntity ->
-                    new ContingencyListBaseAttributes(idBasedContingencyListEntity.getId(), ContingencyListType.IDENTIFIERS, idBasedContingencyListEntity.getModificationDate()))
+                    new ContingencyListInfos(idBasedContingencyListEntity.getId(), ContingencyListType.IDENTIFIERS, idBasedContingencyListEntity.getModificationDate()))
         ).flatMap(Function.identity()).collect(Collectors.toList());
     }
 
-    List<ContingencyListBaseAttributes> getContingencyLists(List<UUID> ids) {
+    List<ContingencyListInfos> getContingencyLists(List<UUID> ids) {
         return Stream.of(
             scriptContingencyListRepository.findAllById(ids).stream().map(scriptContingencyListEntity ->
-                new ContingencyListBaseAttributes(scriptContingencyListEntity.getId(), ContingencyListType.SCRIPT, scriptContingencyListEntity.getModificationDate())),
+                new ContingencyListInfos(scriptContingencyListEntity.getId(), ContingencyListType.SCRIPT, scriptContingencyListEntity.getModificationDate())),
             formContingencyListRepository.findAllById(ids).stream().map(formContingencyListEntity ->
-                new ContingencyListBaseAttributes(formContingencyListEntity.getId(), ContingencyListType.FORM, formContingencyListEntity.getModificationDate())),
+                new ContingencyListInfos(formContingencyListEntity.getId(), ContingencyListType.FORM, formContingencyListEntity.getModificationDate())),
             idBasedContingencyListRepository.findAllById(ids).stream().map(idBasedContingencyListEntity ->
-                new ContingencyListBaseAttributes(idBasedContingencyListEntity.getId(), ContingencyListType.IDENTIFIERS, idBasedContingencyListEntity.getModificationDate()))
+                new ContingencyListInfos(idBasedContingencyListEntity.getId(), ContingencyListType.IDENTIFIERS, idBasedContingencyListEntity.getModificationDate()))
         ).flatMap(Function.identity()).collect(Collectors.toList());
     }
 
