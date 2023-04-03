@@ -99,7 +99,6 @@ public class ContingencyListController {
     @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "The script contingency list have been created successfully")})
     public ResponseEntity<PersistentContingencyList> createScriptContingencyList(@RequestParam(required = false, value = "id") UUID id,
                                                                                  @RequestBody ScriptContingencyList script) {
-        System.out.println("BOBOBOBOBO");
         return ResponseEntity.ok()
             .contentType(MediaType.APPLICATION_JSON)
             .body(service.createScriptContingencyList(id, script));
