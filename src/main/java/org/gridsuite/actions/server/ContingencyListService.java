@@ -135,7 +135,7 @@ public class ContingencyListService {
         return idBasedContingencyListRepository.findById(id).map(ContingencyListService::fromIdBasedContingencyListEntity);
     }
 
-    private List<Contingency> getListOfPowsyblContingencies(PersistentContingencyList contingencyList, UUID networkUuid, String variantId) {
+    private List<Contingency> getPowsyblContingencies(PersistentContingencyList contingencyList, UUID networkUuid, String variantId) {
         Network network;
         if (networkUuid == null) {
             // use an empty network, script might not have need to network
@@ -154,9 +154,9 @@ public class ContingencyListService {
 
     Optional<List<Contingency>> exportContingencyList(UUID id, UUID networkUuid, String variantId) {
         Objects.requireNonNull(id);
-        return getScriptContingencyList(id).map(contingencyList -> getListOfPowsyblContingencies(contingencyList, networkUuid, variantId))
-            .or(() -> getFormContingencyList(id).map(contingencyList -> getListOfPowsyblContingencies(contingencyList, networkUuid, variantId)))
-                    .or(() -> getIdBasedContingencyList(id).map(contingencyList -> getListOfPowsyblContingencies(contingencyList, networkUuid, variantId)));
+        return getScriptContingencyList(id).map(contingencyList -> getPowsyblContingencies(contingencyList, networkUuid, variantId))
+            .or(() -> getFormContingencyList(id).map(contingencyList -> getPowsyblContingencies(contingencyList, networkUuid, variantId)))
+                    .or(() -> getIdBasedContingencyList(id).map(contingencyList -> getPowsyblContingencies(contingencyList, networkUuid, variantId)));
     }
 
     ScriptContingencyList createScriptContingencyList(UUID id, ScriptContingencyList script) {
