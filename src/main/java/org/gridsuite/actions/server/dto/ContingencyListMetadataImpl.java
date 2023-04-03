@@ -16,8 +16,8 @@ import java.util.UUID;
 
 /**
  * @author Chamseddine benhamed <chamseddine.benhamed at rte-france.com>
+ * @author Etienne Homer <etienne.homer@rte-france.com>
  */
-
 @Getter
 @NoArgsConstructor
 @Schema(description = "Contingency list infos")

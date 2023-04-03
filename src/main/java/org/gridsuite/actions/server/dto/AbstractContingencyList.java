@@ -6,16 +6,12 @@
  */
 package org.gridsuite.actions.server.dto;
 
-import com.powsybl.contingency.Contingency;
-import com.powsybl.contingency.contingency.list.ContingencyList;
-import com.powsybl.iidm.network.Network;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.util.List;
-
 /**
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at rte-france.com>
+ * @author Etienne Homer <etienne.homer at rte-france.com>
  */
 @Getter
 @NoArgsConstructor
@@ -29,13 +25,5 @@ public abstract class AbstractContingencyList implements PersistentContingencyLi
 
     @Override public ContingencyListMetadata getMetadata() {
         return metadata;
-    }
-
-    public List<Contingency> getContingencies(Network network) {
-        return toPowsyblContingencyList().getContingencies(network);
-    }
-
-    public ContingencyList toPowsyblContingencyList() {
-        return null;
     }
 }
