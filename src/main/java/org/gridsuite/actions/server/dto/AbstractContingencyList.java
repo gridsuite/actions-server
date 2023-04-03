@@ -9,27 +9,27 @@ package org.gridsuite.actions.server.dto;
 import com.powsybl.contingency.Contingency;
 import com.powsybl.contingency.contingency.list.ContingencyList;
 import com.powsybl.iidm.network.Network;
-import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.gridsuite.actions.server.utils.ContingencyListType;
 
 import java.util.List;
-import java.util.UUID;
 
 /**
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at rte-france.com>
  */
 @Getter
-@AllArgsConstructor
 @NoArgsConstructor
-public abstract class AbstractContingencyList {
+public abstract class AbstractContingencyList implements PersistentContingencyList {
 
-    @Schema(description = "list id")
-    private UUID id;
+    private ContingencyListMetadataImpl metadata;
 
-    public abstract ContingencyListType getType();
+    protected AbstractContingencyList(ContingencyListMetadataImpl metadata) {
+        this.metadata = metadata;
+    }
+
+    @Override public ContingencyListMetadata getMetadata() {
+        return metadata;
+    }
 
     public List<Contingency> getContingencies(Network network) {
         return toPowsyblContingencyList().getContingencies(network);

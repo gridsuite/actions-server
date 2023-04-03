@@ -13,6 +13,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.gridsuite.actions.server.utils.ContingencyListType;
 
+import java.util.Date;
 import java.util.UUID;
 
 /**
@@ -21,21 +22,14 @@ import java.util.UUID;
 @Getter
 @NoArgsConstructor
 @Schema(description = "Id based contingency list")
-
 public class IdBasedContingencyList extends AbstractContingencyList {
 
     @Schema(description = "Identifier list")
     private IdentifierContingencyList identifierContingencyList;
 
-    public IdBasedContingencyList(UUID uuid, IdentifierContingencyList identifierContingencyList) {
-        super(uuid);
+    public IdBasedContingencyList(UUID uuid, Date date, IdentifierContingencyList identifierContingencyList) {
+        super(new ContingencyListMetadataImpl(uuid, ContingencyListType.IDENTIFIERS, date));
         this.identifierContingencyList = identifierContingencyList;
-    }
-
-    @Schema(description = "Type")
-    @Override
-    public ContingencyListType getType() {
-        return ContingencyListType.IDENTIFIERS;
     }
 
     @Override

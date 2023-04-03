@@ -21,13 +21,16 @@ import java.util.UUID;
 @Getter
 @NoArgsConstructor
 @Schema(description = "Contingency list infos")
-public class ContingencyListInfos extends AbstractContingencyList {
+public class ContingencyListMetadataImpl implements ContingencyListMetadata {
 
-    public ContingencyListInfos(UUID id, ContingencyListType type, Date modificationDate) {
-        super(id);
+    public ContingencyListMetadataImpl(UUID id, ContingencyListType type, Date modificationDate) {
+        this.id = id;
         this.type = type;
         this.modificationDate = modificationDate;
     }
+
+    @Schema(description = "List id")
+    private UUID id;
 
     @Schema(description = "List type")
     private ContingencyListType type;

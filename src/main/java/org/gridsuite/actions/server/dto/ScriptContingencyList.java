@@ -15,6 +15,7 @@ import org.codehaus.groovy.control.customizers.ImportCustomizer;
 import org.gridsuite.actions.server.utils.ContingencyListType;
 
 import java.io.ByteArrayInputStream;
+import java.util.Date;
 import java.util.UUID;
 
 /**
@@ -28,15 +29,9 @@ public class ScriptContingencyList extends AbstractContingencyList {
     @Schema(description = "Script")
     private String script;
 
-    public ScriptContingencyList(UUID uuid, String script) {
-        super(uuid);
+    public ScriptContingencyList(UUID uuid, Date date, String script) {
+        super(new ContingencyListMetadataImpl(uuid, ContingencyListType.SCRIPT, date));
         this.script = script;
-    }
-
-    @Schema(description = "Type")
-    @Override
-    public ContingencyListType getType() {
-        return ContingencyListType.SCRIPT;
     }
 
     @Override
@@ -44,6 +39,6 @@ public class ScriptContingencyList extends AbstractContingencyList {
         ImportCustomizer customizer = new ImportCustomizer();
         customizer.addImports("org.gridsuite.actions.server.utils.FiltersUtils");
         customizer.addStaticStars("org.gridsuite.actions.server.utils.FiltersUtils");
-        return new GroovyContingencyListLoader().load(this.getId().toString(), new ByteArrayInputStream(script.getBytes()));
+        return new GroovyContingencyListLoader().load(this.getMetadata().getId().toString(), new ByteArrayInputStream(script.getBytes()));
     }
 }

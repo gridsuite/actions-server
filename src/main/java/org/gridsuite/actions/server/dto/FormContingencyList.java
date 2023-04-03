@@ -19,6 +19,7 @@ import org.gridsuite.actions.server.utils.ContingencyListType;
 import org.gridsuite.actions.server.utils.EquipmentType;
 
 import java.util.Collections;
+import java.util.Date;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -46,19 +47,14 @@ public class FormContingencyList extends AbstractContingencyList {
     @Schema(description = "Countries 2")
     private Set<String> countries2;
 
-    @Schema(description = "Type")
-    @Override
-    public ContingencyListType getType() {
-        return ContingencyListType.FORM;
-    }
-
     public FormContingencyList(UUID uuid,
+                               Date date,
                                String equipmentType,
                                NumericalFilter nominalVoltage1,
                                NumericalFilter nominalVoltage2,
                                Set<String> countries1,
                                Set<String> countries2) {
-        super(uuid);
+        super(new ContingencyListMetadataImpl(uuid, ContingencyListType.FORM, date));
         this.equipmentType =  equipmentType;
         this.nominalVoltage1 =  nominalVoltage1;
         this.nominalVoltage2 =  nominalVoltage2;
@@ -76,7 +72,7 @@ public class FormContingencyList extends AbstractContingencyList {
             case BUSBAR_SECTION:
             case DANGLING_LINE:
                 contingencyList = new InjectionCriterionContingencyList(
-                        this.getId().toString(),
+                        this.getMetadata().getId().toString(),
                         this.getEquipmentType(),
                         //TODO: replace with "new SingleCountryCriterion(this.getCountries1().stream().map(c -> Country.valueOf(c)).collect(Collectors.toList()))" after new powsybl version
                         this.getCountries1().isEmpty() ? null : new SingleCountryCriterion(this.getCountries1().stream().map(c -> Country.valueOf(c)).collect(Collectors.toList())),
@@ -87,7 +83,7 @@ public class FormContingencyList extends AbstractContingencyList {
                 break;
             case HVDC_LINE:
                 contingencyList = new HvdcLineCriterionContingencyList(
-                        this.getId().toString(),
+                        this.getMetadata().getId().toString(),
                         new TwoCountriesCriterion(
                                 this.getCountries1().stream().map(c -> Country.valueOf(c)).collect(Collectors.toList()),
                                 this.getCountries2().stream().map(c -> Country.valueOf(c)).collect(Collectors.toList())
@@ -102,7 +98,7 @@ public class FormContingencyList extends AbstractContingencyList {
                 break;
             case LINE:
                 contingencyList = new LineCriterionContingencyList(
-                        this.getId().toString(),
+                        this.getMetadata().getId().toString(),
                         new TwoCountriesCriterion(
                                 this.getCountries1().stream().map(c -> Country.valueOf(c)).collect(Collectors.toList()),
                                 this.getCountries2().stream().map(c -> Country.valueOf(c)).collect(Collectors.toList())
@@ -114,7 +110,7 @@ public class FormContingencyList extends AbstractContingencyList {
                 break;
             case TWO_WINDINGS_TRANSFORMER:
                 contingencyList = new TwoWindingsTransformerCriterionContingencyList(
-                        this.getId().toString(),
+                        this.getMetadata().getId().toString(),
                         //TODO: replace with "new SingleCountryCriterion(this.getCountries1().stream().map(c -> Country.valueOf(c)).collect(Collectors.toList()))" after new powsybl version
                         this.getCountries1().isEmpty() ? null : new SingleCountryCriterion(this.getCountries1().stream().map(c -> Country.valueOf(c)).collect(Collectors.toList())),
                         new TwoNominalVoltageCriterion(
