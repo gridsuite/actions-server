@@ -149,7 +149,8 @@ public class ContingencyListService {
                 network.getVariantManager().setWorkingVariant(variantId);
             }
         }
-        return contingencyList.toPowsyblContingencyList().getContingencies(network);
+        ContingencyList powsyblContingencyList = contingencyList.toPowsyblContingencyList();
+        return powsyblContingencyList == null ? Collections.emptyList() : powsyblContingencyList.getContingencies(network);
     }
 
     Optional<List<Contingency>> exportContingencyList(UUID id, UUID networkUuid, String variantId) {
