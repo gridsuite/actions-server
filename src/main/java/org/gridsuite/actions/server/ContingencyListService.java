@@ -17,10 +17,7 @@ import com.powsybl.network.store.client.NetworkStoreService;
 import com.powsybl.network.store.client.PreloadingStrategy;
 import com.powsybl.network.store.iidm.impl.NetworkFactoryImpl;
 import org.gridsuite.actions.server.dto.*;
-import org.gridsuite.actions.server.entities.FormContingencyListEntity;
-import org.gridsuite.actions.server.entities.NumericalFilterEntity;
-import org.gridsuite.actions.server.entities.IdBasedContingencyListEntity;
-import org.gridsuite.actions.server.entities.ScriptContingencyListEntity;
+import org.gridsuite.actions.server.entities.*;
 import org.gridsuite.actions.server.repositories.FormContingencyListRepository;
 import org.gridsuite.actions.server.repositories.IdBasedContingencyListRepository;
 import org.gridsuite.actions.server.repositories.ScriptContingencyListRepository;
@@ -85,25 +82,29 @@ public class ContingencyListService {
         return scriptContingencyListRepository.findAll().stream().map(ContingencyListService::fromScriptContingencyListEntity).collect(Collectors.toList());
     }
 
+    ContingencyListMetadata fromContingencyListEntity(AbstractContingencyEntity entity, ContingencyListType type) {
+        return new ContingencyListMetadataImpl(entity.getId(), type, entity.getModificationDate());
+    }
+
     List<ContingencyListMetadata> getContingencyListsMetadata() {
         return Stream.of(
             scriptContingencyListRepository.findAll().stream().map(scriptContingencyListEntity ->
-                new ContingencyListMetadataImpl(scriptContingencyListEntity.getId(), ContingencyListType.SCRIPT, scriptContingencyListEntity.getModificationDate())),
+                    fromContingencyListEntity(scriptContingencyListEntity, ContingencyListType.SCRIPT)),
             formContingencyListRepository.findAll().stream().map(formContingencyListEntity ->
-                new ContingencyListMetadataImpl(formContingencyListEntity.getId(), ContingencyListType.FORM, formContingencyListEntity.getModificationDate())),
+                    fromContingencyListEntity(formContingencyListEntity, ContingencyListType.FORM)),
             idBasedContingencyListRepository.findAll().stream().map(idBasedContingencyListEntity ->
-                    new ContingencyListMetadataImpl(idBasedContingencyListEntity.getId(), ContingencyListType.IDENTIFIERS, idBasedContingencyListEntity.getModificationDate()))
+                    fromContingencyListEntity(idBasedContingencyListEntity, ContingencyListType.IDENTIFIERS))
         ).flatMap(Function.identity()).collect(Collectors.toList());
     }
 
     List<ContingencyListMetadata> getContingencyListsMetadata(List<UUID> ids) {
         return Stream.of(
             scriptContingencyListRepository.findAllById(ids).stream().map(scriptContingencyListEntity ->
-                new ContingencyListMetadataImpl(scriptContingencyListEntity.getId(), ContingencyListType.SCRIPT, scriptContingencyListEntity.getModificationDate())),
+                    fromContingencyListEntity(scriptContingencyListEntity, ContingencyListType.SCRIPT)),
             formContingencyListRepository.findAllById(ids).stream().map(formContingencyListEntity ->
-                new ContingencyListMetadataImpl(formContingencyListEntity.getId(), ContingencyListType.FORM, formContingencyListEntity.getModificationDate())),
+                    fromContingencyListEntity(formContingencyListEntity, ContingencyListType.FORM)),
             idBasedContingencyListRepository.findAllById(ids).stream().map(idBasedContingencyListEntity ->
-                new ContingencyListMetadataImpl(idBasedContingencyListEntity.getId(), ContingencyListType.IDENTIFIERS, idBasedContingencyListEntity.getModificationDate()))
+                    fromContingencyListEntity(idBasedContingencyListEntity, ContingencyListType.IDENTIFIERS))
         ).flatMap(Function.identity()).collect(Collectors.toList());
     }
 

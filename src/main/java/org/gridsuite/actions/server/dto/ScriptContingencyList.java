@@ -35,8 +35,7 @@ public class ScriptContingencyList extends AbstractContingencyList {
     }
 
     public ScriptContingencyList(String script) {
-        super(new ContingencyListMetadataImpl(null, ContingencyListType.SCRIPT, null));
-        this.script = script;
+        this(null, null, script);
     }
 
     @Override
