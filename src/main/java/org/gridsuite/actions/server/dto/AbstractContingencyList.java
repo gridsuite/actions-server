@@ -10,6 +10,10 @@ import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.gridsuite.actions.server.utils.ContingencyListType;
+
+import java.util.Date;
+import java.util.UUID;
 
 /**
  * @author Etienne Homer <etienne.homer at rte-france.com>
@@ -23,5 +27,17 @@ public abstract class AbstractContingencyList implements PersistentContingencyLi
 
     @Override public ContingencyListMetadata getMetadata() {
         return metadata;
+    }
+
+    public UUID getId() {
+        return metadata.getId();
+    }
+
+    public Date getModificationDate() {
+        return metadata.getModificationDate();
+    }
+
+    public ContingencyListType getType() {
+        return metadata.getType();
     }
 }

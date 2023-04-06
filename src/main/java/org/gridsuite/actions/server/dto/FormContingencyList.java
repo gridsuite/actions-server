@@ -73,7 +73,7 @@ public class FormContingencyList extends AbstractContingencyList {
             case BUSBAR_SECTION:
             case DANGLING_LINE:
                 contingencyList = new InjectionCriterionContingencyList(
-                        this.getMetadata().getId().toString(),
+                        this.getId().toString(),
                         this.getEquipmentType(),
                         //TODO: replace with "new SingleCountryCriterion(this.getCountries1().stream().map(c -> Country.valueOf(c)).collect(Collectors.toList()))" after new powsybl version
                         this.getCountries1().isEmpty() ? null : new SingleCountryCriterion(this.getCountries1().stream().map(c -> Country.valueOf(c)).collect(Collectors.toList())),
@@ -84,7 +84,7 @@ public class FormContingencyList extends AbstractContingencyList {
                 break;
             case HVDC_LINE:
                 contingencyList = new HvdcLineCriterionContingencyList(
-                        this.getMetadata().getId().toString(),
+                        this.getId().toString(),
                         new TwoCountriesCriterion(
                                 this.getCountries1().stream().map(c -> Country.valueOf(c)).collect(Collectors.toList()),
                                 this.getCountries2().stream().map(c -> Country.valueOf(c)).collect(Collectors.toList())
@@ -99,7 +99,7 @@ public class FormContingencyList extends AbstractContingencyList {
                 break;
             case LINE:
                 contingencyList = new LineCriterionContingencyList(
-                        this.getMetadata().getId().toString(),
+                        this.getId().toString(),
                         new TwoCountriesCriterion(
                                 this.getCountries1().stream().map(c -> Country.valueOf(c)).collect(Collectors.toList()),
                                 this.getCountries2().stream().map(c -> Country.valueOf(c)).collect(Collectors.toList())
@@ -111,7 +111,7 @@ public class FormContingencyList extends AbstractContingencyList {
                 break;
             case TWO_WINDINGS_TRANSFORMER:
                 contingencyList = new TwoWindingsTransformerCriterionContingencyList(
-                        this.getMetadata().getId().toString(),
+                        this.getId().toString(),
                         //TODO: replace with "new SingleCountryCriterion(this.getCountries1().stream().map(c -> Country.valueOf(c)).collect(Collectors.toList()))" after new powsybl version
                         this.getCountries1().isEmpty() ? null : new SingleCountryCriterion(this.getCountries1().stream().map(c -> Country.valueOf(c)).collect(Collectors.toList())),
                         new TwoNominalVoltageCriterion(

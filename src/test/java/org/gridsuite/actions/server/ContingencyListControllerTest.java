@@ -206,7 +206,7 @@ public class ContingencyListControllerTest {
                 .contentType(APPLICATION_JSON))
                 .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
 
-        UUID ticId = objectMapper.readValue(res, FormContingencyList.class).getMetadata().getId();
+        UUID ticId = objectMapper.readValue(res, FormContingencyList.class).getId();
 
         // check first form insert
         mvc.perform(get("/" + VERSION + "/form-contingency-lists")
@@ -395,7 +395,7 @@ public class ContingencyListControllerTest {
         FormContingencyList list = objectMapper.readValue(res, FormContingencyList.class);
         FormContingencyList original = objectMapper.readValue(form, FormContingencyList.class);
         compareFormContingencyList(original, list);
-        return list.getMetadata().getId();
+        return list.getId();
     }
 
     private UUID addNewScriptContingencyList(String script) throws Exception {
@@ -406,7 +406,7 @@ public class ContingencyListControllerTest {
 
         ScriptContingencyList list = objectMapper.readValue(res, ScriptContingencyList.class);
         compareScriptList(objectMapper.readValue(script, ScriptContingencyList.class), list);
-        return list.getMetadata().getId();
+        return list.getId();
     }
 
     private UUID addNewScriptContingencyListWithId(String script, UUID id) throws Exception {
@@ -417,7 +417,7 @@ public class ContingencyListControllerTest {
 
         ScriptContingencyList list = objectMapper.readValue(res, ScriptContingencyList.class);
         compareScriptList(objectMapper.readValue(script, ScriptContingencyList.class), list);
-        return list.getMetadata().getId();
+        return list.getId();
     }
 
     @Test
@@ -800,7 +800,7 @@ public class ContingencyListControllerTest {
                         .content(formContingencyList)
                         .contentType(APPLICATION_JSON))
                 .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
-        UUID clId = objectMapper.readValue(res, FormContingencyList.class).getMetadata().getId();
+        UUID clId = objectMapper.readValue(res, FormContingencyList.class).getId();
         // retrieve it, no numeric filters created (because of null values)
         String noNominalFilter1Response = "{\"equipmentType\":\"LINE\",\"nominalVoltage1\":null,\"nominalVoltage2\":null,\"countries1\":[\"BE\",\"FR\"],\"countries2\":[], \"metadata\":{\"type\":\"FORM\"}}";
         mvc.perform(get("/" + VERSION + "/form-contingency-lists/" + clId)
@@ -833,7 +833,7 @@ public class ContingencyListControllerTest {
                         .content(formContingencyList)
                         .contentType(APPLICATION_JSON))
                 .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
-        UUID clId = objectMapper.readValue(res, FormContingencyList.class).getMetadata().getId();
+        UUID clId = objectMapper.readValue(res, FormContingencyList.class).getId();
         // retrieve it, no numeric filters created (because of null values)
         String noNominalFilter1Response = "{\"equipmentType\":\"LINE\",\"nominalVoltage1\":null,\"nominalVoltage2\":null,\"countries1\":[\"BE\",\"FR\"],\"countries2\":[], \"metadata\":{\"type\":\"FORM\"}}";
         mvc.perform(get("/" + VERSION + "/form-contingency-lists/" + clId)
@@ -903,7 +903,7 @@ public class ContingencyListControllerTest {
         assertEquals(id, message.getHeaders().get(NotificationService.HEADER_ELEMENT_UUID));
         assertEquals(userId, message.getHeaders().get(NotificationService.HEADER_MODIFIED_BY));
 
-        UUID newId = objectMapper.readValue(res, ScriptContingencyList.class).getMetadata().getId();
+        UUID newId = objectMapper.readValue(res, ScriptContingencyList.class).getId();
 
         // check form list tic not found
         mvc.perform(get("/" + VERSION + "/form-contingency-lists/" + id)
@@ -934,7 +934,7 @@ public class ContingencyListControllerTest {
         // new script from form
         String res = mvc.perform(post("/" + VERSION + "/form-contingency-lists/" + firstUUID + "/new-script"))
                 .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
-        UUID newId = objectMapper.readValue(res, ScriptContingencyList.class).getMetadata().getId();
+        UUID newId = objectMapper.readValue(res, ScriptContingencyList.class).getId();
 
         // check script newId is found
         mvc.perform(get("/" + VERSION + "/script-contingency-lists/" + newId)
@@ -1033,7 +1033,7 @@ public class ContingencyListControllerTest {
                         .contentType(APPLICATION_JSON))
                 .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
 
-        UUID contingencyListId = objectMapper.readValue(res, IdBasedContingencyList.class).getMetadata().getId();
+        UUID contingencyListId = objectMapper.readValue(res, IdBasedContingencyList.class).getId();
         IdBasedContingencyList resultList = createIdBasedContingencyList(contingencyListId, modificationDate, "NHV1_NHV2_1");
 
         res = mvc.perform(get("/" + VERSION + "/identifier-contingency-lists/" + contingencyListId)
@@ -1070,7 +1070,7 @@ public class ContingencyListControllerTest {
                         .contentType(APPLICATION_JSON))
                 .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
 
-        UUID id = objectMapper.readValue(res, IdBasedContingencyList.class).getMetadata().getId();
+        UUID id = objectMapper.readValue(res, IdBasedContingencyList.class).getId();
 
         res = mvc.perform(post("/" + VERSION + "/identifier-contingency-lists?duplicateFrom=" + id + "&id=" + UUID.randomUUID()))
                 .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
@@ -1091,7 +1091,7 @@ public class ContingencyListControllerTest {
                         .contentType(APPLICATION_JSON))
                 .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
 
-        UUID contingencyListId = objectMapper.readValue(res, IdBasedContingencyList.class).getMetadata().getId();
+        UUID contingencyListId = objectMapper.readValue(res, IdBasedContingencyList.class).getId();
 
         mvc.perform(get("/" + VERSION + "/contingency-lists/" + contingencyListId + "/export?networkUuid=" + NETWORK_UUID + (VARIANT_ID_1 != null ? "&variantId=" + VARIANT_ID_1 : ""))
                         .contentType(APPLICATION_JSON))
@@ -1113,11 +1113,11 @@ public class ContingencyListControllerTest {
                         .contentType(APPLICATION_JSON))
                 .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
 
-        UUID contingencyListId = objectMapper.readValue(res, IdBasedContingencyList.class).getMetadata().getId();
+        UUID contingencyListId = objectMapper.readValue(res, IdBasedContingencyList.class).getId();
 
         IdBasedContingencyList newList = createIdBasedContingencyList(contingencyListId, modificationDate, "LINE2");
 
-        mvc.perform(put("/" + VERSION + "/identifier-contingency-lists/" + newList.getMetadata().getId())
+        mvc.perform(put("/" + VERSION + "/identifier-contingency-lists/" + newList.getId())
                         .content(objectMapper.writeValueAsString(newList))
                         .contentType(APPLICATION_JSON)
                         .header(USER_ID_HEADER, USER_ID_HEADER))
@@ -1127,7 +1127,7 @@ public class ContingencyListControllerTest {
         assertEquals(contingencyListId, message.getHeaders().get(NotificationService.HEADER_ELEMENT_UUID));
         assertEquals(USER_ID_HEADER, message.getHeaders().get(NotificationService.HEADER_MODIFIED_BY));
 
-        contingencyListId = objectMapper.readValue(res, IdBasedContingencyList.class).getMetadata().getId();
+        contingencyListId = objectMapper.readValue(res, IdBasedContingencyList.class).getId();
         IdBasedContingencyList resultList = createIdBasedContingencyList(contingencyListId, modificationDate, "LINE2");
         res = mvc.perform(get("/" + VERSION + "/identifier-contingency-lists/" + contingencyListId)
                         .contentType(APPLICATION_JSON))

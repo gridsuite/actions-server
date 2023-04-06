@@ -39,6 +39,6 @@ public class ScriptContingencyList extends AbstractContingencyList {
         ImportCustomizer customizer = new ImportCustomizer();
         customizer.addImports("org.gridsuite.actions.server.utils.FiltersUtils");
         customizer.addStaticStars("org.gridsuite.actions.server.utils.FiltersUtils");
-        return new GroovyContingencyListLoader().load(this.getMetadata().getId().toString(), new ByteArrayInputStream(script.getBytes()));
+        return new GroovyContingencyListLoader().load(this.getId().toString(), new ByteArrayInputStream(script.getBytes()));
     }
 }
