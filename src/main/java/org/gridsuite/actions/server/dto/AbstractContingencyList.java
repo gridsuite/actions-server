@@ -6,6 +6,8 @@
  */
 package org.gridsuite.actions.server.dto;
 
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -14,13 +16,10 @@ import lombok.NoArgsConstructor;
  */
 @Getter
 @NoArgsConstructor
+@AllArgsConstructor(access = AccessLevel.PROTECTED)
 public abstract class AbstractContingencyList implements PersistentContingencyList {
 
     private ContingencyListMetadataImpl metadata;
-
-    protected AbstractContingencyList(ContingencyListMetadataImpl metadata) {
-        this.metadata = metadata;
-    }
 
     @Override public ContingencyListMetadata getMetadata() {
         return metadata;

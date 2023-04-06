@@ -54,10 +54,10 @@ public class ContingencyListController {
     }
 
     @GetMapping(value = "/contingency-lists", produces = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(summary = "Get all contingency lists")
-    @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "All contingency lists")})
-    public ResponseEntity<List<ContingencyListMetadataImpl>> getContingencyLists() {
-        return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(service.getContingencyLists());
+    @Operation(summary = "Get all contingency lists metadata")
+    @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "All contingency lists metadata")})
+    public ResponseEntity<List<ContingencyListMetadata>> getContingencyListsMetadata() {
+        return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(service.getContingencyListsMetadata());
     }
 
     @GetMapping(value = "/script-contingency-lists/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -251,7 +251,7 @@ public class ContingencyListController {
     @Operation(summary = "Get contingency lists metadata")
     @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "contingency lists metadata"),
         @ApiResponse(responseCode = "404", description = "The contingency list does not exists")})
-    public ResponseEntity<List<ContingencyListMetadataImpl>> getContingencyListsMetadata(@RequestParam("ids") List<UUID> ids) {
-        return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(service.getContingencyLists(ids));
+    public ResponseEntity<List<ContingencyListMetadata>> getContingencyListsMetadata(@RequestParam("ids") List<UUID> ids) {
+        return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(service.getContingencyListsMetadata(ids));
     }
 }

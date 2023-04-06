@@ -85,7 +85,7 @@ public class ContingencyListService {
         return scriptContingencyListRepository.findAll().stream().map(ContingencyListService::fromScriptContingencyListEntity).collect(Collectors.toList());
     }
 
-    List<ContingencyListMetadataImpl> getContingencyLists() {
+    List<ContingencyListMetadata> getContingencyListsMetadata() {
         return Stream.of(
             scriptContingencyListRepository.findAll().stream().map(scriptContingencyListEntity ->
                 new ContingencyListMetadataImpl(scriptContingencyListEntity.getId(), ContingencyListType.SCRIPT, scriptContingencyListEntity.getModificationDate())),
@@ -96,7 +96,7 @@ public class ContingencyListService {
         ).flatMap(Function.identity()).collect(Collectors.toList());
     }
 
-    List<ContingencyListMetadataImpl> getContingencyLists(List<UUID> ids) {
+    List<ContingencyListMetadata> getContingencyListsMetadata(List<UUID> ids) {
         return Stream.of(
             scriptContingencyListRepository.findAllById(ids).stream().map(scriptContingencyListEntity ->
                 new ContingencyListMetadataImpl(scriptContingencyListEntity.getId(), ContingencyListType.SCRIPT, scriptContingencyListEntity.getModificationDate())),
