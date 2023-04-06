@@ -240,7 +240,7 @@ public class ContingencyListService {
         Optional<FormContingencyListEntity> formContingencyList = self.doGetFormContingencyListWithPreFetchedCountries(id);
         return formContingencyList.map(entity -> {
             String script = generateGroovyScriptFromForm(fromFormContingencyListEntity(entity));
-            ScriptContingencyListEntity scriptEntity = new ScriptContingencyListEntity(new ScriptContingencyList(null, null, script));
+            ScriptContingencyListEntity scriptEntity = new ScriptContingencyListEntity(new ScriptContingencyList(script));
             scriptEntity.setId(newId == null ? UUID.randomUUID() : newId);
             return fromScriptContingencyListEntity(scriptContingencyListRepository.save(scriptEntity));
         }).orElseThrow(() -> {

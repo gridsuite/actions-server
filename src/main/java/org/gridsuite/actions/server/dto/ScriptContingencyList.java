@@ -34,6 +34,11 @@ public class ScriptContingencyList extends AbstractContingencyList {
         this.script = script;
     }
 
+    public ScriptContingencyList(String script) {
+        super(new ContingencyListMetadataImpl(null, ContingencyListType.SCRIPT, null));
+        this.script = script;
+    }
+
     @Override
     public ContingencyList toPowsyblContingencyList() {
         ImportCustomizer customizer = new ImportCustomizer();
