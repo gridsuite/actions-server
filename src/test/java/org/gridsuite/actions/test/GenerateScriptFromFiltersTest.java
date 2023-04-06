@@ -35,7 +35,7 @@ public class GenerateScriptFromFiltersTest {
                 "     ) {\n" +
                 "        contingency(equipment.id) { equipments equipment.id }\n" +
                 "  }\n" +
-                "}\n", formToScript.generateGroovyScriptFromForm(new FormContingencyList(null, null,
+                "}\n", formToScript.generateGroovyScriptFromForm(new FormContingencyList(
             "GENERATOR", new NumericalFilter(NumericalFilterOperator.EQUALITY, 90., null), null,
             countries, new HashSet<>())));
 
@@ -45,13 +45,12 @@ public class GenerateScriptFromFiltersTest {
             "        contingency(equipment.id) { equipments equipment.id }\n" +
             "  }\n" +
             "}\n", formToScript.generateGroovyScriptFromForm(new FormContingencyList(
-            null, null,
             "DANGLING_LINE", new NumericalFilter(NumericalFilterOperator.EQUALITY, 225., null), null,
                 new HashSet<>(), new HashSet<>())));
 
         assertEquals("for (equipment in network.staticVarCompensators) {\n" +
             "        contingency(equipment.id) { equipments equipment.id }\n" +
-            "}\n", formToScript.generateGroovyScriptFromForm(new FormContingencyList(null, null,
+            "}\n", formToScript.generateGroovyScriptFromForm(new FormContingencyList(
             "STATIC_VAR_COMPENSATOR", null, null,
                 new HashSet<>(), new HashSet<>())));
 
@@ -60,7 +59,7 @@ public class GenerateScriptFromFiltersTest {
             "     ) {\n" +
             "        contingency(equipment.id) { equipments equipment.id }\n" +
             "  }\n" +
-            "}\n", formToScript.generateGroovyScriptFromForm(new FormContingencyList(null, null,
+            "}\n", formToScript.generateGroovyScriptFromForm(new FormContingencyList(
             "SHUNT_COMPENSATOR", new NumericalFilter(NumericalFilterOperator.LESS_THAN, 90., null), null,
                 new HashSet<>(), new HashSet<>())));
 
@@ -69,7 +68,7 @@ public class GenerateScriptFromFiltersTest {
                 "     ) {\n" +
                 "        contingency(equipment.id) { equipments equipment.id }\n" +
                 "  }\n" +
-                "}\n", formToScript.generateGroovyScriptFromForm(new FormContingencyList(null, null,
+                "}\n", formToScript.generateGroovyScriptFromForm(new FormContingencyList(
                 "SHUNT_COMPENSATOR", new NumericalFilter(NumericalFilterOperator.GREATER_THAN, 90., null), null,
                     new HashSet<>(), new HashSet<>())));
 
@@ -79,7 +78,7 @@ public class GenerateScriptFromFiltersTest {
             "     ) {\n" +
             "        contingency(equipment.id) { equipments equipment.id }\n" +
             "  }\n" +
-            "}\n", formToScript.generateGroovyScriptFromForm(new FormContingencyList(null, null,
+            "}\n", formToScript.generateGroovyScriptFromForm(new FormContingencyList(
             "BUSBAR_SECTION", new NumericalFilter(NumericalFilterOperator.GREATER_OR_EQUAL, 63., null), null,
             countries, new HashSet<>())));
     }
@@ -99,7 +98,7 @@ public class GenerateScriptFromFiltersTest {
                 "       ) {\n" +
                 "           contingency(equipment.id) { equipments equipment.id }\n" +
                 "  }\n" +
-                "}\n", formToScript.generateGroovyScriptFromForm(new FormContingencyList(null, null,
+                "}\n", formToScript.generateGroovyScriptFromForm(new FormContingencyList(
                 "HVDC_LINE", null, null,
                 countries, new HashSet<>())));
 
@@ -109,7 +108,7 @@ public class GenerateScriptFromFiltersTest {
                 "       ) {\n" +
                 "           contingency(equipment.id) { equipments equipment.id }\n" +
                 "  }\n" +
-                "}\n", formToScript.generateGroovyScriptFromForm(new FormContingencyList(null, null,
+                "}\n", formToScript.generateGroovyScriptFromForm(new FormContingencyList(
                 "HVDC_LINE", new NumericalFilter(NumericalFilterOperator.LESS_OR_EQUAL, 225., null), null,
                 countries, new HashSet<>())));
 
@@ -119,7 +118,7 @@ public class GenerateScriptFromFiltersTest {
                 "       ) {\n" +
                 "           contingency(equipment.id) { equipments equipment.id }\n" +
                 "  }\n" +
-                "}\n", formToScript.generateGroovyScriptFromForm(new FormContingencyList(null, null,
+                "}\n", formToScript.generateGroovyScriptFromForm(new FormContingencyList(
                 "HVDC_LINE", new NumericalFilter(NumericalFilterOperator.LESS_OR_EQUAL, 225., null), null,
                 countries, countries2)));
 
@@ -129,7 +128,7 @@ public class GenerateScriptFromFiltersTest {
                 "       ) {\n" +
                 "           contingency(equipment.id) { equipments equipment.id }\n" +
                 "  }\n" +
-                "}\n", formToScript.generateGroovyScriptFromForm(new FormContingencyList(null, null,
+                "}\n", formToScript.generateGroovyScriptFromForm(new FormContingencyList(
                 "HVDC_LINE", new NumericalFilter(NumericalFilterOperator.LESS_OR_EQUAL, 225., null), null,
                     new HashSet<>(), countries2)));
     }
@@ -151,7 +150,7 @@ public class GenerateScriptFromFiltersTest {
                 "     ) {\n" +
                 "           contingency(equipment.id) { equipments equipment.id }\n" +
                 "  }\n" +
-                "}\n\n\n", formToScript.generateGroovyScriptFromForm(new FormContingencyList(null, null,
+                "}\n\n\n", formToScript.generateGroovyScriptFromForm(new FormContingencyList(
                 "LINE", new NumericalFilter(NumericalFilterOperator.EQUALITY, 225., null), null,
                     new HashSet<>(), new HashSet<>())));
 
@@ -161,7 +160,7 @@ public class GenerateScriptFromFiltersTest {
                 "     ) {\n" +
                 "           contingency(equipment.id) { equipments equipment.id }\n" +
                 "  }\n" +
-                "}\n\n\n", formToScript.generateGroovyScriptFromForm(new FormContingencyList(null, null,
+                "}\n\n\n", formToScript.generateGroovyScriptFromForm(new FormContingencyList(
                 "LINE", null, null,
                 countries, countries2)));
 
@@ -171,7 +170,7 @@ public class GenerateScriptFromFiltersTest {
                 "     ) {\n" +
                 "           contingency(equipment.id) { equipments equipment.id }\n" +
                 "  }\n" +
-                "}\n\n\n", formToScript.generateGroovyScriptFromForm(new FormContingencyList(null, null,
+                "}\n\n\n", formToScript.generateGroovyScriptFromForm(new FormContingencyList(
                 "LINE", null, null,
                 countries, new HashSet<>())));
 
@@ -181,7 +180,7 @@ public class GenerateScriptFromFiltersTest {
                 "     ) {\n" +
                 "           contingency(equipment.id) { equipments equipment.id }\n" +
                 "  }\n" +
-                "}\n\n\n", formToScript.generateGroovyScriptFromForm(new FormContingencyList(null, null,
+                "}\n\n\n", formToScript.generateGroovyScriptFromForm(new FormContingencyList(
                 "LINE", null, null,
                     new HashSet<>(), countries2)));
     }
@@ -201,7 +200,7 @@ public class GenerateScriptFromFiltersTest {
         assertEquals("for (equipment in network.twoWindingsTransformers) {\n" +
                 "           contingency(equipment.id) { equipments equipment.id }\n" +
                 "}\n\n\n", formToScript.generateGroovyScriptFromForm(
-                    new FormContingencyList(null, null,
+                    new FormContingencyList(
                         "TWO_WINDINGS_TRANSFORMER", null, null,
                         new HashSet<>(), new HashSet<>()
                 )));
@@ -215,7 +214,7 @@ public class GenerateScriptFromFiltersTest {
                 "           contingency(equipment.id) { equipments equipment.id }\n" +
                 "  }\n" +
                 "}\n\n\n", formToScript.generateGroovyScriptFromForm(
-                    new FormContingencyList(null, null,
+                    new FormContingencyList(
                         "TWO_WINDINGS_TRANSFORMER", ge225, null,
                         countries, new HashSet<>()
                 )));
@@ -230,7 +229,7 @@ public class GenerateScriptFromFiltersTest {
                 "           contingency(equipment.id) { equipments equipment.id }\n" +
                 "  }\n" +
                 "}\n\n\n", formToScript.generateGroovyScriptFromForm(
-                    new FormContingencyList(null, null,
+                    new FormContingencyList(
                         "TWO_WINDINGS_TRANSFORMER", null, ge225,
                         countries, new HashSet<>()
                 )));
@@ -245,7 +244,7 @@ public class GenerateScriptFromFiltersTest {
                 "           contingency(equipment.id) { equipments equipment.id }\n" +
                 "  }\n" +
                 "}\n\n\n", formToScript.generateGroovyScriptFromForm(
-                    new FormContingencyList(null, null,
+                    new FormContingencyList(
                         "TWO_WINDINGS_TRANSFORMER", range225400, null,
                         countries, new HashSet<>()
                 )));
@@ -260,7 +259,7 @@ public class GenerateScriptFromFiltersTest {
                 "           contingency(equipment.id) { equipments equipment.id }\n" +
                 "  }\n" +
                 "}\n\n\n", formToScript.generateGroovyScriptFromForm(
-                    new FormContingencyList(null, null,
+                    new FormContingencyList(
                         "TWO_WINDINGS_TRANSFORMER", null, range225400,
                         countries, new HashSet<>()
                 )));
@@ -275,7 +274,7 @@ public class GenerateScriptFromFiltersTest {
                 "           contingency(equipment.id) { equipments equipment.id }\n" +
                 "  }\n" +
                 "}\n\n\n", formToScript.generateGroovyScriptFromForm(
-                    new FormContingencyList(null, null,
+                    new FormContingencyList(
                         "TWO_WINDINGS_TRANSFORMER", lt400, ge225,
                         countries, new HashSet<>()
                 )));
@@ -290,7 +289,7 @@ public class GenerateScriptFromFiltersTest {
                 "           contingency(equipment.id) { equipments equipment.id }\n" +
                 "  }\n" +
                 "}\n\n\n", formToScript.generateGroovyScriptFromForm(
-                    new FormContingencyList(null, null,
+                    new FormContingencyList(
                         "TWO_WINDINGS_TRANSFORMER", ge225, lt400,
                         countries, new HashSet<>()
                 )));
@@ -305,7 +304,7 @@ public class GenerateScriptFromFiltersTest {
                 "           contingency(equipment.id) { equipments equipment.id }\n" +
                 "  }\n" +
                 "}\n\n\n", formToScript.generateGroovyScriptFromForm(
-                    new FormContingencyList(null, null,
+                    new FormContingencyList(
                         "TWO_WINDINGS_TRANSFORMER", lt400, range225400,
                         countries, new HashSet<>()
                 )));
@@ -320,7 +319,7 @@ public class GenerateScriptFromFiltersTest {
                 "           contingency(equipment.id) { equipments equipment.id }\n" +
                 "  }\n" +
                 "}\n\n\n", formToScript.generateGroovyScriptFromForm(
-                    new FormContingencyList(null, null,
+                    new FormContingencyList(
                         "TWO_WINDINGS_TRANSFORMER", range225400, lt400,
                         countries, new HashSet<>()
                 )));
@@ -335,7 +334,7 @@ public class GenerateScriptFromFiltersTest {
                 "           contingency(equipment.id) { equipments equipment.id }\n" +
                 "  }\n" +
                 "}\n\n\n", formToScript.generateGroovyScriptFromForm(
-                    new FormContingencyList(null, null,
+                    new FormContingencyList(
                         "TWO_WINDINGS_TRANSFORMER", range225400, range2063,
                         countries, new HashSet<>()
                 )));

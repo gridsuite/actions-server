@@ -63,6 +63,19 @@ public class FormContingencyList extends AbstractContingencyList {
         this.countries2 =  countries2;
     }
 
+    public FormContingencyList(String equipmentType,
+                               NumericalFilter nominalVoltage1,
+                               NumericalFilter nominalVoltage2,
+                               Set<String> countries1,
+                               Set<String> countries2) {
+        super(new ContingencyListMetadataImpl(null, ContingencyListType.FORM, null));
+        this.equipmentType =  equipmentType;
+        this.nominalVoltage1 =  nominalVoltage1;
+        this.nominalVoltage2 =  nominalVoltage2;
+        this.countries1 =  countries1;
+        this.countries2 =  countries2;
+    }
+
     @Override
     public ContingencyList toPowsyblContingencyList() {
         AbstractEquipmentCriterionContingencyList contingencyList;
