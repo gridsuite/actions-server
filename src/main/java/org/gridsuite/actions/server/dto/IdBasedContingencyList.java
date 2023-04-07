@@ -6,36 +6,34 @@
  */
 package org.gridsuite.actions.server.dto;
 
+import com.powsybl.contingency.contingency.list.ContingencyList;
 import com.powsybl.contingency.contingency.list.IdentifierContingencyList;
 import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 import org.gridsuite.actions.server.utils.ContingencyListType;
 
+import java.util.Date;
 import java.util.UUID;
 
 /**
  * @author Etienne Homer <etienne.homer@rte-france.com>
  */
 @Getter
-@Setter
-@AllArgsConstructor
 @NoArgsConstructor
 @Schema(description = "Id based contingency list")
-
-public class IdBasedContingencyList implements ContingencyList {
-
-    @Schema(description = "List id")
-    private UUID id;
+public class IdBasedContingencyList extends AbstractContingencyList {
 
     @Schema(description = "Identifier list")
     private IdentifierContingencyList identifierContingencyList;
 
-    @Schema(description = "Type")
+    public IdBasedContingencyList(UUID uuid, Date date, IdentifierContingencyList identifierContingencyList) {
+        super(new ContingencyListMetadataImpl(uuid, ContingencyListType.IDENTIFIERS, date));
+        this.identifierContingencyList = identifierContingencyList;
+    }
+
     @Override
-    public ContingencyListType getType() {
-        return ContingencyListType.IDENTIFIERS;
+    public ContingencyList toPowsyblContingencyList() {
+        return identifierContingencyList;
     }
 }

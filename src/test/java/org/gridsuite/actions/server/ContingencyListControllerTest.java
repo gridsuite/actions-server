@@ -24,10 +24,7 @@ import com.powsybl.iidm.network.test.SvcTestCaseFactory;
 import com.powsybl.network.store.client.NetworkStoreService;
 import com.powsybl.network.store.client.PreloadingStrategy;
 import com.powsybl.network.store.iidm.impl.NetworkFactoryImpl;
-import org.gridsuite.actions.server.dto.ContingencyListAttributes;
-import org.gridsuite.actions.server.dto.FormContingencyList;
-import org.gridsuite.actions.server.dto.IdBasedContingencyList;
-import org.gridsuite.actions.server.dto.ScriptContingencyList;
+import org.gridsuite.actions.server.dto.*;
 import org.gridsuite.actions.server.entities.FormContingencyListEntity;
 import org.gridsuite.actions.server.entities.NumericalFilterEntity;
 import org.gridsuite.actions.server.entities.ScriptContingencyListEntity;
@@ -37,6 +34,7 @@ import org.gridsuite.actions.server.repositories.ScriptContingencyListRepository
 import org.gridsuite.actions.server.utils.ContingencyListType;
 import org.gridsuite.actions.server.utils.EquipmentType;
 import org.gridsuite.actions.server.utils.NumericalFilterOperator;
+import org.gridsuite.actions.utils.MatcherJson;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -215,7 +213,7 @@ public class ContingencyListControllerTest {
                         .contentType(APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-                .andExpect(content().json("[{\"equipmentType\":\"GENERATOR\",\"nominalVoltage1\":{\"type\":\"GREATER_THAN\",\"value1\":100.0,\"value2\":null},\"nominalVoltage2\":null,\"countries1\":[\"BE\",\"FR\"],\"countries2\":[],\"type\":\"FORM\"}]", false));
+                .andExpect(content().json("[{\"equipmentType\":\"GENERATOR\",\"nominalVoltage1\":{\"type\":\"GREATER_THAN\",\"value1\":100.0,\"value2\":null},\"nominalVoltage2\":null,\"countries1\":[\"BE\",\"FR\"],\"countries2\":[], \"metadata\":{\"type\":\"FORM\"}}]", false));
 
         mvc.perform(post("/" + VERSION + "/form-contingency-lists/")
                 .content(formContingencyList2)
@@ -245,26 +243,26 @@ public class ContingencyListControllerTest {
                 .contentType(APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-                .andExpect(content().json("[{\"script\":\"contingency('NHV1_NHV2_1') {     equipments 'NHV1_NHV2_1'}\",\"type\":\"SCRIPT\"}]", false));
+                .andExpect(content().json("[{\"script\":\"contingency('NHV1_NHV2_1') {     equipments 'NHV1_NHV2_1'}\", \"metadata\":{\"type\":\"SCRIPT\"}}]", false));
 
         mvc.perform(get("/" + VERSION + "/form-contingency-lists")
                 .contentType(APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-                .andExpect(content().json("[{\"equipmentType\":\"GENERATOR\",\"nominalVoltage1\":{\"type\":\"GREATER_THAN\",\"value1\":100.0,\"value2\":null},\"nominalVoltage2\":null,\"countries1\":[\"BE\",\"FR\"],\"countries2\":[],\"type\":\"FORM\"},{" +
-                        "\"equipmentType\":\"LINE\",\"nominalVoltage1\":{\"type\":\"LESS_OR_EQUAL\",\"value1\":225.0,\"value2\":null},\"nominalVoltage2\":null,\"countries1\":[\"IT\",\"FR\",\"NL\"],\"countries2\":[],\"type\":\"FORM\"}]", false));
+                .andExpect(content().json("[{\"equipmentType\":\"GENERATOR\",\"nominalVoltage1\":{\"type\":\"GREATER_THAN\",\"value1\":100.0,\"value2\":null},\"nominalVoltage2\":null,\"countries1\":[\"BE\",\"FR\"],\"countries2\":[], \"metadata\":{\"type\":\"FORM\"}},{" +
+                        "\"equipmentType\":\"LINE\",\"nominalVoltage1\":{\"type\":\"LESS_OR_EQUAL\",\"value1\":225.0,\"value2\":null},\"nominalVoltage2\":null,\"countries1\":[\"IT\",\"FR\",\"NL\"],\"countries2\":[], \"metadata\":{\"type\":\"FORM\"}}]", false));
 
         mvc.perform(get("/" + VERSION + "/script-contingency-lists/" + scriptId)
                 .contentType(APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-                .andExpect(content().json("{\"script\":\"contingency('NHV1_NHV2_1') {     equipments 'NHV1_NHV2_1'}\",\"type\":\"SCRIPT\"}", false));
+                .andExpect(content().json("{\"script\":\"contingency('NHV1_NHV2_1') {     equipments 'NHV1_NHV2_1'}\", \"metadata\":{\"type\":\"SCRIPT\"}}", false));
 
         mvc.perform(get("/" + VERSION + "/form-contingency-lists/" + ticId)
                 .contentType(APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-                .andExpect(content().json("{\"equipmentType\":\"GENERATOR\",\"nominalVoltage1\":{\"type\":\"GREATER_THAN\",\"value1\":100.0,\"value2\":null},\"nominalVoltage2\":null,\"countries1\":[\"BE\",\"FR\"],\"countries2\":[],\"type\":\"FORM\"}", false));
+                .andExpect(content().json("{\"equipmentType\":\"GENERATOR\",\"nominalVoltage1\":{\"type\":\"GREATER_THAN\",\"value1\":100.0,\"value2\":null},\"nominalVoltage2\":null,\"countries1\":[\"BE\",\"FR\"],\"countries2\":[], \"metadata\":{\"type\":\"FORM\"}}", false));
 
         // check not found
         mvc.perform(get("/" + VERSION + "/script-contingency-lists/" + notFoundId)
@@ -369,7 +367,7 @@ public class ContingencyListControllerTest {
         String userId = "userId";
         String list = genFormContingencyList(EquipmentType.LINE, 11., EQUALITY, Set.of());
         UUID id = addNewFormContingencyList(list);
-        ContingencyListAttributes attributes = getMetadata(id);
+        ContingencyListMetadataImpl attributes = getMetadata(id);
 
         assertEquals(id, attributes.getId());
         Date baseModificationDate = attributes.getModificationDate();
@@ -435,13 +433,13 @@ public class ContingencyListControllerTest {
         String lineForm5 = genFormContingencyList(EquipmentType.LINE, 100., GREATER_THAN, noCountries);
         String lineForm6 = genFormContingencyList(EquipmentType.LINE, -1., GREATER_THAN, france);
 
-        testExportContingencies(lineForm, " [{\"id\":\"NHV1_NHV2_2\",\"elements\":[{\"id\":\"NHV1_NHV2_2\",\"type\":\"BRANCH\"}]},{\"id\":\"NHV1_NHV2_1\",\"elements\":[{\"id\":\"NHV1_NHV2_1\",\"type\":\"BRANCH\"}]}]", NETWORK_UUID);
+        testExportContingencies(lineForm, " [{\"id\":\"NHV1_NHV2_2\",\"elements\":[{\"id\":\"NHV1_NHV2_2\",\"type\":\"LINE\"}]},{\"id\":\"NHV1_NHV2_1\",\"elements\":[{\"id\":\"NHV1_NHV2_1\",\"type\":\"LINE\"}]}]", NETWORK_UUID);
         testExportContingencies(lineForm1, " []", NETWORK_UUID);
-        testExportContingencies(lineForm2, " [{\"id\":\"NHV1_NHV2_2\",\"elements\":[{\"id\":\"NHV1_NHV2_2\",\"type\":\"BRANCH\"}]},{\"id\":\"NHV1_NHV2_1\",\"elements\":[{\"id\":\"NHV1_NHV2_1\",\"type\":\"BRANCH\"}]}]", NETWORK_UUID);
+        testExportContingencies(lineForm2, " [{\"id\":\"NHV1_NHV2_2\",\"elements\":[{\"id\":\"NHV1_NHV2_2\",\"type\":\"LINE\"}]},{\"id\":\"NHV1_NHV2_1\",\"elements\":[{\"id\":\"NHV1_NHV2_1\",\"type\":\"LINE\"}]}]", NETWORK_UUID);
         testExportContingencies(lineForm3, " []", NETWORK_UUID);
-        testExportContingencies(lineForm4, " [{\"id\":\"NHV1_NHV2_2\",\"elements\":[{\"id\":\"NHV1_NHV2_2\",\"type\":\"BRANCH\"}]},{\"id\":\"NHV1_NHV2_1\",\"elements\":[{\"id\":\"NHV1_NHV2_1\",\"type\":\"BRANCH\"}]}]", NETWORK_UUID);
-        testExportContingencies(lineForm5, " [{\"id\":\"NHV1_NHV2_2\",\"elements\":[{\"id\":\"NHV1_NHV2_2\",\"type\":\"BRANCH\"}]},{\"id\":\"NHV1_NHV2_1\",\"elements\":[{\"id\":\"NHV1_NHV2_1\",\"type\":\"BRANCH\"}]}]", NETWORK_UUID);
-        testExportContingencies(lineForm6, " [{\"id\":\"NHV1_NHV2_2\",\"elements\":[{\"id\":\"NHV1_NHV2_2\",\"type\":\"BRANCH\"}]},{\"id\":\"NHV1_NHV2_1\",\"elements\":[{\"id\":\"NHV1_NHV2_1\",\"type\":\"BRANCH\"}]}]", NETWORK_UUID);
+        testExportContingencies(lineForm4, " [{\"id\":\"NHV1_NHV2_2\",\"elements\":[{\"id\":\"NHV1_NHV2_2\",\"type\":\"LINE\"}]},{\"id\":\"NHV1_NHV2_1\",\"elements\":[{\"id\":\"NHV1_NHV2_1\",\"type\":\"LINE\"}]}]", NETWORK_UUID);
+        testExportContingencies(lineForm5, " [{\"id\":\"NHV1_NHV2_2\",\"elements\":[{\"id\":\"NHV1_NHV2_2\",\"type\":\"LINE\"}]},{\"id\":\"NHV1_NHV2_1\",\"elements\":[{\"id\":\"NHV1_NHV2_1\",\"type\":\"LINE\"}]}]", NETWORK_UUID);
+        testExportContingencies(lineForm6, " [{\"id\":\"NHV1_NHV2_2\",\"elements\":[{\"id\":\"NHV1_NHV2_2\",\"type\":\"LINE\"}]},{\"id\":\"NHV1_NHV2_1\",\"elements\":[{\"id\":\"NHV1_NHV2_1\",\"type\":\"LINE\"}]}]", NETWORK_UUID);
     }
 
     @Test
@@ -450,9 +448,9 @@ public class ContingencyListControllerTest {
         // with this network (EurostagTutorialExample1Factory::create), we have 2 FR substations and 2 2WT Transfos:
         // - NGEN_NHV1  term1: 24 kV term2: 380 kV
         // - NHV2_NLOAD term1: 380 kV term2: 150 kV
-        final String bothMatch = "[{\"id\":\"NGEN_NHV1\",\"elements\":[{\"id\":\"NGEN_NHV1\",\"type\":\"BRANCH\"}]},{\"id\":\"NHV2_NLOAD\",\"elements\":[{\"id\":\"NHV2_NLOAD\",\"type\":\"BRANCH\"}]}]";
-        final String matchLOAD = "[{\"id\":\"NHV2_NLOAD\",\"elements\":[{\"id\":\"NHV2_NLOAD\",\"type\":\"BRANCH\"}]}]";
-        final String matchGEN = "[{\"id\":\"NGEN_NHV1\",\"elements\":[{\"id\":\"NGEN_NHV1\",\"type\":\"BRANCH\"}]}]";
+        final String bothMatch = "[{\"id\":\"NGEN_NHV1\",\"elements\":[{\"id\":\"NGEN_NHV1\",\"type\":\"TWO_WINDINGS_TRANSFORMER\"}]},{\"id\":\"NHV2_NLOAD\",\"elements\":[{\"id\":\"NHV2_NLOAD\",\"type\":\"TWO_WINDINGS_TRANSFORMER\"}]}]";
+        final String matchLOAD = "[{\"id\":\"NHV2_NLOAD\",\"elements\":[{\"id\":\"NHV2_NLOAD\",\"type\":\"TWO_WINDINGS_TRANSFORMER\"}]}]";
+        final String matchGEN = "[{\"id\":\"NGEN_NHV1\",\"elements\":[{\"id\":\"NGEN_NHV1\",\"type\":\"TWO_WINDINGS_TRANSFORMER\"}]}]";
         final String noMatch = "[]";
 
         // single voltage filter
@@ -491,8 +489,8 @@ public class ContingencyListControllerTest {
     public void testExportContingencies2WTransfoWith2NumFilter() throws Exception {
         Set<String> noCountries = Collections.emptySet();
 
-        final String matchLOAD = "[{\"id\":\"NHV2_NLOAD\",\"elements\":[{\"id\":\"NHV2_NLOAD\",\"type\":\"BRANCH\"}]}]";
-        final String matchGEN = "[{\"id\":\"NGEN_NHV1\",\"elements\":[{\"id\":\"NGEN_NHV1\",\"type\":\"BRANCH\"}]}]";
+        final String matchLOAD = "[{\"id\":\"NHV2_NLOAD\",\"elements\":[{\"id\":\"NHV2_NLOAD\",\"type\":\"TWO_WINDINGS_TRANSFORMER\"}]}]";
+        final String matchGEN = "[{\"id\":\"NGEN_NHV1\",\"elements\":[{\"id\":\"NGEN_NHV1\",\"type\":\"TWO_WINDINGS_TRANSFORMER\"}]}]";
         final String noMatch = "[]";
 
         // 2 voltage filters
@@ -514,9 +512,9 @@ public class ContingencyListControllerTest {
         Set<String> italy = Collections.singleton("IT");
         Set<String> belgiumAndFrance = Set.of("FR", "BE");
 
-        final String bothMatch = "[{\"id\":\"NGEN_NHV1\",\"elements\":[{\"id\":\"NGEN_NHV1\",\"type\":\"BRANCH\"}]},{\"id\":\"NHV2_NLOAD\",\"elements\":[{\"id\":\"NHV2_NLOAD\",\"type\":\"BRANCH\"}]}]";
-        final String matchLOAD = "[{\"id\":\"NHV2_NLOAD\",\"elements\":[{\"id\":\"NHV2_NLOAD\",\"type\":\"BRANCH\"}]}]";
-        final String matchGEN = "[{\"id\":\"NGEN_NHV1\",\"elements\":[{\"id\":\"NGEN_NHV1\",\"type\":\"BRANCH\"}]}]";
+        final String bothMatch = "[{\"id\":\"NGEN_NHV1\",\"elements\":[{\"id\":\"NGEN_NHV1\",\"type\":\"TWO_WINDINGS_TRANSFORMER\"}]},{\"id\":\"NHV2_NLOAD\",\"elements\":[{\"id\":\"NHV2_NLOAD\",\"type\":\"TWO_WINDINGS_TRANSFORMER\"}]}]";
+        final String matchLOAD = "[{\"id\":\"NHV2_NLOAD\",\"elements\":[{\"id\":\"NHV2_NLOAD\",\"type\":\"TWO_WINDINGS_TRANSFORMER\"}]}]";
+        final String matchGEN = "[{\"id\":\"NGEN_NHV1\",\"elements\":[{\"id\":\"NGEN_NHV1\",\"type\":\"TWO_WINDINGS_TRANSFORMER\"}]}]";
         final String noMatch = "[]";
 
         String twtForm = genFormContingencyList(EquipmentType.TWO_WINDINGS_TRANSFORMER, -1., GREATER_THAN, france);
@@ -543,10 +541,14 @@ public class ContingencyListControllerTest {
         Set<String> france = Collections.singleton("FR");
         Set<String> belgium = Collections.singleton("BE");
 
-        String generatorForm1 = genFormContingencyList(EquipmentType.GENERATOR, -1., EQUALITY, noCountries);
+        String generatorForm1 = genFormContingencyList(EquipmentType.GENERATOR, -1., EQUALITY, france);
         String generatorForm4 = genFormContingencyList(EquipmentType.GENERATOR, 10., LESS_THAN, noCountries);
         String generatorForm5 = genFormContingencyList(EquipmentType.GENERATOR, -1., GREATER_THAN, france);
         String generatorForm6 = genFormContingencyList(EquipmentType.GENERATOR, -1., GREATER_THAN, belgium);
+        System.out.println("generatorForm1=>" + generatorForm1);
+        System.out.println("generatorForm4=>" + generatorForm4);
+        System.out.println("generatorForm5=>" + generatorForm5);
+        System.out.println("generatorForm6=>" + generatorForm6);
         testExportContingencies(generatorForm1, " [{\"id\":\"GEN\",\"elements\":[{\"id\":\"GEN\",\"type\":\"GENERATOR\"}]},{\"id\":\"GEN2\",\"elements\":[{\"id\":\"GEN2\",\"type\":\"GENERATOR\"}]}]", NETWORK_UUID);
 
         // test export on specific variant where generator 'GEN2' has been removed
@@ -731,15 +733,15 @@ public class ContingencyListControllerTest {
                 .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
                 .andExpect(content().json("[]"));
 
-        ContingencyListAttributes attributes = getMetadata(id);
+        ContingencyListMetadataImpl attributes = getMetadata(id);
         assertEquals(attributes.getId(), id);
     }
 
-    private ContingencyListAttributes getMetadata(UUID id) throws Exception {
+    private ContingencyListMetadataImpl getMetadata(UUID id) throws Exception {
         var res = mvc.perform(get("/" + VERSION + "/contingency-lists/metadata?ids=" + id))
                 .andExpect(status().isOk())
                 .andReturn().getResponse().getContentAsString();
-        List<ContingencyListAttributes> contingencyListAttributes = objectMapper.readValue(res, new TypeReference<>() {
+        List<ContingencyListMetadataImpl> contingencyListAttributes = objectMapper.readValue(res, new TypeReference<>() {
         });
         assertEquals(1, contingencyListAttributes.size());
         return contingencyListAttributes.get(0);
@@ -800,7 +802,7 @@ public class ContingencyListControllerTest {
                 .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
         UUID clId = objectMapper.readValue(res, FormContingencyList.class).getId();
         // retrieve it, no numeric filters created (because of null values)
-        String noNominalFilter1Response = "{\"equipmentType\":\"LINE\",\"nominalVoltage1\":null,\"nominalVoltage2\":null,\"countries1\":[\"BE\",\"FR\"],\"countries2\":[],\"type\":\"FORM\"}";
+        String noNominalFilter1Response = "{\"equipmentType\":\"LINE\",\"nominalVoltage1\":null,\"nominalVoltage2\":null,\"countries1\":[\"BE\",\"FR\"],\"countries2\":[], \"metadata\":{\"type\":\"FORM\"}}";
         mvc.perform(get("/" + VERSION + "/form-contingency-lists/" + clId)
                         .contentType(APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -833,7 +835,7 @@ public class ContingencyListControllerTest {
                 .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
         UUID clId = objectMapper.readValue(res, FormContingencyList.class).getId();
         // retrieve it, no numeric filters created (because of null values)
-        String noNominalFilter1Response = "{\"equipmentType\":\"LINE\",\"nominalVoltage1\":null,\"nominalVoltage2\":null,\"countries1\":[\"BE\",\"FR\"],\"countries2\":[],\"type\":\"FORM\"}";
+        String noNominalFilter1Response = "{\"equipmentType\":\"LINE\",\"nominalVoltage1\":null,\"nominalVoltage2\":null,\"countries1\":[\"BE\",\"FR\"],\"countries2\":[], \"metadata\":{\"type\":\"FORM\"}}";
         mvc.perform(get("/" + VERSION + "/form-contingency-lists/" + clId)
                         .contentType(APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -846,10 +848,10 @@ public class ContingencyListControllerTest {
     @Test
     public void contingencyListAttributesTest() {
         UUID contingencyListAttrId = UUID.randomUUID();
-        ContingencyListAttributes contingencyListAttributes = new ContingencyListAttributes(contingencyListAttrId, ContingencyListType.SCRIPT, null);
+        ContingencyListMetadataImpl contingencyListAttributes = new ContingencyListMetadataImpl(contingencyListAttrId, ContingencyListType.SCRIPT, null);
         assertEquals(contingencyListAttrId, contingencyListAttributes.getId());
         assertEquals(ContingencyListType.SCRIPT, contingencyListAttributes.getType());
-        ContingencyListAttributes contingencyListAttributes2 = new ContingencyListAttributes();
+        ContingencyListMetadataImpl contingencyListAttributes2 = new ContingencyListMetadataImpl();
         assertNull(contingencyListAttributes2.getId());
         assertNull(contingencyListAttributes2.getType());
     }
@@ -988,14 +990,43 @@ public class ContingencyListControllerTest {
                 .andExpect(status().isNotFound());
     }
 
-    public IdBasedContingencyList createIdBasedContingencyList(UUID listId, String... identifiers) {
+    public IdBasedContingencyList createIdBasedContingencyList(UUID listId, Date modificationDate, String... identifiers) {
         List< NetworkElementIdentifier > networkElementIdentifiers = Arrays.stream(identifiers).map(id -> new NetworkElementIdentifierList(List.of(new IdBasedNetworkElementIdentifier(id)))).collect(Collectors.toList());
-        return new IdBasedContingencyList(listId, new IdentifierContingencyList(listId != null ? listId.toString() : "defaultName", IdentifiableType.LINE, networkElementIdentifiers));
+        return new IdBasedContingencyList(listId, modificationDate, new IdentifierContingencyList(listId != null ? listId.toString() : "defaultName", IdentifiableType.LINE, networkElementIdentifiers));
+    }
+
+    public int getContingencyListsCount() throws Exception {
+        String res = mvc.perform(get("/" + VERSION + "/contingency-lists")
+                        .contentType(APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+                .andReturn().getResponse().getContentAsString();
+
+        List<IdBasedContingencyList> contingencyListAttributes = objectMapper.readValue(res, new TypeReference<>() {
+        });
+        return contingencyListAttributes.size();
+    }
+
+    private void matchContingencyListMetadata(ContingencyListMetadata metadata1, ContingencyListMetadata metadata2) {
+        assertEquals(metadata1.getId(), metadata2.getId());
+        assertEquals(metadata1.getType(), metadata2.getType());
+        assertTrue((metadata1.getModificationDate().getTime() - metadata2.getModificationDate().getTime()) < 2000);
+    }
+
+    private void matchIdBasedContingencyList(IdBasedContingencyList cl1, IdBasedContingencyList cl2) {
+        matchContingencyListMetadata(cl1.getMetadata(), cl2.getMetadata());
+        assertTrue(new MatcherJson<>(objectMapper, cl1.getIdentifierContingencyList()).matchesSafely(cl2.getIdentifierContingencyList()));
+    }
+
+    private void matchScriptContingencyList(ScriptContingencyList cl1, ScriptContingencyList cl2) {
+        matchContingencyListMetadata(cl1.getMetadata(), cl2.getMetadata());
+        assertTrue(cl1.getScript().contains(cl1.getScript()));
     }
 
     @Test
     public void createIdBasedContingencyList() throws Exception {
-        IdBasedContingencyList idBasedContingencyList = createIdBasedContingencyList(null, "NHV1_NHV2_1");
+        Date modificationDate = new Date();
+        IdBasedContingencyList idBasedContingencyList = createIdBasedContingencyList(null, modificationDate, "NHV1_NHV2_1");
 
         String res = mvc.perform(post("/" + VERSION + "/identifier-contingency-lists/")
                         .content(objectMapper.writeValueAsString(idBasedContingencyList))
@@ -1003,13 +1034,15 @@ public class ContingencyListControllerTest {
                 .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
 
         UUID contingencyListId = objectMapper.readValue(res, IdBasedContingencyList.class).getId();
-        IdBasedContingencyList resultList = createIdBasedContingencyList(contingencyListId, "NHV1_NHV2_1");
+        IdBasedContingencyList resultList = createIdBasedContingencyList(contingencyListId, modificationDate, "NHV1_NHV2_1");
 
-        mvc.perform(get("/" + VERSION + "/identifier-contingency-lists/" + contingencyListId)
+        res = mvc.perform(get("/" + VERSION + "/identifier-contingency-lists/" + contingencyListId)
                         .contentType(APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-                .andExpect(content().json(objectMapper.writeValueAsString(resultList), false));
+                .andReturn().getResponse().getContentAsString();
+
+        matchIdBasedContingencyList(objectMapper.readValue(res, IdBasedContingencyList.class), resultList);
 
         mvc.perform(post("/" + VERSION + "/identifier-contingency-lists/")
                         .content(objectMapper.writeValueAsString(idBasedContingencyList))
@@ -1017,13 +1050,21 @@ public class ContingencyListControllerTest {
                 .andExpect(status().isOk())
                 .andReturn().getResponse().getContentAsString();
 
+        ContingencyListMetadataImpl attributes = getMetadata(contingencyListId);
+        assertEquals(attributes.getId(), contingencyListId);
+
+        assertEquals(2, getContingencyListsCount());
+
         mvc.perform(delete("/" + VERSION + "/contingency-lists/" + contingencyListId))
                 .andExpect(status().isOk());
+
+        assertEquals(1, getContingencyListsCount());
     }
 
     @Test
     public void duplicateBasedContingencyList() throws Exception {
-        IdBasedContingencyList idBasedContingencyList = createIdBasedContingencyList(null, "id1");
+        Date modificationDate = new Date();
+        IdBasedContingencyList idBasedContingencyList = createIdBasedContingencyList(null, modificationDate, "id1");
         String res = mvc.perform(post("/" + VERSION + "/identifier-contingency-lists/")
                         .content(objectMapper.writeValueAsString(idBasedContingencyList))
                         .contentType(APPLICATION_JSON))
@@ -1042,7 +1083,8 @@ public class ContingencyListControllerTest {
 
     @Test
     public void exportIdBasedContingencyList() throws Exception {
-        IdBasedContingencyList idBasedContingencyList = createIdBasedContingencyList(null, "NHV1_NHV2_1");
+        Date modificationDate = new Date();
+        IdBasedContingencyList idBasedContingencyList = createIdBasedContingencyList(null, modificationDate, "NHV1_NHV2_1");
 
         String res = mvc.perform(post("/" + VERSION + "/identifier-contingency-lists/")
                         .content(objectMapper.writeValueAsString(idBasedContingencyList))
@@ -1063,7 +1105,8 @@ public class ContingencyListControllerTest {
 
     @Test
     public void modifyIdBasedContingencyList() throws Exception {
-        IdBasedContingencyList idBasedContingencyList = createIdBasedContingencyList(null, "LINE1");
+        Date modificationDate = new Date();
+        IdBasedContingencyList idBasedContingencyList = createIdBasedContingencyList(null, modificationDate, "LINE1");
 
         String res = mvc.perform(post("/" + VERSION + "/identifier-contingency-lists/")
                         .content(objectMapper.writeValueAsString(idBasedContingencyList))
@@ -1072,7 +1115,7 @@ public class ContingencyListControllerTest {
 
         UUID contingencyListId = objectMapper.readValue(res, IdBasedContingencyList.class).getId();
 
-        IdBasedContingencyList newList = createIdBasedContingencyList(contingencyListId, "LINE2");
+        IdBasedContingencyList newList = createIdBasedContingencyList(contingencyListId, modificationDate, "LINE2");
 
         mvc.perform(put("/" + VERSION + "/identifier-contingency-lists/" + newList.getId())
                         .content(objectMapper.writeValueAsString(newList))
@@ -1085,11 +1128,12 @@ public class ContingencyListControllerTest {
         assertEquals(USER_ID_HEADER, message.getHeaders().get(NotificationService.HEADER_MODIFIED_BY));
 
         contingencyListId = objectMapper.readValue(res, IdBasedContingencyList.class).getId();
-        IdBasedContingencyList resultList = createIdBasedContingencyList(contingencyListId, "LINE2");
-        mvc.perform(get("/" + VERSION + "/identifier-contingency-lists/" + contingencyListId)
+        IdBasedContingencyList resultList = createIdBasedContingencyList(contingencyListId, modificationDate, "LINE2");
+        res = mvc.perform(get("/" + VERSION + "/identifier-contingency-lists/" + contingencyListId)
                         .contentType(APPLICATION_JSON))
-                .andExpect(content().json(objectMapper.writeValueAsString(resultList), false))
                 .andReturn().getResponse().getContentAsString();
+
+        matchIdBasedContingencyList(objectMapper.readValue(res, IdBasedContingencyList.class), resultList);
 
         mvc.perform(put("/" + VERSION + "/identifier-contingency-lists/" + UUID.randomUUID())
                         .content(objectMapper.writeValueAsString(newList))

@@ -17,15 +17,15 @@ import java.util.UUID;
 
 /**
  * @author Chamseddine benhamed <chamseddine.benhamed at rte-france.com>
+ * @author Etienne Homer <etienne.homer@rte-france.com>
  */
-
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-@Schema(description = "Contingency list attributes")
-public class ContingencyListAttributes implements ContingencyList {
+@Schema(description = "Contingency list infos")
+public class ContingencyListMetadataImpl implements ContingencyListMetadata {
 
-    @Schema(description = "list id")
+    @Schema(description = "List id")
     private UUID id;
 
     @Schema(description = "List type")
@@ -33,4 +33,5 @@ public class ContingencyListAttributes implements ContingencyList {
 
     @Schema(description = "Modification Date")
     Date modificationDate;
+
 }
