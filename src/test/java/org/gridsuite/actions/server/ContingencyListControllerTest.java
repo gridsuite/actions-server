@@ -14,7 +14,6 @@ import com.powsybl.contingency.contingency.list.identifier.IdBasedNetworkElement
 import com.powsybl.contingency.contingency.list.identifier.NetworkElementIdentifier;
 import com.powsybl.contingency.contingency.list.identifier.NetworkElementIdentifierList;
 import com.powsybl.contingency.json.ContingencyJsonModule;
-import com.powsybl.iidm.network.IdentifiableType;
 import com.powsybl.iidm.network.Network;
 import com.powsybl.iidm.network.VariantManagerConstants;
 import com.powsybl.iidm.network.test.EurostagTutorialExample1Factory;
@@ -992,7 +991,7 @@ public class ContingencyListControllerTest {
 
     public IdBasedContingencyList createIdBasedContingencyList(UUID listId, Date modificationDate, String... identifiers) {
         List< NetworkElementIdentifier > networkElementIdentifiers = Arrays.stream(identifiers).map(id -> new NetworkElementIdentifierList(List.of(new IdBasedNetworkElementIdentifier(id)))).collect(Collectors.toList());
-        return new IdBasedContingencyList(listId, modificationDate, new IdentifierContingencyList(listId != null ? listId.toString() : "defaultName", IdentifiableType.LINE, networkElementIdentifiers));
+        return new IdBasedContingencyList(listId, modificationDate, new IdentifierContingencyList(listId != null ? listId.toString() : "defaultName", networkElementIdentifiers));
     }
 
     public int getContingencyListsCount() throws Exception {
