@@ -36,15 +36,15 @@ public final class FiltersUtils {
             injectionMatch(terminal2, countries);
     }
 
-    public static  boolean hvdcLineMatch(HvdcLine line, List<String> countries, List<String> countries2) {
+    public static boolean hvdcLineMatch(HvdcLine line, List<String> countries, List<String> countries2) {
         return filterByCountries(line.getConverterStation1().getTerminal(), line.getConverterStation2().getTerminal(), countries, countries2);
     }
 
-    public static  boolean lineMatch(Line line, List<String> countries, List<String> countries2) {
+    public static boolean lineMatch(Line line, List<String> countries, List<String> countries2) {
         return filterByCountries(line.getTerminal1(), line.getTerminal2(), countries, countries2);
     }
 
-    public static  boolean transfoMatch(TwoWindingsTransformer transfo, List<String> countries) {
+    public static boolean transfoMatch(TwoWindingsTransformer transfo, List<String> countries) {
         return filterByCountries(transfo.getTerminal1(), transfo.getTerminal2(), countries, List.of());
     }
 }
