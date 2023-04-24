@@ -56,11 +56,11 @@ public class FormContingencyList extends AbstractContingencyList {
                                Set<String> countries1,
                                Set<String> countries2) {
         super(new ContingencyListMetadataImpl(uuid, ContingencyListType.FORM, date));
-        this.equipmentType =  equipmentType;
-        this.nominalVoltage1 =  nominalVoltage1;
-        this.nominalVoltage2 =  nominalVoltage2;
-        this.countries1 =  countries1;
-        this.countries2 =  countries2;
+        this.equipmentType = equipmentType;
+        this.nominalVoltage1 = nominalVoltage1;
+        this.nominalVoltage2 = nominalVoltage2;
+        this.countries1 = countries1;
+        this.countries2 = countries2;
     }
 
     public FormContingencyList(String equipmentType,
