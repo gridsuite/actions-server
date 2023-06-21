@@ -112,7 +112,10 @@ public class FormContingencyList extends AbstractContingencyList {
                                 this.getCountries1().stream().map(c -> Country.valueOf(c)).collect(Collectors.toList()),
                                 this.getCountries2().stream().map(c -> Country.valueOf(c)).collect(Collectors.toList())
                         ),
-                        NumericalFilter.toNominalVoltageCriterion(this.getNominalVoltage1()),
+                        new TwoNominalVoltageCriterion(
+                                NumericalFilter.toNominalVoltageCriterion(this.getNominalVoltage1()).getVoltageInterval(),
+                                NumericalFilter.toNominalVoltageCriterion(this.getNominalVoltage2()).getVoltageInterval()
+                        ),
                         Collections.emptyList(),
                         null
                 );
