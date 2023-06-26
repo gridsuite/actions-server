@@ -254,8 +254,7 @@ public class ContingencyListService {
         entity.getIdentifiersListEntities().forEach(identifierList -> {
             List<NetworkElementIdentifier> networkElementIdentifiers = new ArrayList<>();
             identifierList.getEquipmentIds().forEach(equipmentId -> networkElementIdentifiers.add(new IdBasedNetworkElementIdentifier(equipmentId)));
-            //TODO: NetworkElementIdentifierList name will have to be filled with identifierList.getName() when it's available in powsybl-core
-            listOfNetworkElementIdentifierList.add(new NetworkElementIdentifierList(networkElementIdentifiers));
+            listOfNetworkElementIdentifierList.add(new NetworkElementIdentifierList(networkElementIdentifiers, identifierList.getName()));
         });
         return new IdBasedContingencyList(entity.getId(), entity.getModificationDate(), new IdentifierContingencyList(entity.getId().toString(), listOfNetworkElementIdentifierList));
     }
