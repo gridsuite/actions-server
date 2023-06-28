@@ -41,9 +41,8 @@ public class IdBasedContingencyListEntity extends AbstractContingencyEntity {
         this.identifiersListEntities = new ArrayList<>();
         identifierContingencyList.getIdentifiants().forEach(networkElementIdentifier -> {
             List<NetworkElementIdentifier> identifierList = ((NetworkElementIdentifierList) networkElementIdentifier).getNetworkElementIdentifiers();
-            String firstIdentifier = ((IdBasedNetworkElementIdentifier) identifierList.stream().findFirst().get()).getIdentifier();
-            //TODO: set NetworkIdentifierList name when it will be available in powsybl-core
-            identifiersListEntities.add(new IdentifierListEntity(UUID.randomUUID(), firstIdentifier, identifierList.stream().map(identifier -> ((IdBasedNetworkElementIdentifier) identifier).getIdentifier()).collect(Collectors.toSet())));
+            String contingencyName = networkElementIdentifier.getContingencyId().isPresent() ? networkElementIdentifier.getContingencyId().get() : "";
+            identifiersListEntities.add(new IdentifierListEntity(UUID.randomUUID(), contingencyName, identifierList.stream().map(identifier -> ((IdBasedNetworkElementIdentifier) identifier).getIdentifier()).collect(Collectors.toSet())));
             }
         );
     }
