@@ -83,8 +83,7 @@ public class FormContingencyList extends AbstractContingencyList {
                 contingencyList = new InjectionCriterionContingencyList(
                         this.getId().toString(),
                         this.getEquipmentType(),
-                        //TODO: replace with "new SingleCountryCriterion(this.getCountries1().stream().map(c -> Country.valueOf(c)).collect(Collectors.toList()))" after new powsybl version
-                        this.getCountries1().isEmpty() ? null : new SingleCountryCriterion(this.getCountries1().stream().map(c -> Country.valueOf(c)).collect(Collectors.toList())),
+                        new SingleCountryCriterion(this.getCountries1().stream().map(c -> Country.valueOf(c)).collect(Collectors.toList())),
                         NumericalFilter.toNominalVoltageCriterion(this.getNominalVoltage1()),
                         Collections.emptyList(),
                         null
@@ -123,8 +122,7 @@ public class FormContingencyList extends AbstractContingencyList {
             case TWO_WINDINGS_TRANSFORMER:
                 contingencyList = new TwoWindingsTransformerCriterionContingencyList(
                         this.getId().toString(),
-                        //TODO: replace with "new SingleCountryCriterion(this.getCountries1().stream().map(c -> Country.valueOf(c)).collect(Collectors.toList()))" after new powsybl version
-                        this.getCountries1().isEmpty() ? null : new SingleCountryCriterion(this.getCountries1().stream().map(c -> Country.valueOf(c)).collect(Collectors.toList())),
+                        new SingleCountryCriterion(this.getCountries1().stream().map(c -> Country.valueOf(c)).collect(Collectors.toList())),
                         new TwoNominalVoltageCriterion(
                                 NumericalFilter.toNominalVoltageCriterion(this.getNominalVoltage1()).getVoltageInterval(),
                                 NumericalFilter.toNominalVoltageCriterion(this.getNominalVoltage2()).getVoltageInterval()
