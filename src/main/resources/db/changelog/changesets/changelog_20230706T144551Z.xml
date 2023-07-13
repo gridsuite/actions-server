@@ -24,4 +24,32 @@
     <changeSet author="florent (generated)" id="1688654755015-5">
         <addForeignKeyConstraint baseColumnNames="numeric_filter_id_id" baseTableName="form_contingency_list" constraintName="numericFilterId_id_fk" deferrable="false" initiallyDeferred="false" referencedColumnNames="id" referencedTableName="numeric_filter" validate="true"/>
     </changeSet>
+    <changeSet author="florent" id="1688654755015-6">
+        <update tableName="form_contingency_list">
+            <column name="numeric_filter_id_id" valueComputed="numeric_filter_id1_id"/>
+            <where>equipment_type!='TWO_WINDINGS_TRANSFORMER' AND equipment_type!='LINE'</where>
+        </update>
+    </changeSet>
+    <changeSet author="florent" id="1688654755015-7">
+        <update tableName="form_contingency_list">
+            <column name="numeric_filter_id1_id"/>
+            <where>equipment_type!='TWO_WINDINGS_TRANSFORMER' AND equipment_type!='LINE'</where>
+        </update>
+    </changeSet>
+    <changeSet author="florent" id="1688654755015-8">
+        <sql>
+            INSERT INTO form_contingency_list_entity_countries (form_contingency_list_entity_id, country)
+            SELECT form_contingency_list_entity_id, country1
+            FROM form_contingency_list_entity_countries1
+            WHERE form_contingency_list_entity_id IN (SELECT id FROM form_contingency_list WHERE equipment_type!='HVDC_LINE'
+              AND equipment_type!='LINE')
+        </sql>
+    </changeSet>
+    <changeSet author="florent" id="1688654755015-9">
+        <sql>
+            DELETE FROM form_contingency_list_entity_countries1
+            WHERE form_contingency_list_entity_id IN (SELECT id FROM form_contingency_list WHERE equipment_type!='HVDC_LINE'
+              AND equipment_type!='LINE')
+        </sql>
+    </changeSet>
 </databaseChangeLog>
