@@ -74,12 +74,13 @@ public class FormContingencyList extends AbstractContingencyList {
     }
 
     public FormContingencyList(String equipmentType,
+                               NumericalFilter nominalVoltage,
                                NumericalFilter nominalVoltage1,
                                NumericalFilter nominalVoltage2,
+                               Set<String> countries,
                                Set<String> countries1,
                                Set<String> countries2) {
-        //TODO fix for tests
-        this(null, null, equipmentType, null, nominalVoltage1, nominalVoltage2, null, countries1, countries2);
+        this(null, null, equipmentType, nominalVoltage, nominalVoltage1, nominalVoltage2, countries, countries1, countries2);
     }
 
     @Override
@@ -107,9 +108,10 @@ public class FormContingencyList extends AbstractContingencyList {
                                 this.getCountries1().stream().map(c -> Country.valueOf(c)).collect(Collectors.toList()),
                                 this.getCountries2().stream().map(c -> Country.valueOf(c)).collect(Collectors.toList())
                         ),
+                        // TODO ?????
                         new TwoNominalVoltageCriterion(
-                                NumericalFilter.toNominalVoltageCriterion(this.getNominalVoltage1()).getVoltageInterval(),
-                                NumericalFilter.toNominalVoltageCriterion(this.getNominalVoltage2()).getVoltageInterval()
+                                NumericalFilter.toNominalVoltageCriterion(this.getNominalVoltage()).getVoltageInterval(),
+                                null
                         ),
                         Collections.emptyList(),
                         null
