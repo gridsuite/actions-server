@@ -169,12 +169,12 @@ public class ContingencyListControllerTest {
 
         String formContingencyList = "{\n" +
                 "  \"equipmentType\": \"GENERATOR\"," +
-                "  \"nominalVoltage1\": {" +
+                "  \"nominalVoltage\": {" +
                 "    \"type\": \"GREATER_THAN\"," +
                 "    \"value1\": \"100\"," +
                 "    \"value2\": \"null\"" +
                 "  }," +
-                "  \"countries1\": [\"FR\", \"BE\"]" +
+                "  \"countries\": [\"FR\", \"BE\"]" +
                 "}";
 
         String formContingencyList2 = "{\n" +
@@ -190,12 +190,12 @@ public class ContingencyListControllerTest {
         // LOAD is not a supported type => error case
         String formContingencyListError = "{\n" +
                 "  \"equipmentType\": \"LOAD\"," +
-                "  \"nominalVoltage1\": {" +
+                "  \"nominalVoltage\": {" +
                 "    \"type\": \"EQUALITY\"," +
                 "    \"value1\": \"380\"," +
                 "    \"value2\": \"null\"" +
                 "  }," +
-                "  \"countries1\": []" +
+                "  \"countries\": []" +
                 "}";
 
         UUID scriptId = addNewScriptContingencyList(script);
@@ -212,7 +212,7 @@ public class ContingencyListControllerTest {
                         .contentType(APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-                .andExpect(content().json("[{\"equipmentType\":\"GENERATOR\",\"nominalVoltage1\":{\"type\":\"GREATER_THAN\",\"value1\":100.0,\"value2\":null},\"nominalVoltage2\":null,\"countries1\":[\"BE\",\"FR\"],\"countries2\":[], \"metadata\":{\"type\":\"FORM\"}}]", false));
+                .andExpect(content().json("[{\"equipmentType\":\"GENERATOR\",\"nominalVoltage\":{\"type\":\"GREATER_THAN\",\"value1\":100.0,\"value2\":null},\"nominalVoltage1\":null,\"nominalVoltage2\":null,\"countries\":[\"BE\",\"FR\"],\"countries1\":[], \"countries2\":[],\"metadata\":{\"type\":\"FORM\"}}]", false));
 
         mvc.perform(post("/" + VERSION + "/form-contingency-lists/")
                 .content(formContingencyList2)
@@ -248,8 +248,8 @@ public class ContingencyListControllerTest {
                 .contentType(APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-                .andExpect(content().json("[{\"equipmentType\":\"GENERATOR\",\"nominalVoltage1\":{\"type\":\"GREATER_THAN\",\"value1\":100.0,\"value2\":null},\"nominalVoltage2\":null,\"countries1\":[\"BE\",\"FR\"],\"countries2\":[], \"metadata\":{\"type\":\"FORM\"}},{" +
-                        "\"equipmentType\":\"LINE\",\"nominalVoltage1\":{\"type\":\"LESS_OR_EQUAL\",\"value1\":225.0,\"value2\":null},\"nominalVoltage2\":null,\"countries1\":[\"IT\",\"FR\",\"NL\"],\"countries2\":[], \"metadata\":{\"type\":\"FORM\"}}]", false));
+                .andExpect(content().json("[{\"equipmentType\":\"GENERATOR\",\"nominalVoltage\":{\"type\":\"GREATER_THAN\",\"value1\":100.0,\"value2\":null},\"nominalVoltage1\":null,\"nominalVoltage2\":null,\"countries\":[\"BE\",\"FR\"],\"countries1\":[],\"countries2\":[], \"metadata\":{\"type\":\"FORM\"}},{" +
+                        "\"equipmentType\":\"LINE\",\"nominalVoltage\":null,\"nominalVoltage1\":{\"type\":\"LESS_OR_EQUAL\",\"value1\":225.0,\"value2\":null},\"nominalVoltage2\":null,\"countries\":[],\"countries1\":[\"IT\",\"FR\",\"NL\"],\"countries2\":[], \"metadata\":{\"type\":\"FORM\"}}]", false));
 
         mvc.perform(get("/" + VERSION + "/script-contingency-lists/" + scriptId)
                 .contentType(APPLICATION_JSON))
@@ -261,7 +261,7 @@ public class ContingencyListControllerTest {
                 .contentType(APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-                .andExpect(content().json("{\"equipmentType\":\"GENERATOR\",\"nominalVoltage1\":{\"type\":\"GREATER_THAN\",\"value1\":100.0,\"value2\":null},\"nominalVoltage2\":null,\"countries1\":[\"BE\",\"FR\"],\"countries2\":[], \"metadata\":{\"type\":\"FORM\"}}", false));
+                .andExpect(content().json("{\"equipmentType\":\"GENERATOR\",\"nominalVoltage\":{\"type\":\"GREATER_THAN\",\"value1\":100.0,\"value2\":null},\"nominalVoltage1\":null,\"nominalVoltage2\":null,\"countries\":[\"BE\",\"FR\"],\"countries1\":[],\"countries2\":[], \"metadata\":{\"type\":\"FORM\"}}", false));
 
         // check not found
         mvc.perform(get("/" + VERSION + "/script-contingency-lists/" + notFoundId)
@@ -316,21 +316,57 @@ public class ContingencyListControllerTest {
     }
 
     public String genFormContingencyList(EquipmentType type, Double nominalVoltage, NumericalFilterOperator nominalVoltageOperator, Set<String> countries) {
-        return genFormContingencyList(type, nominalVoltage, nominalVoltageOperator, countries, Collections.emptySet());
-    }
-
-    public String genFormContingencyList(EquipmentType type, Double nominalVoltage, NumericalFilterOperator nominalVoltageOperator,
-                                         Set<String> countries, Set<String> countries2) {
         // single nominalVoltage => no range allowed
         assertNotEquals(nominalVoltageOperator, RANGE);
-        return genFormContingencyList(type, nominalVoltage, -1.0, nominalVoltageOperator, -1.0, -1.0, EQUALITY, countries, countries2);
+
+        switch (type) {
+            case LINE:
+                return genFormContingencyListForLine(nominalVoltage, nominalVoltageOperator, countries);
+            case HVDC_LINE:
+                return genFormContingencyListForHVDC(nominalVoltage, nominalVoltageOperator, countries);
+            case TWO_WINDINGS_TRANSFORMER:
+                return genFormContingencyListFor2WT(nominalVoltage, nominalVoltageOperator, countries);
+            default:
+                return genFormContingencyListForOthers(type, nominalVoltage, nominalVoltageOperator, countries);
+        }
     }
 
-    public String genFormContingencyList(EquipmentType type, Double value11, Double value12, NumericalFilterOperator operator1,
+    public String genFormContingencyListForLine(Double nominalVoltage, NumericalFilterOperator nominalVoltageOperator, Set<String> countries) {
+        return genFormContingencyList(EquipmentType.LINE, -1.0, -1.0, EQUALITY, nominalVoltage, -1.0, nominalVoltageOperator, -1.0, -1.0, EQUALITY, Collections.emptySet(), countries, Collections.emptySet());
+    }
+
+    public String genFormContingencyListForHVDC(Double nominalVoltage, NumericalFilterOperator nominalVoltageOperator, Set<String> countries) {
+        return genFormContingencyList(EquipmentType.HVDC_LINE, nominalVoltage, -1.0, nominalVoltageOperator, -1.0, -1.0, EQUALITY, -1.0, -1.0, EQUALITY, Collections.emptySet(), countries, Collections.emptySet());
+    }
+
+    public String genFormContingencyListFor2WT(Double nominalVoltage, NumericalFilterOperator nominalVoltageOperator, Set<String> countries) {
+        return genFormContingencyList(EquipmentType.TWO_WINDINGS_TRANSFORMER, -1.0, -1.0, EQUALITY, nominalVoltage, -1.0, nominalVoltageOperator, -1.0, -1.0, EQUALITY, countries, Collections.emptySet(), Collections.emptySet());
+    }
+
+    public String genFormContingencyListForOthers(EquipmentType type, Double nominalVoltage, NumericalFilterOperator nominalVoltageOperator,
+                                                  Set<String> countries) {
+        return genFormContingencyList(type, nominalVoltage, -1.0, nominalVoltageOperator, -1.0, -1.0, EQUALITY, -1.0, -1.0, EQUALITY, countries, Collections.emptySet(), Collections.emptySet());
+    }
+
+    public String genFormContingencyList(EquipmentType type,
+                                         Double value01, Double value02, NumericalFilterOperator operator0,
+                                         Double value11, Double value12, NumericalFilterOperator operator1,
                                          Double value21, Double value22, NumericalFilterOperator operator2,
-                                         Set<String> countries, Set<String> countries2) {
+                                         Set<String> countries, Set<String> countries1, Set<String> countries2) {
         String jsonData = "{" + jsonVal("equipmentType", type.name(), true);
-        // value11 == -1 => no first filter on voltage-level
+        // value01 == -1 => no filter on voltage-level (for all equipments except lines)
+        if (value01 == -1.) {
+            jsonData += "\"nominalVoltage\": null,";
+        } else {
+            jsonData += "\"nominalVoltage\": {"
+                    + jsonVal("type", operator0.name(), true)
+                    + jsonVal("value1", value01, operator0 == RANGE);
+            if (operator0 == RANGE) {
+                jsonData += jsonVal("value2", value02, false);
+            }
+            jsonData += "},";
+        }
+        // value11 == -1 => no first filter on voltage-level (lines)
         if (value11 == -1.) {
             jsonData += "\"nominalVoltage1\": null,";
         } else {
@@ -342,7 +378,7 @@ public class ContingencyListControllerTest {
             }
             jsonData += "},";
         }
-        // value21 == -1 => no second filter on voltage-level
+        // value21 == -1 => no second filter on voltage-level (lines)
         if (value21 == -1.) {
             jsonData += "\"nominalVoltage2\": null,";
         } else {
@@ -354,8 +390,9 @@ public class ContingencyListControllerTest {
             }
             jsonData += "},";
         }
-        jsonData += "\"countries1\": [" + (!countries.isEmpty() ? "\"" + join(countries, "\",\"") + "\"" : "") + "], ";
-        jsonData += "\"countries2\": [" + (!countries2.isEmpty() ? "\"" + join(countries2, "\",\"") + "\"" : "") + "]}";
+        jsonData += "\"countries\": [" + (!countries.isEmpty() ? "\"" + join(countries, "\",\"") + "\"" : "") + "], "; // all equipments except lines
+        jsonData += "\"countries1\": [" + (!countries1.isEmpty() ? "\"" + join(countries1, "\",\"") + "\"" : "") + "], "; // lines
+        jsonData += "\"countries2\": [" + (!countries2.isEmpty() ? "\"" + join(countries2, "\",\"") + "\"" : "") + "]}"; // lines
         return jsonData;
     }
 
@@ -387,8 +424,8 @@ public class ContingencyListControllerTest {
 
     private UUID addNewFormContingencyList(String form) throws Exception {
         String res = mvc.perform(post("/" + VERSION + "/form-contingency-lists/")
-                .content(form)
-                .contentType(APPLICATION_JSON))
+                        .content(form)
+                        .contentType(APPLICATION_JSON))
                 .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
 
         FormContingencyList list = objectMapper.readValue(res, FormContingencyList.class);
@@ -474,13 +511,13 @@ public class ContingencyListControllerTest {
         twtForm = genFormContingencyList(EquipmentType.TWO_WINDINGS_TRANSFORMER, 400., GREATER_OR_EQUAL, noCountries);
         testExportContingencies(twtForm, noMatch, NETWORK_UUID);
         // range
-        twtForm = genFormContingencyList(EquipmentType.TWO_WINDINGS_TRANSFORMER, 0., 24., RANGE, -1., -1., EQUALITY, noCountries, noCountries);
+        twtForm = genFormContingencyList(EquipmentType.TWO_WINDINGS_TRANSFORMER, -1.0, -1.0, EQUALITY, 0., 24., RANGE, -1., -1., EQUALITY, noCountries, noCountries, noCountries);
         testExportContingencies(twtForm, matchGEN, NETWORK_UUID);
-        twtForm = genFormContingencyList(EquipmentType.TWO_WINDINGS_TRANSFORMER, 24., 150., RANGE, -1., -1., EQUALITY, noCountries, noCountries);
+        twtForm = genFormContingencyList(EquipmentType.TWO_WINDINGS_TRANSFORMER, -1.0, -1.0, EQUALITY, 24., 150., RANGE, -1., -1., EQUALITY, noCountries, noCountries, noCountries);
         testExportContingencies(twtForm, bothMatch, NETWORK_UUID);
-        twtForm = genFormContingencyList(EquipmentType.TWO_WINDINGS_TRANSFORMER, 225., 380., RANGE, -1., -1., EQUALITY, noCountries, noCountries);
+        twtForm = genFormContingencyList(EquipmentType.TWO_WINDINGS_TRANSFORMER, -1.0, -1.0, EQUALITY, 225., 380., RANGE, -1., -1., EQUALITY, noCountries, noCountries, noCountries);
         testExportContingencies(twtForm, bothMatch, NETWORK_UUID);
-        twtForm = genFormContingencyList(EquipmentType.TWO_WINDINGS_TRANSFORMER, 400., 500., RANGE, -1., -1., EQUALITY, noCountries, noCountries);
+        twtForm = genFormContingencyList(EquipmentType.TWO_WINDINGS_TRANSFORMER, -1.0, -1.0, EQUALITY, 400., 500., RANGE, -1., -1., EQUALITY, noCountries, noCountries, noCountries);
         testExportContingencies(twtForm, noMatch, NETWORK_UUID);
     }
 
@@ -493,13 +530,13 @@ public class ContingencyListControllerTest {
         final String noMatch = "[]";
 
         // 2 voltage filters
-        String twtForm = genFormContingencyList(EquipmentType.TWO_WINDINGS_TRANSFORMER, 400., 500., RANGE, 24., -1., EQUALITY, noCountries, noCountries);
+        String twtForm = genFormContingencyList(EquipmentType.TWO_WINDINGS_TRANSFORMER, -1.0, -1.0, EQUALITY, 400., 500., RANGE, 24., -1., EQUALITY, noCountries, noCountries, noCountries);
         testExportContingencies(twtForm, noMatch, NETWORK_UUID);
-        twtForm = genFormContingencyList(EquipmentType.TWO_WINDINGS_TRANSFORMER, 150., 400., RANGE, 24., -1., EQUALITY, noCountries, noCountries);
+        twtForm = genFormContingencyList(EquipmentType.TWO_WINDINGS_TRANSFORMER, -1.0, -1.0, EQUALITY, 150., 400., RANGE, 24., -1., EQUALITY, noCountries, noCountries, noCountries);
         testExportContingencies(twtForm, matchGEN, NETWORK_UUID);
-        twtForm = genFormContingencyList(EquipmentType.TWO_WINDINGS_TRANSFORMER, 150., 400., RANGE, 150., -1., EQUALITY, noCountries, noCountries);
+        twtForm = genFormContingencyList(EquipmentType.TWO_WINDINGS_TRANSFORMER, -1.0, -1.0, EQUALITY, 150., 400., RANGE, 150., -1., EQUALITY, noCountries, noCountries, noCountries);
         testExportContingencies(twtForm, matchLOAD, NETWORK_UUID);
-        twtForm = genFormContingencyList(EquipmentType.TWO_WINDINGS_TRANSFORMER, 150., 400., RANGE, 33., -1., EQUALITY, noCountries, noCountries);
+        twtForm = genFormContingencyList(EquipmentType.TWO_WINDINGS_TRANSFORMER, -1.0, -1.0, EQUALITY, 150., 400., RANGE, 33., -1., EQUALITY, noCountries, noCountries, noCountries);
         testExportContingencies(twtForm, noMatch, NETWORK_UUID);
     }
 
@@ -613,12 +650,32 @@ public class ContingencyListControllerTest {
     }
 
     void compareFormContingencyList(FormContingencyList expected, FormContingencyList current) {
-        if (null == expected.getCountries1()) {
-            assertTrue(current.getCountries1().isEmpty());
-        } else {
-            assertEquals(expected.getCountries1(), current.getCountries1());
+        // Ideally we shouldn't do that... it's because in the app null <=> [] for country list
+        Set<String> expectedCountries = expected.getCountries();
+        if (expectedCountries == null) {
+            expectedCountries = Collections.emptySet();
         }
+        Set<String> currentCountries = current.getCountries();
+        if (currentCountries == null) {
+            currentCountries = Collections.emptySet();
+        }
+        Set<String> expectedCountries1 = expected.getCountries1();
+        if (expectedCountries1 == null) {
+            expectedCountries1 = Collections.emptySet();
+        }
+        Set<String> currentCountries1 = current.getCountries1();
+        if (currentCountries1 == null) {
+            currentCountries1 = Collections.emptySet();
+        }
+        assertEquals(expectedCountries, currentCountries);
+        assertEquals(expectedCountries1, currentCountries1);
         assertEquals(expected.getEquipmentType(), current.getEquipmentType());
+        if (expected.getNominalVoltage() == null || current.getNominalVoltage() == null) {
+            assertNull(expected.getNominalVoltage());
+            assertNull(current.getNominalVoltage());
+        } else {
+            assertEquals(expected.getNominalVoltage().getValue1(), current.getNominalVoltage().getValue1());
+        }
         if (expected.getNominalVoltage1() == null || current.getNominalVoltage1() == null) {
             assertNull(expected.getNominalVoltage1());
             assertNull(current.getNominalVoltage1());
@@ -649,7 +706,7 @@ public class ContingencyListControllerTest {
         assertEquals(userId, message.getHeaders().get(NotificationService.HEADER_MODIFIED_BY));
 
         String res = mvc.perform(get("/" + VERSION + "/form-contingency-lists/" + id)
-                .contentType(APPLICATION_JSON))
+                        .contentType(APPLICATION_JSON))
                 .andReturn().getResponse().getContentAsString();
 
         compareFormContingencyList(objectMapper.readValue(newFilter, FormContingencyList.class),
@@ -801,7 +858,7 @@ public class ContingencyListControllerTest {
                 .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
         UUID clId = objectMapper.readValue(res, FormContingencyList.class).getId();
         // retrieve it, no numeric filters created (because of null values)
-        String noNominalFilter1Response = "{\"equipmentType\":\"LINE\",\"nominalVoltage1\":null,\"nominalVoltage2\":null,\"countries1\":[\"BE\",\"FR\"],\"countries2\":[], \"metadata\":{\"type\":\"FORM\"}}";
+        String noNominalFilter1Response = "{\"equipmentType\":\"LINE\",\"nominalVoltage\":null,\"nominalVoltage1\":null,\"nominalVoltage2\":null,\"countries\":[],\"countries1\":[\"BE\",\"FR\"],\"countries2\":[], \"metadata\":{\"type\":\"FORM\"}}";
         mvc.perform(get("/" + VERSION + "/form-contingency-lists/" + clId)
                         .contentType(APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -834,7 +891,7 @@ public class ContingencyListControllerTest {
                 .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
         UUID clId = objectMapper.readValue(res, FormContingencyList.class).getId();
         // retrieve it, no numeric filters created (because of null values)
-        String noNominalFilter1Response = "{\"equipmentType\":\"LINE\",\"nominalVoltage1\":null,\"nominalVoltage2\":null,\"countries1\":[\"BE\",\"FR\"],\"countries2\":[], \"metadata\":{\"type\":\"FORM\"}}";
+        String noNominalFilter1Response = "{\"equipmentType\":\"LINE\",\"nominalVoltage\":null,\"nominalVoltage1\":null,\"nominalVoltage2\":null,\"countries\":[],\"countries1\":[\"BE\",\"FR\"],\"countries2\":[], \"metadata\":{\"type\":\"FORM\"}}";
         mvc.perform(get("/" + VERSION + "/form-contingency-lists/" + clId)
                         .contentType(APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -882,12 +939,12 @@ public class ContingencyListControllerTest {
         String userId = "userId";
         String form = "{\n" +
                 "  \"equipmentType\": \"GENERATOR\"," +
-                "  \"nominalVoltage1\": {" +
+                "  \"nominalVoltage\": {" +
                 "    \"type\": \"GREATER_THAN\"," +
                 "    \"value1\": \"100\"," +
                 "    \"value2\": \"null\"" +
                 "  }," +
-                "  \"countries1\": [\"FR\", \"BE\"]" +
+                "  \"countries\": [\"FR\", \"BE\"]" +
                 "}";
 
         // Put data
@@ -920,12 +977,12 @@ public class ContingencyListControllerTest {
     public void copyFormToScriptTest() throws Exception {
         String form = "{\n" +
                 "  \"equipmentType\": \"GENERATOR\"," +
-                "  \"nominalVoltage1\": {" +
+                "  \"nominalVoltage\": {" +
                 "    \"type\": \"GREATER_THAN\"," +
                 "    \"value1\": \"100\"," +
                 "    \"value2\": \"null\"" +
                 "  }," +
-                "  \"countries1\": [\"FR\", \"BE\"]" +
+                "  \"countries\": [\"FR\", \"BE\"]" +
                 "}";
         // Put data
         UUID firstUUID = addNewFormContingencyList(form);

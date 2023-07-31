@@ -36,11 +36,17 @@ public class FormContingencyList extends AbstractContingencyList {
     @Schema(description = "Equipment type")
     private String equipmentType;
 
+    @Schema(description = "Nominal voltage")
+    private NumericalFilter nominalVoltage;
+
     @Schema(description = "Nominal voltage 1")
     private NumericalFilter nominalVoltage1;
 
     @Schema(description = "Nominal voltage 2")
     private NumericalFilter nominalVoltage2;
+
+    @Schema(description = "Countries")
+    private Set<String> countries;
 
     @Schema(description = "Countries 1")
     private Set<String> countries1;
@@ -51,24 +57,30 @@ public class FormContingencyList extends AbstractContingencyList {
     public FormContingencyList(UUID uuid,
                                Date date,
                                String equipmentType,
+                               NumericalFilter nominalVoltage,
                                NumericalFilter nominalVoltage1,
                                NumericalFilter nominalVoltage2,
+                               Set<String> countries,
                                Set<String> countries1,
                                Set<String> countries2) {
         super(new ContingencyListMetadataImpl(uuid, ContingencyListType.FORM, date));
         this.equipmentType = equipmentType;
+        this.nominalVoltage = nominalVoltage;
         this.nominalVoltage1 = nominalVoltage1;
         this.nominalVoltage2 = nominalVoltage2;
+        this.countries = countries;
         this.countries1 = countries1;
         this.countries2 = countries2;
     }
 
     public FormContingencyList(String equipmentType,
+                               NumericalFilter nominalVoltage,
                                NumericalFilter nominalVoltage1,
                                NumericalFilter nominalVoltage2,
+                               Set<String> countries,
                                Set<String> countries1,
                                Set<String> countries2) {
-        this(null, null, equipmentType, nominalVoltage1, nominalVoltage2, countries1, countries2);
+        this(null, null, equipmentType, nominalVoltage, nominalVoltage1, nominalVoltage2, countries, countries1, countries2);
     }
 
     @Override
@@ -83,8 +95,8 @@ public class FormContingencyList extends AbstractContingencyList {
                 contingencyList = new InjectionCriterionContingencyList(
                         this.getId().toString(),
                         this.getEquipmentType(),
-                        new SingleCountryCriterion(this.getCountries1().stream().map(c -> Country.valueOf(c)).collect(Collectors.toList())),
-                        NumericalFilter.toNominalVoltageCriterion(this.getNominalVoltage1()),
+                        new SingleCountryCriterion(this.getCountries().stream().map(c -> Country.valueOf(c)).collect(Collectors.toList())),
+                        NumericalFilter.toNominalVoltageCriterion(this.getNominalVoltage()),
                         Collections.emptyList(),
                         null
                 );
@@ -96,9 +108,10 @@ public class FormContingencyList extends AbstractContingencyList {
                                 this.getCountries1().stream().map(c -> Country.valueOf(c)).collect(Collectors.toList()),
                                 this.getCountries2().stream().map(c -> Country.valueOf(c)).collect(Collectors.toList())
                         ),
+                        // TODO ?????
                         new TwoNominalVoltageCriterion(
-                                NumericalFilter.toNominalVoltageCriterion(this.getNominalVoltage1()).getVoltageInterval(),
-                                NumericalFilter.toNominalVoltageCriterion(this.getNominalVoltage2()).getVoltageInterval()
+                                NumericalFilter.toNominalVoltageCriterion(this.getNominalVoltage()).getVoltageInterval(),
+                                null
                         ),
                         Collections.emptyList(),
                         null
@@ -122,7 +135,7 @@ public class FormContingencyList extends AbstractContingencyList {
             case TWO_WINDINGS_TRANSFORMER:
                 contingencyList = new TwoWindingsTransformerCriterionContingencyList(
                         this.getId().toString(),
-                        new SingleCountryCriterion(this.getCountries1().stream().map(c -> Country.valueOf(c)).collect(Collectors.toList())),
+                        new SingleCountryCriterion(this.getCountries().stream().map(c -> Country.valueOf(c)).collect(Collectors.toList())),
                         new TwoNominalVoltageCriterion(
                                 NumericalFilter.toNominalVoltageCriterion(this.getNominalVoltage1()).getVoltageInterval(),
                                 NumericalFilter.toNominalVoltageCriterion(this.getNominalVoltage2()).getVoltageInterval()
