@@ -55,8 +55,8 @@ public class FormToGroovyScript {
     }
 
     private void addCountry(ST template, FormContingencyList formContingencyList) {
-        if (!formContingencyList.getCountries1().isEmpty()) {
-            template.add("countries1", formContingencyList.getCountries1().stream().collect(joining("','", "['", "']")));
+        if (!formContingencyList.getCountries().isEmpty()) {
+            template.add("countries", formContingencyList.getCountries().stream().collect(joining("','", "['", "']")));
         }
     }
 
@@ -138,7 +138,7 @@ public class FormToGroovyScript {
                 addNominalVoltage(template, formContingencyList.getNominalVoltage2(), 0);
             }
         } else {
-            addNominalVoltage(template, formContingencyList.getNominalVoltage1(), 0);
+            addNominalVoltage(template, formContingencyList.getNominalVoltage(), 0);
         }
 
         return template.render();

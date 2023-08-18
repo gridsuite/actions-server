@@ -33,6 +33,14 @@ public class FormContingencyListEntity extends AbstractContingencyEntity {
     private String equipmentType;
 
     @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @JoinColumn(name = "numericFilterId_id",
+            referencedColumnName = "id",
+            foreignKey = @ForeignKey(
+                    name = "numericFilterId_id_fk"
+            ), nullable = true)
+    NumericalFilterEntity nominalVoltage;
+
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @JoinColumn(name = "numericFilterId1_id",
             referencedColumnName = "id",
             foreignKey = @ForeignKey(
@@ -47,6 +55,11 @@ public class FormContingencyListEntity extends AbstractContingencyEntity {
                     name = "numericFilterId_id_fk2"
             ), nullable = true)
     NumericalFilterEntity nominalVoltage2;
+
+    @Column(name = "country")
+    @ElementCollection
+    @CollectionTable(foreignKey = @ForeignKey(name = "formContingencyListEntity_countries_fk"), indexes = {@Index(name = "formContingencyListEntity_countries_idx", columnList = "form_contingency_list_entity_id")})
+    private Set<String> countries;
 
     @Column(name = "country1")
     @ElementCollection
@@ -67,18 +80,18 @@ public class FormContingencyListEntity extends AbstractContingencyEntity {
     final void init(FormContingencyList formContingencyList) {
         this.equipmentType = formContingencyList.getEquipmentType();
         EquipmentType type = EquipmentType.valueOf(this.equipmentType);
-        this.nominalVoltage1 = NumericalFilterEntity.convert(formContingencyList.getNominalVoltage1());
         // protection against unrelevant input data
         if (type == EquipmentType.TWO_WINDINGS_TRANSFORMER || type == EquipmentType.LINE) {
+            this.nominalVoltage1 = NumericalFilterEntity.convert(formContingencyList.getNominalVoltage1());
             this.nominalVoltage2 = NumericalFilterEntity.convert(formContingencyList.getNominalVoltage2());
         } else {
-            this.nominalVoltage2 = null;
+            this.nominalVoltage = NumericalFilterEntity.convert(formContingencyList.getNominalVoltage());
         }
-        this.countries1 = new HashSet<>(emptyIfNull(formContingencyList.getCountries1()));
         if (type == EquipmentType.LINE || type == EquipmentType.HVDC_LINE) {
+            this.countries1 = new HashSet<>(emptyIfNull(formContingencyList.getCountries1()));
             this.countries2 = new HashSet<>(emptyIfNull(formContingencyList.getCountries2()));
         } else {
-            this.countries2 = null;
+            this.countries = new HashSet<>(emptyIfNull(formContingencyList.getCountries()));
         }
     }
 
