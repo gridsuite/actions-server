@@ -18,4 +18,5 @@ import java.util.UUID;
  */
 @Repository
 public interface ScriptContingencyListRepository extends JpaRepository<ScriptContingencyListEntity, UUID> {
+    Integer deleteScriptContingencyListById(UUID uuid);
 }

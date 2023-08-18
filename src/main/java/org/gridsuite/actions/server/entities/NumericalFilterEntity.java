@@ -13,7 +13,7 @@ import lombok.NoArgsConstructor;
 import org.gridsuite.actions.server.dto.NumericalFilter;
 import org.gridsuite.actions.server.utils.NumericalFilterOperator;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 import java.util.UUID;
 
 /**

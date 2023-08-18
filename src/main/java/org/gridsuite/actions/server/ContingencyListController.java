@@ -19,7 +19,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import javax.persistence.EntityNotFoundException;
+import jakarta.persistence.EntityNotFoundException;
 import java.util.List;
 import java.util.UUID;
 
@@ -154,7 +154,7 @@ public class ContingencyListController {
     @GetMapping(value = "/identifier-contingency-lists/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Get identifier contingency list by id")
     @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "The identifier contingency list"),
-            @ApiResponse(responseCode = "404", description = "The identifier contingency list does not exists")})
+        @ApiResponse(responseCode = "404", description = "The identifier contingency list does not exists")})
     public ResponseEntity<PersistentContingencyList> getIdentifierContingencyList(@PathVariable("id") UUID id) {
         return service.getIdBasedContingencyList(id).map(contingencyList -> ResponseEntity.ok()
                         .contentType(MediaType.APPLICATION_JSON)
@@ -165,7 +165,7 @@ public class ContingencyListController {
     @PostMapping(value = "/identifier-contingency-lists")
     @Operation(summary = "Create a identifier contingency list from another existing one")
     @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "The identifier contingency list have been duplicated successfully"),
-            @ApiResponse(responseCode = "404", description = "Source script contingency list not found")})
+        @ApiResponse(responseCode = "404", description = "Source script contingency list not found")})
     public ResponseEntity<PersistentContingencyList> duplicateIdentifierContingencyList(@RequestParam("duplicateFrom") UUID sourceListId,
                                                                                         @RequestParam(value = "id") UUID id) {
         return service.duplicateIdentifierContingencyList(sourceListId, id).map(contingencyList -> ResponseEntity.ok()

@@ -24,6 +24,7 @@ import org.gridsuite.actions.server.repositories.ScriptContingencyListRepository
 import org.gridsuite.actions.server.utils.ContingencyListType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.ComponentScan;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -203,12 +204,14 @@ public class ContingencyListService {
     }
 
     @Transactional
-    public void deleteContingencyList(UUID id) {
+    public void deleteContingencyList(UUID id) throws EmptyResultDataAccessException {
         Objects.requireNonNull(id);
         // if there is no form contingency list by this Id, deleted count == 0
         if (formContingencyListRepository.deleteFormContingencyListEntityById(id) == 0) {
             if (idBasedContingencyListRepository.deleteIdBasedContingencyListEntityById(id) == 0) {
-                scriptContingencyListRepository.deleteById(id);
+                if (scriptContingencyListRepository.deleteScriptContingencyListById(id) == 0) {
+                    throw new EmptyResultDataAccessException("No element found", 1);
+                }
             }
         }
     }
