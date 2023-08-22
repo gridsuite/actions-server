@@ -6,16 +6,18 @@
  */
 package org.gridsuite.actions.server.dto;
 
+import com.powsybl.contingency.Contingency;
 import com.powsybl.contingency.contingency.list.ContingencyList;
-import com.powsybl.contingency.dsl.GroovyContingencyListLoader;
+import com.powsybl.contingency.dsl.ContingencyDslLoader;
+import com.powsybl.iidm.network.Network;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.codehaus.groovy.control.customizers.ImportCustomizer;
 import org.gridsuite.actions.server.utils.ContingencyListType;
 
-import java.io.ByteArrayInputStream;
 import java.util.Date;
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -39,10 +41,11 @@ public class ScriptContingencyList extends AbstractContingencyList {
     }
 
     @Override
-    public ContingencyList toPowsyblContingencyList() {
+    public ContingencyList toPowsyblContingencyList(Network network) {
         ImportCustomizer customizer = new ImportCustomizer();
         customizer.addImports("org.gridsuite.actions.server.utils.FiltersUtils");
         customizer.addStaticStars("org.gridsuite.actions.server.utils.FiltersUtils");
-        return new GroovyContingencyListLoader().load(this.getId().toString(), new ByteArrayInputStream(script.getBytes()));
+        List<Contingency> contingencyList = new ContingencyDslLoader(script).load(network, customizer);
+        return ContingencyList.of(contingencyList.toArray(Contingency[]::new));
     }
 }
