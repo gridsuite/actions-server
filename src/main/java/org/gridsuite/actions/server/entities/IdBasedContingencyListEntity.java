@@ -49,7 +49,7 @@ public class IdBasedContingencyListEntity extends AbstractContingencyEntity {
             List<NetworkElementIdentifier> identifierList = ((NetworkElementIdentifierList) networkElementIdentifier).getNetworkElementIdentifiers();
             String contingencyName = networkElementIdentifier.getContingencyId().isPresent() ? networkElementIdentifier.getContingencyId().get() : "";
             if (contingencyName.isEmpty() || (identifierList == null || identifierList.isEmpty())) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "At least one contingency is partially defined :  " + identifierContingencyList.getName());
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "At least one contingency is partially defined for the contingency list " + identifierContingencyList.getName());
             }
             identifiersListEntities.add(new IdentifierListEntity(UUID.randomUUID(), contingencyName, identifierList.stream().map(identifier -> ((IdBasedNetworkElementIdentifier) identifier).getIdentifier()).collect(Collectors.toSet())));
             }
