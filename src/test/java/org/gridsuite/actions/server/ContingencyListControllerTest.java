@@ -1119,6 +1119,23 @@ public class ContingencyListControllerTest {
     }
 
     @Test
+    public void createIdBasedContingencyListError() throws Exception {
+        Date modificationDate = new Date();
+
+        IdBasedContingencyList idBasedContingencyList1 = createIdBasedContingencyList(null, modificationDate, "");
+        mvc.perform(post("/" + VERSION + "/identifier-contingency-lists/")
+                        .content(objectMapper.writeValueAsString(idBasedContingencyList1))
+                        .contentType(APPLICATION_JSON))
+                .andExpect(status().isBadRequest());
+
+        IdBasedContingencyList idBasedContingencyList2 = createIdBasedContingencyList(null, modificationDate, new String[0]);
+        mvc.perform(post("/" + VERSION + "/identifier-contingency-lists/")
+                        .content(objectMapper.writeValueAsString(idBasedContingencyList2))
+                        .contentType(APPLICATION_JSON))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
     public void duplicateBasedContingencyList() throws Exception {
         Date modificationDate = new Date();
         IdBasedContingencyList idBasedContingencyList = createIdBasedContingencyList(null, modificationDate, "id1");

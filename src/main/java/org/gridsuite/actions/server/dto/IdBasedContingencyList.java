@@ -8,6 +8,7 @@ package org.gridsuite.actions.server.dto;
 
 import com.powsybl.contingency.contingency.list.ContingencyList;
 import com.powsybl.contingency.contingency.list.IdentifierContingencyList;
+import com.powsybl.iidm.network.Network;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -33,7 +34,7 @@ public class IdBasedContingencyList extends AbstractContingencyList {
     }
 
     @Override
-    public ContingencyList toPowsyblContingencyList() {
+    public ContingencyList toPowsyblContingencyList(Network network) {
         return identifierContingencyList;
     }
 }

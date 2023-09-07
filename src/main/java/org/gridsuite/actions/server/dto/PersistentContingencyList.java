@@ -7,6 +7,7 @@
 package org.gridsuite.actions.server.dto;
 
 import com.powsybl.contingency.contingency.list.ContingencyList;
+import com.powsybl.iidm.network.Network;
 
 /**
  * @author Etienne Homer <etienne.homer@rte-france.com>
@@ -14,5 +15,5 @@ import com.powsybl.contingency.contingency.list.ContingencyList;
 public interface PersistentContingencyList {
     ContingencyListMetadata getMetadata();
 
-    ContingencyList toPowsyblContingencyList();
+    ContingencyList toPowsyblContingencyList(Network network);
 }
