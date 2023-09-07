@@ -12,6 +12,7 @@ import com.powsybl.contingency.contingency.list.criterion.SingleCountryCriterion
 import com.powsybl.contingency.contingency.list.criterion.TwoCountriesCriterion;
 import com.powsybl.contingency.contingency.list.criterion.TwoNominalVoltageCriterion;
 import com.powsybl.iidm.network.Country;
+import com.powsybl.iidm.network.Network;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -84,7 +85,7 @@ public class FormContingencyList extends AbstractContingencyList {
     }
 
     @Override
-    public ContingencyList toPowsyblContingencyList() {
+    public ContingencyList toPowsyblContingencyList(Network network) {
         AbstractEquipmentCriterionContingencyList contingencyList;
         switch (EquipmentType.valueOf(this.getEquipmentType())) {
             case GENERATOR:

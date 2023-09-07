@@ -151,7 +151,7 @@ public class ContingencyListService {
                 network.getVariantManager().setWorkingVariant(variantId);
             }
         }
-        ContingencyList powsyblContingencyList = contingencyList.toPowsyblContingencyList();
+        ContingencyList powsyblContingencyList = contingencyList.toPowsyblContingencyList(network);
         return powsyblContingencyList == null ? Collections.emptyList() : powsyblContingencyList.getContingencies(network);
     }
 
