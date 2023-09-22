@@ -12,7 +12,7 @@ import lombok.Setter;
 import org.gridsuite.actions.server.dto.FormContingencyList;
 import org.gridsuite.actions.server.utils.EquipmentType;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 import java.util.HashSet;
 import java.util.Set;
 

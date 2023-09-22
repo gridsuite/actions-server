@@ -23,6 +23,7 @@ import com.powsybl.iidm.network.test.SvcTestCaseFactory;
 import com.powsybl.network.store.client.NetworkStoreService;
 import com.powsybl.network.store.client.PreloadingStrategy;
 import com.powsybl.network.store.iidm.impl.NetworkFactoryImpl;
+import jakarta.servlet.ServletException;
 import org.gridsuite.actions.server.dto.*;
 import org.gridsuite.actions.server.entities.FormContingencyListEntity;
 import org.gridsuite.actions.server.entities.NumericalFilterEntity;
@@ -49,7 +50,6 @@ import org.springframework.messaging.Message;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.web.util.NestedServletException;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -200,7 +200,7 @@ public class ContingencyListControllerTest {
 
         UUID scriptId = addNewScriptContingencyList(script);
 
-        String res = mvc.perform(post("/" + VERSION + "/form-contingency-lists/")
+        String res = mvc.perform(post("/" + VERSION + "/form-contingency-lists")
                 .content(formContingencyList)
                 .contentType(APPLICATION_JSON))
                 .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
@@ -214,7 +214,7 @@ public class ContingencyListControllerTest {
                 .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
                 .andExpect(content().json("[{\"equipmentType\":\"GENERATOR\",\"nominalVoltage\":{\"type\":\"GREATER_THAN\",\"value1\":100.0,\"value2\":null},\"nominalVoltage1\":null,\"nominalVoltage2\":null,\"countries\":[\"BE\",\"FR\"],\"countries1\":[], \"countries2\":[],\"metadata\":{\"type\":\"FORM\"}}]", false));
 
-        mvc.perform(post("/" + VERSION + "/form-contingency-lists/")
+        mvc.perform(post("/" + VERSION + "/form-contingency-lists")
                 .content(formContingencyList2)
                 .contentType(APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -222,14 +222,14 @@ public class ContingencyListControllerTest {
 
         Throwable e = null;
         try {
-            mvc.perform(post("/" + VERSION + "/form-contingency-lists/")
+            mvc.perform(post("/" + VERSION + "/form-contingency-lists")
                             .content(formContingencyListError)
                             .contentType(APPLICATION_JSON))
                     .andExpect(status().isOk());
         } catch (Throwable ex) {
             e = ex;
         }
-        assertTrue(e instanceof NestedServletException);
+        assertTrue(e instanceof ServletException);
 
         // Check data
         mvc.perform(get("/" + VERSION + "/contingency-lists")
@@ -423,7 +423,8 @@ public class ContingencyListControllerTest {
     }
 
     private UUID addNewFormContingencyList(String form) throws Exception {
-        String res = mvc.perform(post("/" + VERSION + "/form-contingency-lists/")
+
+        String res = mvc.perform(post("/" + VERSION + "/form-contingency-lists")
                         .content(form)
                         .contentType(APPLICATION_JSON))
                 .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
@@ -435,7 +436,7 @@ public class ContingencyListControllerTest {
     }
 
     private UUID addNewScriptContingencyList(String script) throws Exception {
-        String res = mvc.perform(post("/" + VERSION + "/script-contingency-lists/")
+        String res = mvc.perform(post("/" + VERSION + "/script-contingency-lists")
                 .content(script)
                 .contentType(APPLICATION_JSON))
                 .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
@@ -813,8 +814,8 @@ public class ContingencyListControllerTest {
         } catch (Throwable ex) {
             e = ex;
         }
-        assertTrue(e instanceof NestedServletException);
-        assertEquals("Request processing failed; nested exception is com.powsybl.commons.PowsyblException: Network '7928181c-7977-4592-ba19-88027e4254e8' not found", e.getMessage());
+        assertTrue(e instanceof ServletException);
+        assertEquals("Request processing failed: com.powsybl.commons.PowsyblException: Network '7928181c-7977-4592-ba19-88027e4254e8' not found", e.getMessage());
     }
 
     @Test
@@ -829,7 +830,7 @@ public class ContingencyListControllerTest {
                 "  \"countries1\": [\"FR\", \"BE\"]" +
                 "}";
 
-        mvc.perform(post("/" + VERSION + "/form-contingency-lists/")
+        mvc.perform(post("/" + VERSION + "/form-contingency-lists")
                         .content(lineFilters)
                         .contentType(APPLICATION_JSON))
                 .andExpect(status().is4xxClientError());
@@ -852,7 +853,7 @@ public class ContingencyListControllerTest {
                 "  \"countries1\": [\"FR\", \"BE\"]" +
                 "}";
         // creation
-        String res = mvc.perform(post("/" + VERSION + "/form-contingency-lists/")
+        String res = mvc.perform(post("/" + VERSION + "/form-contingency-lists")
                         .content(formContingencyList)
                         .contentType(APPLICATION_JSON))
                 .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
@@ -885,7 +886,7 @@ public class ContingencyListControllerTest {
                 "  \"countries1\": [\"FR\", \"BE\"]" +
                 "}";
         // creation
-        String res = mvc.perform(post("/" + VERSION + "/form-contingency-lists/")
+        String res = mvc.perform(post("/" + VERSION + "/form-contingency-lists")
                         .content(formContingencyList)
                         .contentType(APPLICATION_JSON))
                 .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
@@ -1084,7 +1085,7 @@ public class ContingencyListControllerTest {
         Date modificationDate = new Date();
         IdBasedContingencyList idBasedContingencyList = createIdBasedContingencyList(null, modificationDate, "NHV1_NHV2_1");
 
-        String res = mvc.perform(post("/" + VERSION + "/identifier-contingency-lists/")
+        String res = mvc.perform(post("/" + VERSION + "/identifier-contingency-lists")
                         .content(objectMapper.writeValueAsString(idBasedContingencyList))
                         .contentType(APPLICATION_JSON))
                 .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
@@ -1100,7 +1101,7 @@ public class ContingencyListControllerTest {
 
         matchIdBasedContingencyList(objectMapper.readValue(res, IdBasedContingencyList.class), resultList);
 
-        mvc.perform(post("/" + VERSION + "/identifier-contingency-lists/")
+        mvc.perform(post("/" + VERSION + "/identifier-contingency-lists")
                         .content(objectMapper.writeValueAsString(idBasedContingencyList))
                         .contentType(APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -1122,13 +1123,13 @@ public class ContingencyListControllerTest {
         Date modificationDate = new Date();
 
         IdBasedContingencyList idBasedContingencyList1 = createIdBasedContingencyList(null, modificationDate, "");
-        mvc.perform(post("/" + VERSION + "/identifier-contingency-lists/")
+        mvc.perform(post("/" + VERSION + "/identifier-contingency-lists")
                         .content(objectMapper.writeValueAsString(idBasedContingencyList1))
                         .contentType(APPLICATION_JSON))
                 .andExpect(status().isBadRequest());
 
         IdBasedContingencyList idBasedContingencyList2 = createIdBasedContingencyList(null, modificationDate, new String[0]);
-        mvc.perform(post("/" + VERSION + "/identifier-contingency-lists/")
+        mvc.perform(post("/" + VERSION + "/identifier-contingency-lists")
                         .content(objectMapper.writeValueAsString(idBasedContingencyList2))
                         .contentType(APPLICATION_JSON))
                 .andExpect(status().isBadRequest());
@@ -1138,7 +1139,7 @@ public class ContingencyListControllerTest {
     public void duplicateBasedContingencyList() throws Exception {
         Date modificationDate = new Date();
         IdBasedContingencyList idBasedContingencyList = createIdBasedContingencyList(null, modificationDate, "id1");
-        String res = mvc.perform(post("/" + VERSION + "/identifier-contingency-lists/")
+        String res = mvc.perform(post("/" + VERSION + "/identifier-contingency-lists")
                         .content(objectMapper.writeValueAsString(idBasedContingencyList))
                         .contentType(APPLICATION_JSON))
                 .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
@@ -1159,7 +1160,7 @@ public class ContingencyListControllerTest {
         Date modificationDate = new Date();
         IdBasedContingencyList idBasedContingencyList = createIdBasedContingencyList(null, modificationDate, "NHV1_NHV2_1");
 
-        String res = mvc.perform(post("/" + VERSION + "/identifier-contingency-lists/")
+        String res = mvc.perform(post("/" + VERSION + "/identifier-contingency-lists")
                         .content(objectMapper.writeValueAsString(idBasedContingencyList))
                         .contentType(APPLICATION_JSON))
                 .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
@@ -1181,7 +1182,7 @@ public class ContingencyListControllerTest {
         Date modificationDate = new Date();
         IdBasedContingencyList idBasedContingencyList = createIdBasedContingencyList(null, modificationDate, "LINE1");
 
-        String res = mvc.perform(post("/" + VERSION + "/identifier-contingency-lists/")
+        String res = mvc.perform(post("/" + VERSION + "/identifier-contingency-lists")
                         .content(objectMapper.writeValueAsString(idBasedContingencyList))
                         .contentType(APPLICATION_JSON))
                 .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();

@@ -16,7 +16,8 @@ import org.gridsuite.actions.server.dto.IdBasedContingencyList;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -48,7 +49,7 @@ public class IdBasedContingencyListEntity extends AbstractContingencyEntity {
         identifierContingencyList.getIdentifiants().forEach(networkElementIdentifier -> {
             List<NetworkElementIdentifier> identifierList = ((NetworkElementIdentifierList) networkElementIdentifier).getNetworkElementIdentifiers();
             String contingencyName = networkElementIdentifier.getContingencyId().isPresent() ? networkElementIdentifier.getContingencyId().get() : "";
-            if (contingencyName.isEmpty() || (identifierList == null || identifierList.isEmpty())) {
+            if (contingencyName.isEmpty() || identifierList == null || identifierList.isEmpty()) {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "At least one contingency is partially defined for the contingency list " + identifierContingencyList.getName());
             }
             identifiersListEntities.add(new IdentifierListEntity(UUID.randomUUID(), contingencyName, identifierList.stream().map(identifier -> ((IdBasedNetworkElementIdentifier) identifier).getIdentifier()).collect(Collectors.toSet())));
