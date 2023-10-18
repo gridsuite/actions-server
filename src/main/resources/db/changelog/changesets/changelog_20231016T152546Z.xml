@@ -1,0 +1,15 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog" xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext" xmlns:pro="http://www.liquibase.org/xml/ns/pro" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd http://www.liquibase.org/xml/ns/pro http://www.liquibase.org/xml/ns/pro/liquibase-pro-latest.xsd http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+    <changeSet author="chuinetri (generated)" id="1697469962255-1">
+        <dropUniqueConstraint constraintName="UC_FORM_CONTINGENCY_LISTNUMERIC_FILTER_ID1_ID_COL" tableName="form_contingency_list"/>
+    </changeSet>
+    <changeSet author="chuinetri (generated)" id="1697469962255-2">
+        <addUniqueConstraint columnNames="numeric_filter_id1_id" constraintName="UC_FORM_CONTINGENCY_LISTNUMERIC_FILTER_ID1_ID_COL" tableName="form_contingency_list"/>
+    </changeSet>
+    <changeSet author="chuinetri (generated)" id="1697469962255-3">
+        <dropUniqueConstraint constraintName="UC_FORM_CONTINGENCY_LISTNUMERIC_FILTER_ID2_ID_COL" tableName="form_contingency_list"/>
+    </changeSet>
+    <changeSet author="chuinetri (generated)" id="1697469962255-4">
+        <addUniqueConstraint columnNames="numeric_filter_id2_id" constraintName="UC_FORM_CONTINGENCY_LISTNUMERIC_FILTER_ID2_ID_COL" tableName="form_contingency_list"/>
+    </changeSet>
+</databaseChangeLog>
