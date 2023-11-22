@@ -12,7 +12,6 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
-import com.powsybl.ws.commons.Utils;
 
 /**
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at rte-france.com>
@@ -23,7 +22,6 @@ import com.powsybl.ws.commons.Utils;
 public class ActionsApplication {
 
     public static void main(String[] args) {
-        Utils.initProperties();
         SpringApplication.run(ActionsApplication.class, args);
     }
 
