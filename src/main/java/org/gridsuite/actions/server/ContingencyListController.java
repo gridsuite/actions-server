@@ -6,8 +6,6 @@
  */
 package org.gridsuite.actions.server;
 
-import com.powsybl.contingency.Contingency;
-
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -85,7 +83,7 @@ public class ContingencyListController {
     @GetMapping(value = "/contingency-lists/{id}/export", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Export a contingency list to PowSyBl JSON format")
     @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "The contingency list on PowSyBl JSON format")})
-    public ResponseEntity<List<Contingency>> exportContingencyList(@PathVariable("id") UUID id,
+    public ResponseEntity<List<ContingencyInfos>> exportContingencyList(@PathVariable("id") UUID id,
                                                                    @RequestParam(value = "networkUuid", required = false) UUID networkUuid,
                                                                    @RequestParam(value = "variantId", required = false) String variantId) {
         return service.exportContingencyList(id, networkUuid, variantId).map(contingencies -> ResponseEntity.ok()
@@ -156,7 +154,7 @@ public class ContingencyListController {
     @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "The identifier contingency list"),
         @ApiResponse(responseCode = "404", description = "The identifier contingency list does not exists")})
     public ResponseEntity<PersistentContingencyList> getIdentifierContingencyList(@PathVariable("id") UUID id) {
-        return service.getIdBasedContingencyList(id).map(contingencyList -> ResponseEntity.ok()
+        return service.getIdBasedContingencyList(id, null).map(contingencyList -> ResponseEntity.ok()
                         .contentType(MediaType.APPLICATION_JSON)
                         .body(contingencyList))
                 .orElse(ResponseEntity.notFound().build());
