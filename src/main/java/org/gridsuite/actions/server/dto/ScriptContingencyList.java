@@ -55,7 +55,7 @@ public class ScriptContingencyList extends AbstractContingencyList {
     // this should be deleted when a fix is added to powsybl
     public Map<String, Set<String>> getNotFoundElements(Network network) {
         Map<String, Set<String>> contingencyEquipmentMap = new LinkedHashMap<>();
-        Pattern pattern = Pattern.compile("contingency\\('([A-Z0-9]+)'\\)\\s*\\{\\s*equipments\\s*'([A-Z0-9]+(?:,\\s*[A-Z0-9]+)++)'\\}");
+        Pattern pattern = Pattern.compile("contingency\\('([^']+)'\\)\\s*\\{\\s*equipments\\s*'([^']+)'");
         Matcher matcher = pattern.matcher(script);
 
         while (matcher.find()) {

@@ -13,6 +13,13 @@ import java.util.Set;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ContingencyInfos {
-    Contingency contingency;
-    Set<String> notFoundElements;
+    private String id;
+    private Contingency contingency;
+    private Set<String> notFoundElements;
+
+    public ContingencyInfos(Contingency contingency, Set<String> notFoundElements) {
+        this.id = contingency == null ? null : contingency.getId();
+        this.contingency = contingency;
+        this.notFoundElements = notFoundElements;
+    }
 }
