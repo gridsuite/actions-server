@@ -287,14 +287,8 @@ public class ContingencyListService {
             List<NetworkElementIdentifier> networkElementIdentifiers = new ArrayList<>();
             identifierList.getEquipmentIds().forEach(equipmentId -> {
                 if (network != null && network.getIdentifiable(equipmentId) == null) {
-                    Set<String> ids = notFoundElements.get(identifierList.getName());
-                    if (ids != null) {
-                        ids.add(equipmentId);
-                    } else {
-                        Set<String> newIds = new HashSet<>();
-                        newIds.add(equipmentId);
-                        notFoundElements.put(identifierList.getName(), newIds);
-                    }
+                    Set<String> ids = notFoundElements.computeIfAbsent(identifierList.getName(), k -> new HashSet<>());
+                    ids.add(equipmentId);
                 }
                 networkElementIdentifiers.add(new IdBasedNetworkElementIdentifier(equipmentId));
             });
