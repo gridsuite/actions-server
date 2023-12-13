@@ -145,19 +145,19 @@ public class ContingencyListService {
     List<ContingencyInfos> exportContingencyList(UUID id, UUID networkUuid, String variantId) {
         Objects.requireNonNull(id);
         Network network = getNetworkFromUuid(networkUuid, variantId);
-        Optional<PersistentContingencyList> persistentContingencyList = getScriptContingencyList(id)
+        Optional<PersistentContingencyList> optionalPersistentContingencyList = getScriptContingencyList(id)
                 .or(() -> getFormContingencyList(id))
                 .or(() -> getIdBasedContingencyList(id, network));
 
-        if (persistentContingencyList.isEmpty()) {
+        if (optionalPersistentContingencyList.isEmpty()) {
             return null;
         }
 
-        List<Contingency> contingencies = persistentContingencyList.map(contingencyList -> getPowsyblContingencies(contingencyList, network))
-            .orElse(List.of());
+        PersistentContingencyList persistentContingencyList = optionalPersistentContingencyList.get();
+        List<Contingency> contingencies = getPowsyblContingencies(persistentContingencyList, network);
 
         List<ContingencyInfos> contingencyInfos = new ArrayList<>();
-        Map<String, Set<String>> notFoundElements = persistentContingencyList.get().getNotFoundElements(network);
+        Map<String, Set<String>> notFoundElements = persistentContingencyList.getNotFoundElements(network);
 
         // we add all the contingencies that have only wrong ids
         notFoundElements.entrySet().stream()
