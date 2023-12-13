@@ -88,10 +88,10 @@ public class ContingencyListController {
     public ResponseEntity<List<Contingency>> exportContingencyList(@PathVariable("id") UUID id,
                                                                    @RequestParam(value = "networkUuid", required = false) UUID networkUuid,
                                                                    @RequestParam(value = "variantId", required = false) String variantId) {
-        return service.exportContingencyList(id, networkUuid, variantId).map(contingencies -> ResponseEntity.ok()
-            .contentType(MediaType.APPLICATION_JSON)
-            .body(contingencies.stream().map(ContingencyInfos::getContingency).filter(Objects::nonNull).toList()))
-            .orElse(ResponseEntity.notFound().build());
+        List<ContingencyInfos> contingencyInfos = service.exportContingencyList(id, networkUuid, variantId);
+        return contingencyInfos == null ? ResponseEntity.notFound().build() : ResponseEntity.ok()
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(contingencyInfos.stream().map(ContingencyInfos::getContingency).filter(Objects::nonNull).toList());
     }
 
     @GetMapping(value = "/contingency-lists/contingency-infos/{id}/export", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -100,10 +100,10 @@ public class ContingencyListController {
     public ResponseEntity<List<ContingencyInfos>> exportContingencyInfosList(@PathVariable("id") UUID id,
                                                                    @RequestParam(value = "networkUuid", required = false) UUID networkUuid,
                                                                    @RequestParam(value = "variantId", required = false) String variantId) {
-        return service.exportContingencyList(id, networkUuid, variantId).map(contingencies -> ResponseEntity.ok()
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .body(contingencies))
-                .orElse(ResponseEntity.notFound().build());
+        List<ContingencyInfos> contingencyInfos = service.exportContingencyList(id, networkUuid, variantId);
+        return contingencyInfos == null ? ResponseEntity.notFound().build() : ResponseEntity.ok()
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(contingencyInfos);
     }
 
     @PostMapping(value = "/script-contingency-lists", consumes = MediaType.APPLICATION_JSON_VALUE)

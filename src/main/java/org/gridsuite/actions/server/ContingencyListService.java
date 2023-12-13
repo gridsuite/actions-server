@@ -142,34 +142,34 @@ public class ContingencyListService {
         return powsyblContingencyList == null ? Collections.emptyList() : powsyblContingencyList.getContingencies(network);
     }
 
-    Optional<List<ContingencyInfos>> exportContingencyList(UUID id, UUID networkUuid, String variantId) {
+    List<ContingencyInfos> exportContingencyList(UUID id, UUID networkUuid, String variantId) {
         Objects.requireNonNull(id);
         Network network = getNetworkFromUuid(networkUuid, variantId);
         Optional<PersistentContingencyList> persistentContingencyList = getScriptContingencyList(id)
                 .or(() -> getFormContingencyList(id))
                 .or(() -> getIdBasedContingencyList(id, network));
 
-        Optional<List<Contingency>> contingencies = getScriptContingencyList(id).map(contingencyList -> getPowsyblContingencies(contingencyList, network))
-            .or(() -> getFormContingencyList(id).map(contingencyList -> getPowsyblContingencies(contingencyList, network)))
-                    .or(() -> getIdBasedContingencyList(id, network).map(contingencyList -> getPowsyblContingencies(contingencyList, network)));
-
-        Map<String, Set<String>> notFoundElements = persistentContingencyList.isPresent() ? persistentContingencyList.get().getNotFoundElements(network) : Map.of();
-
-        // we collect all the contingencies that have only wrong ids
-        var allWrongIdsContingencies = notFoundElements.entrySet().stream()
-                .filter(stringSetEntry -> contingencies.isEmpty() || contingencies.get().stream().noneMatch(c -> c.getId().equals(stringSetEntry.getKey())))
-                .map(stringSetEntry -> new ContingencyInfos(stringSetEntry.getKey(), null, stringSetEntry.getValue()))
-                .toList();
-
-        Optional<List<ContingencyInfos>> contingencyInfos = contingencies.map(contingencies1 -> contingencies1.stream()
-                .map(contingency -> new ContingencyInfos(contingency, notFoundElements.get(contingency.getId())))
-                .collect(Collectors.toList()));
-        if (contingencyInfos.isPresent()) {
-            contingencyInfos.get().addAll(allWrongIdsContingencies);
-            return contingencyInfos;
+        if (persistentContingencyList.isEmpty()) {
+            return null;
         }
 
-        return Optional.of(allWrongIdsContingencies);
+        List<Contingency> contingencies = persistentContingencyList.map(contingencyList -> getPowsyblContingencies(contingencyList, network))
+            .orElse(List.of());
+
+        List<ContingencyInfos> contingencyInfos = new ArrayList<>();
+        Map<String, Set<String>> notFoundElements = persistentContingencyList.get().getNotFoundElements(network);
+
+        // we add all the contingencies that have only wrong ids
+        notFoundElements.entrySet().stream()
+                .filter(stringSetEntry -> contingencies.stream().noneMatch(c -> c.getId().equals(stringSetEntry.getKey())))
+                .map(stringSetEntry -> new ContingencyInfos(stringSetEntry.getKey(), null, stringSetEntry.getValue()))
+                .forEach(contingencyInfos::add);
+
+        contingencies.stream()
+                .map(contingency -> new ContingencyInfos(contingency, notFoundElements.get(contingency.getId())))
+                .forEach(contingencyInfos::add);
+
+        return contingencyInfos;
     }
 
     private Network getNetworkFromUuid(UUID networkUuid, String variantId) {
