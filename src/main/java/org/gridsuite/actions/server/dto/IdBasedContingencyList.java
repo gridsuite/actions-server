@@ -15,6 +15,8 @@ import lombok.NoArgsConstructor;
 import org.gridsuite.actions.server.utils.ContingencyListType;
 
 import java.util.Date;
+import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -27,14 +29,27 @@ public class IdBasedContingencyList extends AbstractContingencyList {
 
     @Schema(description = "Identifier list")
     private IdentifierContingencyList identifierContingencyList;
+    private Map<String, Set<String>> notFoundElements;
 
     public IdBasedContingencyList(UUID uuid, Date date, IdentifierContingencyList identifierContingencyList) {
+        this(uuid, date, identifierContingencyList, Map.of());
+    }
+
+    public IdBasedContingencyList(UUID uuid, Date date, IdentifierContingencyList identifierContingencyList, Map<String, Set<String>> notFoundElements) {
         super(new ContingencyListMetadataImpl(uuid, ContingencyListType.IDENTIFIERS, date));
         this.identifierContingencyList = identifierContingencyList;
+        this.notFoundElements = notFoundElements;
     }
 
     @Override
     public ContingencyList toPowsyblContingencyList(Network network) {
         return identifierContingencyList;
+    }
+
+    //TODO this a temporary workaround to get elements not found in the network
+    // this should be deleted when a fix is added to powsybl
+    @Override
+    public Map<String, Set<String>> getNotFoundElements(Network network) {
+        return notFoundElements;
     }
 }

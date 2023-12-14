@@ -7,7 +7,6 @@
 package org.gridsuite.actions.server;
 
 import com.powsybl.contingency.Contingency;
-
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -21,6 +20,7 @@ import org.springframework.web.bind.annotation.*;
 
 import jakarta.persistence.EntityNotFoundException;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 /**
@@ -88,10 +88,22 @@ public class ContingencyListController {
     public ResponseEntity<List<Contingency>> exportContingencyList(@PathVariable("id") UUID id,
                                                                    @RequestParam(value = "networkUuid", required = false) UUID networkUuid,
                                                                    @RequestParam(value = "variantId", required = false) String variantId) {
-        return service.exportContingencyList(id, networkUuid, variantId).map(contingencies -> ResponseEntity.ok()
-            .contentType(MediaType.APPLICATION_JSON)
-            .body(contingencies))
-            .orElse(ResponseEntity.notFound().build());
+        List<ContingencyInfos> contingencyInfos = service.exportContingencyList(id, networkUuid, variantId);
+        return contingencyInfos == null ? ResponseEntity.notFound().build() : ResponseEntity.ok()
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(contingencyInfos.stream().map(ContingencyInfos::getContingency).filter(Objects::nonNull).toList());
+    }
+
+    @GetMapping(value = "/contingency-lists/contingency-infos/{id}/export", produces = MediaType.APPLICATION_JSON_VALUE)
+    @Operation(summary = "Export a contingency infos list to JSON format")
+    @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "The contingency list on PowSyBl JSON format")})
+    public ResponseEntity<List<ContingencyInfos>> exportContingencyInfosList(@PathVariable("id") UUID id,
+                                                                   @RequestParam(value = "networkUuid", required = false) UUID networkUuid,
+                                                                   @RequestParam(value = "variantId", required = false) String variantId) {
+        List<ContingencyInfos> contingencyInfos = service.exportContingencyList(id, networkUuid, variantId);
+        return contingencyInfos == null ? ResponseEntity.notFound().build() : ResponseEntity.ok()
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(contingencyInfos);
     }
 
     @PostMapping(value = "/script-contingency-lists", consumes = MediaType.APPLICATION_JSON_VALUE)
@@ -156,7 +168,7 @@ public class ContingencyListController {
     @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "The identifier contingency list"),
         @ApiResponse(responseCode = "404", description = "The identifier contingency list does not exists")})
     public ResponseEntity<PersistentContingencyList> getIdentifierContingencyList(@PathVariable("id") UUID id) {
-        return service.getIdBasedContingencyList(id).map(contingencyList -> ResponseEntity.ok()
+        return service.getIdBasedContingencyList(id, null).map(contingencyList -> ResponseEntity.ok()
                         .contentType(MediaType.APPLICATION_JSON)
                         .body(contingencyList))
                 .orElse(ResponseEntity.notFound().build());

@@ -132,12 +132,47 @@ public class ContingencyListService {
         return self.doGetFormContingencyListWithPreFetchedCountries(id).map(ContingencyListService::fromFormContingencyListEntity);
     }
 
-    public Optional<PersistentContingencyList> getIdBasedContingencyList(UUID id) {
+    public Optional<PersistentContingencyList> getIdBasedContingencyList(UUID id, Network network) {
         Objects.requireNonNull(id);
-        return idBasedContingencyListRepository.findById(id).map(ContingencyListService::fromIdBasedContingencyListEntity);
+        return idBasedContingencyListRepository.findById(id).map(idBasedContingencyListEntity -> fromIdBasedContingencyListEntity(idBasedContingencyListEntity, network));
     }
 
-    private List<Contingency> getPowsyblContingencies(PersistentContingencyList contingencyList, UUID networkUuid, String variantId) {
+    private List<Contingency> getPowsyblContingencies(PersistentContingencyList contingencyList, Network network) {
+        ContingencyList powsyblContingencyList = contingencyList.toPowsyblContingencyList(network);
+        return powsyblContingencyList == null ? Collections.emptyList() : powsyblContingencyList.getContingencies(network);
+    }
+
+    List<ContingencyInfos> exportContingencyList(UUID id, UUID networkUuid, String variantId) {
+        Objects.requireNonNull(id);
+        Network network = getNetworkFromUuid(networkUuid, variantId);
+        Optional<PersistentContingencyList> optionalPersistentContingencyList = getScriptContingencyList(id)
+                .or(() -> getFormContingencyList(id))
+                .or(() -> getIdBasedContingencyList(id, network));
+
+        if (optionalPersistentContingencyList.isEmpty()) {
+            return null;
+        }
+
+        PersistentContingencyList persistentContingencyList = optionalPersistentContingencyList.get();
+        List<Contingency> contingencies = getPowsyblContingencies(persistentContingencyList, network);
+
+        List<ContingencyInfos> contingencyInfos = new ArrayList<>();
+        Map<String, Set<String>> notFoundElements = persistentContingencyList.getNotFoundElements(network);
+
+        // we add all the contingencies that have only wrong ids
+        notFoundElements.entrySet().stream()
+                .filter(stringSetEntry -> contingencies.stream().noneMatch(c -> c.getId().equals(stringSetEntry.getKey())))
+                .map(stringSetEntry -> new ContingencyInfos(stringSetEntry.getKey(), null, stringSetEntry.getValue()))
+                .forEach(contingencyInfos::add);
+
+        contingencies.stream()
+                .map(contingency -> new ContingencyInfos(contingency, notFoundElements.get(contingency.getId())))
+                .forEach(contingencyInfos::add);
+
+        return contingencyInfos;
+    }
+
+    private Network getNetworkFromUuid(UUID networkUuid, String variantId) {
         Network network;
         if (networkUuid == null) {
             // use an empty network, script might not have need to network
@@ -151,15 +186,8 @@ public class ContingencyListService {
                 network.getVariantManager().setWorkingVariant(variantId);
             }
         }
-        ContingencyList powsyblContingencyList = contingencyList.toPowsyblContingencyList(network);
-        return powsyblContingencyList == null ? Collections.emptyList() : powsyblContingencyList.getContingencies(network);
-    }
 
-    Optional<List<Contingency>> exportContingencyList(UUID id, UUID networkUuid, String variantId) {
-        Objects.requireNonNull(id);
-        return getScriptContingencyList(id).map(contingencyList -> getPowsyblContingencies(contingencyList, networkUuid, variantId))
-            .or(() -> getFormContingencyList(id).map(contingencyList -> getPowsyblContingencies(contingencyList, networkUuid, variantId)))
-                    .or(() -> getIdBasedContingencyList(id).map(contingencyList -> getPowsyblContingencies(contingencyList, networkUuid, variantId)));
+        return network;
     }
 
     ScriptContingencyList createScriptContingencyList(UUID id, ScriptContingencyList script) {
@@ -188,7 +216,7 @@ public class ContingencyListService {
     }
 
     public Optional<PersistentContingencyList> duplicateIdentifierContingencyList(UUID sourceListId, UUID id) {
-        return getIdBasedContingencyList(sourceListId).map(s -> createIdBasedContingencyList(id, (IdBasedContingencyList) s));
+        return getIdBasedContingencyList(sourceListId, null).map(s -> createIdBasedContingencyList(id, (IdBasedContingencyList) s));
     }
 
     public void modifyFormContingencyList(UUID id, FormContingencyList formContingencyList, String userId) {
@@ -252,20 +280,30 @@ public class ContingencyListService {
         });
     }
 
-    private static IdBasedContingencyList fromIdBasedContingencyListEntity(IdBasedContingencyListEntity entity) {
+    private static IdBasedContingencyList fromIdBasedContingencyListEntity(IdBasedContingencyListEntity entity, Network network) {
         List<NetworkElementIdentifier> listOfNetworkElementIdentifierList = new ArrayList<>();
+        Map<String, Set<String>> notFoundElements = new HashMap<>();
         entity.getIdentifiersListEntities().forEach(identifierList -> {
             List<NetworkElementIdentifier> networkElementIdentifiers = new ArrayList<>();
-            identifierList.getEquipmentIds().forEach(equipmentId -> networkElementIdentifiers.add(new IdBasedNetworkElementIdentifier(equipmentId)));
+            identifierList.getEquipmentIds().forEach(equipmentId -> {
+                if (network != null && network.getIdentifiable(equipmentId) == null) {
+                    Set<String> ids = notFoundElements.computeIfAbsent(identifierList.getName(), k -> new HashSet<>());
+                    ids.add(equipmentId);
+                }
+                networkElementIdentifiers.add(new IdBasedNetworkElementIdentifier(equipmentId));
+            });
             listOfNetworkElementIdentifierList.add(new NetworkElementIdentifierList(networkElementIdentifiers, identifierList.getName()));
         });
-        return new IdBasedContingencyList(entity.getId(), entity.getModificationDate(), new IdentifierContingencyList(entity.getId().toString(), listOfNetworkElementIdentifierList));
+        return new IdBasedContingencyList(entity.getId(),
+                entity.getModificationDate(),
+                new IdentifierContingencyList(entity.getId().toString(), listOfNetworkElementIdentifierList),
+                notFoundElements);
     }
 
     public IdBasedContingencyList createIdBasedContingencyList(UUID id, IdBasedContingencyList idBasedContingencyList) {
         IdBasedContingencyListEntity entity = new IdBasedContingencyListEntity(idBasedContingencyList);
         entity.setId(id == null ? UUID.randomUUID() : id);
-        return fromIdBasedContingencyListEntity(idBasedContingencyListRepository.save(entity));
+        return fromIdBasedContingencyListEntity(idBasedContingencyListRepository.save(entity), null);
     }
 
 }

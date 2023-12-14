@@ -21,6 +21,7 @@ import org.gridsuite.actions.server.utils.EquipmentType;
 
 import java.util.Collections;
 import java.util.Date;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -149,5 +150,12 @@ public class FormContingencyList extends AbstractContingencyList {
                 throw new PowsyblException("Unknown equipment type");
         }
         return contingencyList;
+    }
+
+    //TODO this a temporary workaround to get elements not found in the network
+    // this should be deleted when a fix is added to powsybl
+    @Override
+    public Map<String, Set<String>> getNotFoundElements(Network network) {
+        return Map.of();
     }
 }

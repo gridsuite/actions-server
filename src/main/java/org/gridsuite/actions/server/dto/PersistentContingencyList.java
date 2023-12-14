@@ -9,6 +9,9 @@ package org.gridsuite.actions.server.dto;
 import com.powsybl.contingency.contingency.list.ContingencyList;
 import com.powsybl.iidm.network.Network;
 
+import java.util.Map;
+import java.util.Set;
+
 /**
  * @author Etienne Homer <etienne.homer@rte-france.com>
  */
@@ -16,4 +19,8 @@ public interface PersistentContingencyList {
     ContingencyListMetadata getMetadata();
 
     ContingencyList toPowsyblContingencyList(Network network);
+
+    //TODO this a temporary workaround to get elements not found in the network
+    // this should be deleted when a fix is added to powsybl
+    Map<String, Set<String>> getNotFoundElements(Network network);
 }

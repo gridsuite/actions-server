@@ -780,6 +780,42 @@ public class ContingencyListControllerTest {
     }
 
     @Test
+    public void testExportContingenciesInfos() throws Exception {
+        ScriptContingencyList scriptContingencyList = new ScriptContingencyList("contingency('NHV1_NHV2_1') {\n" +
+                "    equipments 'NHV1_NHV2_1'}\n" +
+                "contingency('TEST2') {\n" +
+                "    equipments 'TEST2'}");
+
+        UUID scriptContingencyId = addNewScriptContingencyList(objectMapper.writeValueAsString(scriptContingencyList));
+
+        mvc.perform(get("/" + VERSION + "/contingency-lists/contingency-infos/" + scriptContingencyId + "/export?networkUuid=" + NETWORK_UUID + "&variantId=" + VARIANT_ID_1)
+                        .contentType(APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+                .andExpect(content().json("[{\"id\":\"NHV1_NHV2_1\",\"contingency\":{\"id\":\"NHV1_NHV2_1\",\"elements\":[{\"id\":\"NHV1_NHV2_1\",\"type\":\"LINE\"}]},\"notFoundElements\":null},{\"id\":\"TEST2\",\"contingency\":null,\"notFoundElements\":[\"TEST2\"]}]"));
+        // delete data
+        mvc.perform(delete("/" + VERSION + "/contingency-lists/" + scriptContingencyId))
+                .andExpect(status().isOk());
+
+        Date date = new Date();
+        IdBasedContingencyList idBasedContingencyList = createIdBasedContingencyList(null, date, "NHV1_NHV2_1", "Test");
+        String res = mvc.perform(post("/" + VERSION + "/identifier-contingency-lists")
+                        .content(objectMapper.writeValueAsString(idBasedContingencyList))
+                        .contentType(APPLICATION_JSON))
+                .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
+
+        UUID contingencyListId = objectMapper.readValue(res, IdBasedContingencyList.class).getId();
+        mvc.perform(get("/" + VERSION + "/contingency-lists/contingency-infos/" + contingencyListId + "/export?networkUuid=" + NETWORK_UUID + "&variantId=" + VARIANT_ID_1)
+                        .contentType(APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+                .andExpect(content().json("[{\"id\":\"NHV1_NHV2_1\",\"contingency\":{\"id\":\"NHV1_NHV2_1\",\"elements\":[{\"id\":\"NHV1_NHV2_1\",\"type\":\"LINE\"}]},\"notFoundElements\":null},{\"id\":\"Test\",\"contingency\":null,\"notFoundElements\":[\"Test\"]}]"));
+        // delete data
+        mvc.perform(delete("/" + VERSION + "/contingency-lists/" + contingencyListId))
+                .andExpect(status().isOk());
+    }
+
+    @Test
     public void emptyScriptTest() throws Exception {
         UUID id = addNewScriptContingencyList("{" +
                 "\"script\" : \"\"}");

@@ -15,10 +15,12 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.codehaus.groovy.control.customizers.ImportCustomizer;
 import org.gridsuite.actions.server.utils.ContingencyListType;
+import org.springframework.util.CollectionUtils;
 
-import java.util.Date;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 /**
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at rte-france.com>
@@ -47,5 +49,27 @@ public class ScriptContingencyList extends AbstractContingencyList {
         customizer.addStaticStars("org.gridsuite.actions.server.utils.FiltersUtils");
         List<Contingency> contingencyList = new ContingencyDslLoader(script).load(network, customizer);
         return ContingencyList.of(contingencyList.toArray(Contingency[]::new));
+    }
+
+    //TODO this a temporary workaround to get elements not found in the network
+    // this should be deleted when a fix is added to powsybl
+    public Map<String, Set<String>> getNotFoundElements(Network network) {
+        Map<String, Set<String>> contingencyEquipmentMap = new LinkedHashMap<>();
+        Pattern pattern = Pattern.compile("contingency\\('([^']+)'\\)\\s*\\{\\s*equipments\\s*'([^']+)'");
+        Matcher matcher = pattern.matcher(script);
+
+        while (matcher.find()) {
+            String contingencyId = matcher.group(1);
+            String equipmentsIds = matcher.group(2);
+            String[] equipmentsArray = equipmentsIds.split(",\\s*"); // Splitting multiple IDs by comma
+            Set<String> equipmentSet = Arrays.stream(equipmentsArray)
+                    .filter(id -> network.getIdentifiable(id) == null).collect(Collectors.toSet());
+
+            if (!CollectionUtils.isEmpty(equipmentSet)) {
+                contingencyEquipmentMap.put(contingencyId, equipmentSet);
+            }
+        }
+
+        return contingencyEquipmentMap;
     }
 }
