@@ -6,7 +6,6 @@
  */
 package org.gridsuite.actions.server;
 
-import com.powsybl.contingency.Contingency;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -20,7 +19,6 @@ import org.springframework.web.bind.annotation.*;
 
 import jakarta.persistence.EntityNotFoundException;
 import java.util.List;
-import java.util.Objects;
 import java.util.UUID;
 
 /**
@@ -82,16 +80,14 @@ public class ContingencyListController {
             .orElse(ResponseEntity.notFound().build());
     }
 
-    @GetMapping(value = "/contingency-lists/{id}/export", produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = "/contingency-lists/{id}/contingency-count", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Export a contingency list to PowSyBl JSON format")
     @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "The contingency list on PowSyBl JSON format")})
-    public ResponseEntity<List<Contingency>> exportContingencyList(@PathVariable("id") UUID id,
+    public ResponseEntity<Integer> contingencyListCount(@PathVariable("id") List<UUID> uuids,
                                                                    @RequestParam(value = "networkUuid", required = false) UUID networkUuid,
                                                                    @RequestParam(value = "variantId", required = false) String variantId) {
-        List<ContingencyInfos> contingencyInfos = service.exportContingencyList(id, networkUuid, variantId);
-        return contingencyInfos == null ? ResponseEntity.notFound().build() : ResponseEntity.ok()
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(contingencyInfos.stream().map(ContingencyInfos::getContingency).filter(Objects::nonNull).toList());
+        Integer contingencyInfosCount = service.getContingencyCount(uuids, networkUuid, variantId);
+        return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(contingencyInfosCount);
     }
 
     @GetMapping(value = "/contingency-lists/contingency-infos/{id}/export", produces = MediaType.APPLICATION_JSON_VALUE)

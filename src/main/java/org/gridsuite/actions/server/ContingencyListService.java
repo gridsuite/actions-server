@@ -142,6 +142,41 @@ public class ContingencyListService {
         return powsyblContingencyList == null ? Collections.emptyList() : powsyblContingencyList.getContingencies(network);
     }
 
+    public Integer getContingencyCount(List<UUID> uuids, UUID networkUuid, String variantId) {
+        Objects.requireNonNull(uuids);
+        Network network = getNetworkFromUuid(networkUuid, variantId);
+        List<Integer> contingencyCounts = new ArrayList<>();
+        for (UUID uuid : uuids) {
+            Optional<PersistentContingencyList> optionalPersistentContingencyList = getScriptContingencyList(uuid)
+                    .or(() -> getFormContingencyList(uuid))
+                    .or(() -> getIdBasedContingencyList(uuid, network));
+
+            if (optionalPersistentContingencyList.isEmpty()) {
+                contingencyCounts.add(0);
+            } else {
+
+                PersistentContingencyList persistentContingencyList = optionalPersistentContingencyList.get();
+                List<Contingency> contingencies = getPowsyblContingencies(persistentContingencyList, network);
+
+                List<ContingencyInfos> contingencyInfos = new ArrayList<>();
+                Map<String, Set<String>> notFoundElements = persistentContingencyList.getNotFoundElements(network);
+
+                // we add all the contingencies that have only wrong ids
+                notFoundElements.entrySet().stream()
+                        .filter(stringSetEntry -> contingencies.stream().noneMatch(c -> c.getId().equals(stringSetEntry.getKey())))
+                        .map(stringSetEntry -> new ContingencyInfos(stringSetEntry.getKey(), null, stringSetEntry.getValue()))
+                        .forEach(contingencyInfos::add);
+
+                contingencies.stream()
+                        .map(contingency -> new ContingencyInfos(contingency, notFoundElements.get(contingency.getId())))
+                        .forEach(contingencyInfos::add);
+
+                contingencyCounts.add(contingencies.size());
+            }
+        }
+        return contingencyCounts.stream().reduce(0, Integer::sum);
+    }
+
     List<ContingencyInfos> exportContingencyList(UUID id, UUID networkUuid, String variantId) {
         Objects.requireNonNull(id);
         Network network = getNetworkFromUuid(networkUuid, variantId);
