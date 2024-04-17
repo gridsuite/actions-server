@@ -8,6 +8,7 @@ package org.gridsuite.actions.server;
 
 import com.powsybl.contingency.Contingency;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -92,6 +93,15 @@ public class ContingencyListController {
         return contingencyInfos == null ? ResponseEntity.notFound().build() : ResponseEntity.ok()
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(contingencyInfos.stream().map(ContingencyInfos::getContingency).filter(Objects::nonNull).toList());
+    }
+
+    @GetMapping(value = "/contingency-lists/count", produces = MediaType.APPLICATION_JSON_VALUE)
+    @Operation(summary = "Sum the contingency count for all ids passed")
+    @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "The total contingency count")})
+    public ResponseEntity<Integer> getContingencyCount(@Parameter(description = "Contingency list ids") @RequestParam(name = "ids") List<UUID> ids,
+                                                       @RequestParam(value = "networkUuid") UUID networkUuid,
+                                                       @RequestParam(value = "variantId", required = false) String variantId) {
+        return ResponseEntity.ok().body(service.getContingencyCount(ids, networkUuid, variantId));
     }
 
     @GetMapping(value = "/contingency-lists/contingency-infos/{id}/export", produces = MediaType.APPLICATION_JSON_VALUE)

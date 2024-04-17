@@ -1214,6 +1214,14 @@ public class ContingencyListControllerTest {
     }
 
     @Test
+    public void exportUnknownContingencyList() throws Exception {
+        mvc.perform(get("/" + VERSION + "/contingency-lists/" + UUID.randomUUID() + "/export?networkUuid=" + NETWORK_UUID + (VARIANT_ID_1 != null ? "&variantId=" + VARIANT_ID_1 : ""))
+                        .contentType(APPLICATION_JSON))
+                .andExpect(status().isNotFound())
+                .andReturn();
+    }
+
+    @Test
     public void modifyIdBasedContingencyList() throws Exception {
         Date modificationDate = new Date();
         IdBasedContingencyList idBasedContingencyList = createIdBasedContingencyList(null, modificationDate, "LINE1");

@@ -142,9 +142,25 @@ public class ContingencyListService {
         return powsyblContingencyList == null ? Collections.emptyList() : powsyblContingencyList.getContingencies(network);
     }
 
-    List<ContingencyInfos> exportContingencyList(UUID id, UUID networkUuid, String variantId) {
+    @Transactional(readOnly = true)
+    public Integer getContingencyCount(List<UUID> ids, UUID networkUuid, String variantId) {
+        Network network = getNetworkFromUuid(networkUuid, variantId);
+        return ids.stream()
+            .map(uuid -> {
+                List<ContingencyInfos> contingencyList = exportContingencyList(uuid, network);
+                return contingencyList == null ? 0 : contingencyList.stream().map(ContingencyInfos::getContingency).filter(Objects::nonNull).toList().size();
+            })
+            .reduce(0, Integer::sum);
+    }
+
+    @Transactional(readOnly = true)
+    public List<ContingencyInfos> exportContingencyList(UUID id, UUID networkUuid, String variantId) {
         Objects.requireNonNull(id);
         Network network = getNetworkFromUuid(networkUuid, variantId);
+        return exportContingencyList(id, network);
+    }
+
+    private List<ContingencyInfos> exportContingencyList(UUID id, Network network) {
         Optional<PersistentContingencyList> optionalPersistentContingencyList = getScriptContingencyList(id)
                 .or(() -> getFormContingencyList(id))
                 .or(() -> getIdBasedContingencyList(id, network));
