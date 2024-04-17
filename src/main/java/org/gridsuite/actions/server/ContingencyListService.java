@@ -196,8 +196,10 @@ public class ContingencyListService {
         return fromScriptContingencyListEntity(scriptContingencyListRepository.save(entity));
     }
 
-    Optional<PersistentContingencyList> duplicateScriptContingencyList(UUID sourceListId, UUID id) {
-        return getScriptContingencyList(sourceListId).map(s -> createScriptContingencyList(id, (ScriptContingencyList) s));
+    Optional<UUID> duplicateScriptContingencyList(UUID sourceListId) {
+        UUID newScriptContingencyListId = UUID.randomUUID();
+        getScriptContingencyList(sourceListId).map(s -> createScriptContingencyList(newScriptContingencyListId, (ScriptContingencyList) s));
+        return Optional.of(newScriptContingencyListId);
     }
 
     void modifyScriptContingencyList(UUID id, ScriptContingencyList script, String userId) {
@@ -211,12 +213,16 @@ public class ContingencyListService {
         return fromFormContingencyListEntity(formContingencyListRepository.save(entity));
     }
 
-    public Optional<PersistentContingencyList> duplicateFormContingencyList(UUID sourceListId, UUID id) {
-        return getFormContingencyList(sourceListId).map(s -> createFormContingencyList(id, (FormContingencyList) s));
+    public Optional<UUID> duplicateFormContingencyList(UUID sourceListId) {
+        UUID newFormContingencyListId = UUID.randomUUID();
+        getFormContingencyList(sourceListId).map(s -> createFormContingencyList(newFormContingencyListId, (FormContingencyList) s));
+        return Optional.of(newFormContingencyListId);
     }
 
-    public Optional<PersistentContingencyList> duplicateIdentifierContingencyList(UUID sourceListId, UUID id) {
-        return getIdBasedContingencyList(sourceListId, null).map(s -> createIdBasedContingencyList(id, (IdBasedContingencyList) s));
+    public Optional<UUID> duplicateIdentifierContingencyList(UUID sourceListId) {
+        UUID newIdentifierContingencyListId = UUID.randomUUID();
+        getIdBasedContingencyList(sourceListId, null).map(s -> createIdBasedContingencyList(newIdentifierContingencyListId, (IdBasedContingencyList) s));
+        return Optional.of(newIdentifierContingencyListId);
     }
 
     public void modifyFormContingencyList(UUID id, FormContingencyList formContingencyList, String userId) {
