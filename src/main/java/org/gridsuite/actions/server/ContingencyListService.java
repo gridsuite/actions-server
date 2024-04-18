@@ -198,7 +198,9 @@ public class ContingencyListService {
 
     Optional<UUID> duplicateScriptContingencyList(UUID sourceListId) {
         UUID newScriptContingencyListId = UUID.randomUUID();
-        getScriptContingencyList(sourceListId).map(s -> createScriptContingencyList(newScriptContingencyListId, (ScriptContingencyList) s));
+        getScriptContingencyList(sourceListId).map(s -> createScriptContingencyList(newScriptContingencyListId, (ScriptContingencyList) s)).orElseThrow(() -> {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Script contingency list " + sourceListId + " not found");
+        });
         return Optional.of(newScriptContingencyListId);
     }
 
@@ -215,13 +217,17 @@ public class ContingencyListService {
 
     public Optional<UUID> duplicateFormContingencyList(UUID sourceListId) {
         UUID newFormContingencyListId = UUID.randomUUID();
-        getFormContingencyList(sourceListId).map(s -> createFormContingencyList(newFormContingencyListId, (FormContingencyList) s));
+        getFormContingencyList(sourceListId).map(s -> createFormContingencyList(newFormContingencyListId, (FormContingencyList) s)).orElseThrow(() -> {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Form contingency list " + sourceListId + " not found");
+        });
         return Optional.of(newFormContingencyListId);
     }
 
     public Optional<UUID> duplicateIdentifierContingencyList(UUID sourceListId) {
         UUID newIdentifierContingencyListId = UUID.randomUUID();
-        getIdBasedContingencyList(sourceListId, null).map(s -> createIdBasedContingencyList(newIdentifierContingencyListId, (IdBasedContingencyList) s));
+        getIdBasedContingencyList(sourceListId, null).map(s -> createIdBasedContingencyList(newIdentifierContingencyListId, (IdBasedContingencyList) s)).orElseThrow(() -> {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Identifier contingency list " + sourceListId + " not found");
+        });
         return Optional.of(newIdentifierContingencyListId);
     }
 

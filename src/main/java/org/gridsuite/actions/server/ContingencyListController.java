@@ -176,7 +176,7 @@ public class ContingencyListController {
     @PostMapping(value = "/identifier-contingency-lists/{identifierContingencyListsId}/duplicate")
     @Operation(summary = "Create a identifier contingency list from another existing one")
         @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "The identifier contingency list have been duplicated successfully"),
-        @ApiResponse(responseCode = "404", description = "Source script contingency list not found")})
+                               @ApiResponse(responseCode = "404", description = "Source script contingency list not found")})
     public ResponseEntity<UUID> duplicateIdentifierContingencyList(@PathVariable("identifierContingencyListsId") UUID identifierContingencyListsId) {
         return service.duplicateIdentifierContingencyList(identifierContingencyListsId).map(contingencyList -> ResponseEntity.ok()
                         .contentType(MediaType.APPLICATION_JSON)
