@@ -84,11 +84,9 @@ public class ContingencyListControllerTest {
     private static final String VARIANT_ID_1 = "variant_1";
     private static final String USER_ID_HEADER = "userId";
 
-    private String elementUpdateDestination = "element.update";
+    private final String elementUpdateDestination = "element.update";
 
     private Network network;
-
-    private static final double EPSILON = .001;
 
     @Autowired
     private ScriptContingencyListRepository scriptContingencyListRepository;
@@ -319,16 +317,13 @@ public class ContingencyListControllerTest {
         // single nominalVoltage => no range allowed
         assertNotEquals(nominalVoltageOperator, RANGE);
 
-        switch (type) {
-            case LINE:
-                return genFormContingencyListForLine(nominalVoltage, nominalVoltageOperator, countries);
-            case HVDC_LINE:
-                return genFormContingencyListForHVDC(nominalVoltage, nominalVoltageOperator, countries);
-            case TWO_WINDINGS_TRANSFORMER:
-                return genFormContingencyListFor2WT(nominalVoltage, nominalVoltageOperator, countries);
-            default:
-                return genFormContingencyListForOthers(type, nominalVoltage, nominalVoltageOperator, countries);
-        }
+        return switch (type) {
+            case LINE -> genFormContingencyListForLine(nominalVoltage, nominalVoltageOperator, countries);
+            case HVDC_LINE -> genFormContingencyListForHVDC(nominalVoltage, nominalVoltageOperator, countries);
+            case TWO_WINDINGS_TRANSFORMER ->
+                    genFormContingencyListFor2WT(nominalVoltage, nominalVoltageOperator, countries);
+            default -> genFormContingencyListForOthers(type, nominalVoltage, nominalVoltageOperator, countries);
+        };
     }
 
     public String genFormContingencyListForLine(Double nominalVoltage, NumericalFilterOperator nominalVoltageOperator, Set<String> countries) {
@@ -1203,7 +1198,7 @@ public class ContingencyListControllerTest {
 
         UUID contingencyListId = objectMapper.readValue(res, IdBasedContingencyList.class).getId();
 
-        mvc.perform(get("/" + VERSION + "/contingency-lists/" + contingencyListId + "/export?networkUuid=" + NETWORK_UUID + (VARIANT_ID_1 != null ? "&variantId=" + VARIANT_ID_1 : ""))
+        mvc.perform(get("/" + VERSION + "/contingency-lists/" + contingencyListId + "/export?networkUuid=" + NETWORK_UUID + "&variantId=" + VARIANT_ID_1)
                         .contentType(APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andReturn().getResponse().getContentAsString();
@@ -1214,11 +1209,39 @@ public class ContingencyListControllerTest {
     }
 
     @Test
-    public void exportUnknownContingencyList() throws Exception {
-        mvc.perform(get("/" + VERSION + "/contingency-lists/" + UUID.randomUUID() + "/export?networkUuid=" + NETWORK_UUID + (VARIANT_ID_1 != null ? "&variantId=" + VARIANT_ID_1 : ""))
+    public void testExportUnknownContingencyList() throws Exception {
+        mvc.perform(get("/" + VERSION + "/contingency-lists/" + UUID.randomUUID() + "/export?networkUuid=" + NETWORK_UUID + "&variantId=" + VARIANT_ID_1)
                         .contentType(APPLICATION_JSON))
                 .andExpect(status().isNotFound())
                 .andReturn();
+    }
+
+    @Test
+    public void testCountUnknownContingencyList() throws Exception {
+        String res = mvc.perform(get("/" + VERSION + "/contingency-lists/count?ids=" + UUID.randomUUID() + "&networkUuid=" + NETWORK_UUID + "&variantId=" + VARIANT_ID_1)
+                        .contentType(APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString();
+        assertEquals(0, Integer.parseInt(res));
+    }
+
+    @Test
+    public void testCountContingencyList() throws Exception {
+        // insert 3 contingency lists
+        Set<String> noCountries = Collections.emptySet();
+        String lineForm1 = genFormContingencyList(EquipmentType.LINE, -1., EQUALITY, noCountries); // 2 defaults
+        String lineForm2 = genFormContingencyList(EquipmentType.LINE, 100., LESS_THAN, noCountries); // none
+        String lineForm3 = genFormContingencyList(EquipmentType.LINE, 380., EQUALITY, noCountries); // 2 defaults
+        UUID cl1 = addNewFormContingencyList(lineForm1);
+        UUID cl2 = addNewFormContingencyList(lineForm2);
+        UUID cl3 = addNewFormContingencyList(lineForm3);
+
+        // count them (incl a wrong uuid)
+        String res = mvc.perform(get("/" + VERSION + "/contingency-lists/count?ids=" + UUID.randomUUID() + "&ids=" + cl1 + "&ids=" + cl2 + "&ids=" + cl3 + "&networkUuid=" + NETWORK_UUID + "&variantId=" + VARIANT_ID_1)
+                        .contentType(APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString();
+        assertEquals(4, Integer.parseInt(res));
     }
 
     @Test
