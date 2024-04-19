@@ -43,15 +43,15 @@ import java.util.stream.Stream;
 @Service
 public class ContingencyListService {
 
-    private ScriptContingencyListRepository scriptContingencyListRepository;
+    private final ScriptContingencyListRepository scriptContingencyListRepository;
 
-    private FormContingencyListRepository formContingencyListRepository;
+    private final FormContingencyListRepository formContingencyListRepository;
 
-    private IdBasedContingencyListRepository idBasedContingencyListRepository;
+    private final IdBasedContingencyListRepository idBasedContingencyListRepository;
 
-    private NetworkStoreService networkStoreService;
+    private final NetworkStoreService networkStoreService;
 
-    private NotificationService notificationService;
+    private final NotificationService notificationService;
 
     private final FormToGroovyScript formToScript = new FormToGroovyScript();
 
@@ -142,23 +142,54 @@ public class ContingencyListService {
         return powsyblContingencyList == null ? Collections.emptyList() : powsyblContingencyList.getContingencies(network);
     }
 
-    List<ContingencyInfos> exportContingencyList(UUID id, UUID networkUuid, String variantId) {
-        Objects.requireNonNull(id);
+    @Transactional(readOnly = true)
+    public Integer getContingencyCount(List<UUID> ids, UUID networkUuid, String variantId) {
         Network network = getNetworkFromUuid(networkUuid, variantId);
-        Optional<PersistentContingencyList> optionalPersistentContingencyList = getScriptContingencyList(id)
-                .or(() -> getFormContingencyList(id))
-                .or(() -> getIdBasedContingencyList(id, network));
+        return ids.stream()
+            .map(uuid -> {
+                Optional<PersistentContingencyList> contingencyList = getAnyContingencyList(uuid, network);
+                return contingencyList.map(l -> getContingencies(l, network).size()).orElse(0);
+            })
+            .reduce(0, Integer::sum);
+    }
 
-        if (optionalPersistentContingencyList.isEmpty()) {
-            return null;
-        }
+    @Transactional(readOnly = true)
+    public List<Contingency> exportContingencyList(UUID id, UUID networkUuid, String variantId) {
+        Network network = getNetworkFromUuid(networkUuid, variantId);
+        return getContingencies(findContingencyList(id, network), network);
+    }
 
-        PersistentContingencyList persistentContingencyList = optionalPersistentContingencyList.get();
+    private List<Contingency> getContingencies(PersistentContingencyList persistentContingencyList, Network network) {
+        return evaluateContingencyList(persistentContingencyList, network)
+                .stream()
+                .map(ContingencyInfos::getContingency)
+                .filter(Objects::nonNull)
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<ContingencyInfos> exportContingencyInfosList(UUID id, UUID networkUuid, String variantId) {
+        Network network = getNetworkFromUuid(networkUuid, variantId);
+        return evaluateContingencyList(findContingencyList(id, network), network);
+    }
+
+    private PersistentContingencyList findContingencyList(UUID id, Network network) {
+        Objects.requireNonNull(id);
+        return getAnyContingencyList(id, network)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Contingency list " + id + " not found"));
+    }
+
+    private Optional<PersistentContingencyList> getAnyContingencyList(UUID id, Network network) {
+        return getFormContingencyList(id)
+                .or(() -> getIdBasedContingencyList(id, network))
+                .or(() -> getScriptContingencyList(id));
+    }
+
+    private List<ContingencyInfos> evaluateContingencyList(PersistentContingencyList persistentContingencyList, Network network) {
         List<Contingency> contingencies = getPowsyblContingencies(persistentContingencyList, network);
-
-        List<ContingencyInfos> contingencyInfos = new ArrayList<>();
         Map<String, Set<String>> notFoundElements = persistentContingencyList.getNotFoundElements(network);
 
+        List<ContingencyInfos> contingencyInfos = new ArrayList<>();
         // we add all the contingencies that have only wrong ids
         notFoundElements.entrySet().stream()
                 .filter(stringSetEntry -> contingencies.stream().noneMatch(c -> c.getId().equals(stringSetEntry.getKey())))
