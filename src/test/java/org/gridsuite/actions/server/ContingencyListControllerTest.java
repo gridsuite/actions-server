@@ -1058,10 +1058,10 @@ public class ContingencyListControllerTest {
         String list = genFormContingencyList(EquipmentType.LINE, 11., EQUALITY, Set.of());
         UUID id = addNewFormContingencyList(list);
 
-        String newUuid = mvc.perform(post("/" + VERSION + "/form-contingency-lists/" + id + "/duplicate"))
+        String newUuid = mvc.perform(post("/" + VERSION + "/form-contingency-lists?duplicateFrom=" + id))
                 .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
         assertNotNull(newUuid);
-        mvc.perform(post("/" + VERSION + "/form-contingency-lists/" + UUID.randomUUID() + "/duplicate"))
+        mvc.perform(post("/" + VERSION + "/form-contingency-lists?duplicateFrom=" + UUID.randomUUID()))
                 .andExpect(status().isNotFound());
     }
 
@@ -1072,7 +1072,7 @@ public class ContingencyListControllerTest {
                 "}";
         UUID id = addNewScriptContingencyList(script.strip());
 
-        String newUuid = mvc.perform(post("/" + VERSION + "/script-contingency-lists/" + id + "/duplicate"))
+        String newUuid = mvc.perform(post("/" + VERSION + "/script-contingency-lists?duplicateFrom=" + id))
                 .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
         assertNotNull(newUuid);
         mvc.perform(post("/" + VERSION + "/script-contingency-lists" + UUID.randomUUID()))
@@ -1178,12 +1178,12 @@ public class ContingencyListControllerTest {
 
         UUID id = objectMapper.readValue(res, IdBasedContingencyList.class).getId();
 
-        String newUuid = mvc.perform(post("/" + VERSION + "/identifier-contingency-lists/" + id + "/duplicate"))
+        String newUuid = mvc.perform(post("/" + VERSION + "/identifier-contingency-lists?duplicateFrom=" + id))
                 .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
 
         assertNotNull(newUuid);
 
-        mvc.perform(post("/" + VERSION + "/identifier-contingency-lists/" + UUID.randomUUID() + "/duplicate"))
+        mvc.perform(post("/" + VERSION + "/identifier-contingency-lists?duplicateFrom=" + UUID.randomUUID()))
                 .andExpect(status().isNotFound());
     }
 
