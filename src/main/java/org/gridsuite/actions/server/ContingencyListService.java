@@ -199,10 +199,11 @@ public class ContingencyListService {
 
     Optional<UUID> duplicateScriptContingencyList(UUID sourceListId) {
         Optional<ScriptContingencyList> scriptContingencyList = getScriptContingencyList(sourceListId).map(s -> createScriptContingencyList(null, (ScriptContingencyList) s));
-        if (scriptContingencyList.isPresent()) {
+        if (!scriptContingencyList.isPresent()) {
+            ExceptionUtils.throwNotFound(sourceListId.toString(), "Script contingency list");
+        } else {
             return Optional.of(scriptContingencyList.get().getId());
         }
-        ExceptionUtils.throwNotFound(sourceListId.toString(), "Script contingency list");
         return Optional.empty();
     }
 
