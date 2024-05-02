@@ -1075,7 +1075,7 @@ public class ContingencyListControllerTest {
         String newUuid = mvc.perform(post("/" + VERSION + "/script-contingency-lists?duplicateFrom=" + id))
                 .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
         assertNotNull(newUuid);
-        mvc.perform(post("/" + VERSION + "/script-contingency-lists" + UUID.randomUUID()))
+        mvc.perform(post("/" + VERSION + "/script-contingency-lists?duplicateFrom=" + UUID.randomUUID()))
                 .andExpect(status().isNotFound());
     }
 
