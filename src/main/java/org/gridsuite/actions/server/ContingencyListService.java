@@ -201,10 +201,9 @@ public class ContingencyListService {
         Optional<ScriptContingencyList> scriptContingencyList = getScriptContingencyList(sourceListId).map(s -> createScriptContingencyList(null, (ScriptContingencyList) s));
         if (scriptContingencyList.isPresent()) {
             return Optional.of(scriptContingencyList.get().getId());
-        } else {
-            ExceptionUtils.throwNotFound(sourceListId.toString(), "Script contingency list");
         }
-        return null;
+        ExceptionUtils.throwNotFound(sourceListId.toString(), "Script contingency list");
+        return Optional.empty();
     }
 
     void modifyScriptContingencyList(UUID id, ScriptContingencyList script, String userId) {
@@ -222,20 +221,18 @@ public class ContingencyListService {
         Optional<FormContingencyList> formContingencyList = getFormContingencyList(sourceListId).map(s -> createFormContingencyList(null, (FormContingencyList) s));
         if (formContingencyList.isPresent()) {
             return Optional.of(formContingencyList.get().getId());
-        } else {
-            ExceptionUtils.throwNotFound(sourceListId.toString(), "Form contingency list");
         }
-        return null;
+        ExceptionUtils.throwNotFound(sourceListId.toString(), "Form contingency list");
+        return Optional.empty();
     }
 
     public Optional<UUID> duplicateIdentifierContingencyList(UUID sourceListId) {
         Optional<IdBasedContingencyList> idBasedContingencyList = getIdBasedContingencyList(sourceListId, null).map(s -> createIdBasedContingencyList(null, (IdBasedContingencyList) s));
         if (idBasedContingencyList.isPresent()) {
             return Optional.of(idBasedContingencyList.get().getId());
-        } else {
-            ExceptionUtils.throwNotFound(sourceListId.toString(), "Identifier contingency list");
         }
-        return null;
+        ExceptionUtils.throwNotFound(sourceListId.toString(), "Identifier contingency list");
+        return Optional.empty();
     }
 
     public void modifyFormContingencyList(UUID id, FormContingencyList formContingencyList, String userId) {
