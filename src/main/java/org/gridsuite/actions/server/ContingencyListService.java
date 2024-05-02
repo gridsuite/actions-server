@@ -220,19 +220,21 @@ public class ContingencyListService {
 
     public Optional<UUID> duplicateFormContingencyList(UUID sourceListId) {
         Optional<FormContingencyList> formContingencyList = getFormContingencyList(sourceListId).map(s -> createFormContingencyList(null, (FormContingencyList) s));
-        if (formContingencyList.isPresent()) {
+        if (!formContingencyList.isPresent()) {
+            ExceptionUtils.throwNotFound(sourceListId.toString(), "Form contingency list");
+        } else {
             return Optional.of(formContingencyList.get().getId());
         }
-        ExceptionUtils.throwNotFound(sourceListId.toString(), "Form contingency list");
         return Optional.empty();
     }
 
     public Optional<UUID> duplicateIdentifierContingencyList(UUID sourceListId) {
         Optional<IdBasedContingencyList> idBasedContingencyList = getIdBasedContingencyList(sourceListId, null).map(s -> createIdBasedContingencyList(null, (IdBasedContingencyList) s));
-        if (idBasedContingencyList.isPresent()) {
+        if (!idBasedContingencyList.isPresent()) {
+            ExceptionUtils.throwNotFound(sourceListId.toString(), "Identifier contingency list");
+        } else {
             return Optional.of(idBasedContingencyList.get().getId());
         }
-        ExceptionUtils.throwNotFound(sourceListId.toString(), "Identifier contingency list");
         return Optional.empty();
     }
 
