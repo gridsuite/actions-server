@@ -22,7 +22,6 @@ import org.gridsuite.actions.server.repositories.FormContingencyListRepository;
 import org.gridsuite.actions.server.repositories.IdBasedContingencyListRepository;
 import org.gridsuite.actions.server.repositories.ScriptContingencyListRepository;
 import org.gridsuite.actions.server.utils.ContingencyListType;
-import org.gridsuite.actions.server.utils.ExceptionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.dao.EmptyResultDataAccessException;
@@ -200,11 +199,10 @@ public class ContingencyListService {
     Optional<UUID> duplicateScriptContingencyList(UUID sourceListId) {
         Optional<ScriptContingencyList> scriptContingencyList = getScriptContingencyList(sourceListId).map(s -> createScriptContingencyList(null, (ScriptContingencyList) s));
         if (!scriptContingencyList.isPresent()) {
-            ExceptionUtils.throwNotFound(sourceListId.toString(), "Script contingency list");
+            throw createNotFoundException(sourceListId.toString(), "Script contingency list");
         } else {
             return Optional.of(scriptContingencyList.get().getId());
         }
-        return Optional.empty();
     }
 
     void modifyScriptContingencyList(UUID id, ScriptContingencyList script, String userId) {
@@ -221,21 +219,19 @@ public class ContingencyListService {
     public Optional<UUID> duplicateFormContingencyList(UUID sourceListId) {
         Optional<FormContingencyList> formContingencyList = getFormContingencyList(sourceListId).map(s -> createFormContingencyList(null, (FormContingencyList) s));
         if (!formContingencyList.isPresent()) {
-            ExceptionUtils.throwNotFound(sourceListId.toString(), "Form contingency list");
+            throw createNotFoundException(sourceListId.toString(), "Form contingency list");
         } else {
             return Optional.of(formContingencyList.get().getId());
         }
-        return Optional.empty();
     }
 
     public Optional<UUID> duplicateIdentifierContingencyList(UUID sourceListId) {
         Optional<IdBasedContingencyList> idBasedContingencyList = getIdBasedContingencyList(sourceListId, null).map(s -> createIdBasedContingencyList(null, (IdBasedContingencyList) s));
         if (!idBasedContingencyList.isPresent()) {
-            ExceptionUtils.throwNotFound(sourceListId.toString(), "Identifier contingency list");
+            throw createNotFoundException(sourceListId.toString(), "Identifier contingency list");
         } else {
             return Optional.of(idBasedContingencyList.get().getId());
         }
-        return Optional.empty();
     }
 
     public void modifyFormContingencyList(UUID id, FormContingencyList formContingencyList, String userId) {
@@ -323,6 +319,10 @@ public class ContingencyListService {
         IdBasedContingencyListEntity entity = new IdBasedContingencyListEntity(idBasedContingencyList);
         entity.setId(id == null ? UUID.randomUUID() : id);
         return fromIdBasedContingencyListEntity(idBasedContingencyListRepository.save(entity), null);
+    }
+
+    public ResponseStatusException createNotFoundException(String resourceId, String resourceType) {
+        return new ResponseStatusException(HttpStatus.NOT_FOUND, String.format("%s %s not found", resourceType, resourceId));
     }
 
 }
