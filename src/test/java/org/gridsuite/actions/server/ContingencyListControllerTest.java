@@ -1053,12 +1053,10 @@ public class ContingencyListControllerTest {
         String list = genFormContingencyList(EquipmentType.LINE, 11., EQUALITY, Set.of());
         UUID id = addNewFormContingencyList(list);
 
-        String res = mvc.perform(post("/" + VERSION + "/form-contingency-lists?duplicateFrom=" + id + "&id=" + UUID.randomUUID()))
+        String newUuid = mvc.perform(post("/" + VERSION + "/form-contingency-lists?duplicateFrom=" + id))
                 .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
-        String returnedEquipmentType = objectMapper.readValue(res, FormContingencyList.class).getEquipmentType();
-        assertEquals(returnedEquipmentType, EquipmentType.LINE.toString());
-
-        mvc.perform(post("/" + VERSION + "/form-contingency-lists?duplicateFrom=" + UUID.randomUUID() + "&id=" + UUID.randomUUID()))
+        assertNotNull(newUuid);
+        mvc.perform(post("/" + VERSION + "/form-contingency-lists?duplicateFrom=" + UUID.randomUUID()))
                 .andExpect(status().isNotFound());
     }
 
@@ -1069,12 +1067,10 @@ public class ContingencyListControllerTest {
                 "}";
         UUID id = addNewScriptContingencyList(script.strip());
 
-        String res = mvc.perform(post("/" + VERSION + "/script-contingency-lists?duplicateFrom=" + id + "&id=" + UUID.randomUUID()))
+        String newUuid = mvc.perform(post("/" + VERSION + "/script-contingency-lists?duplicateFrom=" + id))
                 .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
-        String returnedScript = objectMapper.readValue(res, ScriptContingencyList.class).getScript();
-        assertTrue(returnedScript.contains("equipments 'NHV1_NHV2_1'"));
-
-        mvc.perform(post("/" + VERSION + "/script-contingency-lists?duplicateFrom=" + UUID.randomUUID() + "&id=" + UUID.randomUUID()))
+        assertNotNull(newUuid);
+        mvc.perform(post("/" + VERSION + "/script-contingency-lists?duplicateFrom=" + UUID.randomUUID()))
                 .andExpect(status().isNotFound());
     }
 
@@ -1177,12 +1173,12 @@ public class ContingencyListControllerTest {
 
         UUID id = objectMapper.readValue(res, IdBasedContingencyList.class).getId();
 
-        res = mvc.perform(post("/" + VERSION + "/identifier-contingency-lists?duplicateFrom=" + id + "&id=" + UUID.randomUUID()))
+        String newUuid = mvc.perform(post("/" + VERSION + "/identifier-contingency-lists?duplicateFrom=" + id))
                 .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
 
-        assertEquals(1, objectMapper.readValue(res, IdBasedContingencyList.class).getIdentifierContingencyList().getIdentifiants().size());
+        assertNotNull(newUuid);
 
-        mvc.perform(post("/" + VERSION + "/identifier-contingency-lists?duplicateFrom=" + UUID.randomUUID() + "&id=" + UUID.randomUUID()))
+        mvc.perform(post("/" + VERSION + "/identifier-contingency-lists?duplicateFrom=" + UUID.randomUUID()))
                 .andExpect(status().isNotFound());
     }
 

@@ -125,9 +125,8 @@ public class ContingencyListController {
     @Operation(summary = "Create a script contingency list from another existing one")
     @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "The script contingency list have been duplicated successfully"),
                            @ApiResponse(responseCode = "404", description = "Source script contingency list not found")})
-    public ResponseEntity<PersistentContingencyList> duplicateScriptContingencyList(@RequestParam("duplicateFrom") UUID sourceListId,
-                                                                                    @RequestParam(value = "id") UUID id) {
-        return service.duplicateScriptContingencyList(sourceListId, id).map(contingencyList -> ResponseEntity.ok()
+    public ResponseEntity<UUID> duplicateScriptContingencyList(@RequestParam("duplicateFrom") UUID scriptContingencyListsId) {
+        return service.duplicateScriptContingencyList(scriptContingencyListsId).map(contingencyList -> ResponseEntity.ok()
                         .contentType(MediaType.APPLICATION_JSON)
                         .body(contingencyList))
                 .orElse(ResponseEntity.notFound().build());
@@ -181,11 +180,10 @@ public class ContingencyListController {
 
     @PostMapping(value = "/identifier-contingency-lists")
     @Operation(summary = "Create a identifier contingency list from another existing one")
-    @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "The identifier contingency list have been duplicated successfully"),
-        @ApiResponse(responseCode = "404", description = "Source script contingency list not found")})
-    public ResponseEntity<PersistentContingencyList> duplicateIdentifierContingencyList(@RequestParam("duplicateFrom") UUID sourceListId,
-                                                                                        @RequestParam(value = "id") UUID id) {
-        return service.duplicateIdentifierContingencyList(sourceListId, id).map(contingencyList -> ResponseEntity.ok()
+        @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "The identifier contingency list have been duplicated successfully"),
+                               @ApiResponse(responseCode = "404", description = "Source script contingency list not found")})
+    public ResponseEntity<UUID> duplicateIdentifierContingencyList(@RequestParam("duplicateFrom") UUID identifierContingencyListsId) {
+        return service.duplicateIdentifierContingencyList(identifierContingencyListsId).map(contingencyList -> ResponseEntity.ok()
                         .contentType(MediaType.APPLICATION_JSON)
                         .body(contingencyList))
                 .orElse(ResponseEntity.notFound().build());
@@ -206,13 +204,12 @@ public class ContingencyListController {
         }
     }
 
-    @PostMapping(value = "/form-contingency-lists")
+    @PostMapping(value = "/form-contingency-lists", params = "duplicateFrom")
     @Operation(summary = "Create a form contingency list from another existing one")
     @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "The form contingency list have been duplicated successfully"),
                            @ApiResponse(responseCode = "404", description = "Source form contingency list not found")})
-    public ResponseEntity<PersistentContingencyList> duplicateFormContingencyList(@RequestParam("duplicateFrom") UUID sourceListId,
-                                                                                  @RequestParam(value = "id") UUID id) {
-        return service.duplicateFormContingencyList(sourceListId, id).map(contingencyList -> ResponseEntity.ok()
+    public ResponseEntity<UUID> duplicateFormContingencyList(@RequestParam("duplicateFrom") UUID formContingencyListsId) {
+        return service.duplicateFormContingencyList(formContingencyListsId).map(contingencyList -> ResponseEntity.ok()
                         .contentType(MediaType.APPLICATION_JSON)
                         .body(contingencyList))
                 .orElse(ResponseEntity.notFound().build());
