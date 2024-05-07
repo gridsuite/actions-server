@@ -9,9 +9,9 @@ package org.gridsuite.actions.server;
 import com.powsybl.commons.PowsyblException;
 import com.powsybl.contingency.*;
 import com.powsybl.contingency.contingency.list.*;
-import com.powsybl.contingency.contingency.list.identifier.IdBasedNetworkElementIdentifier;
-import com.powsybl.contingency.contingency.list.identifier.NetworkElementIdentifier;
-import com.powsybl.contingency.contingency.list.identifier.NetworkElementIdentifierList;
+import com.powsybl.iidm.network.identifiers.IdBasedNetworkElementIdentifier;
+import com.powsybl.iidm.network.identifiers.NetworkElementIdentifier;
+import com.powsybl.iidm.network.identifiers.NetworkElementIdentifierContingencyList;
 import com.powsybl.iidm.network.*;
 import com.powsybl.network.store.client.NetworkStoreService;
 import com.powsybl.network.store.client.PreloadingStrategy;
@@ -338,7 +338,7 @@ public class ContingencyListService {
                 }
                 networkElementIdentifiers.add(new IdBasedNetworkElementIdentifier(equipmentId));
             });
-            listOfNetworkElementIdentifierList.add(new NetworkElementIdentifierList(networkElementIdentifiers, identifierList.getName()));
+            listOfNetworkElementIdentifierList.add(new NetworkElementIdentifierContingencyList(networkElementIdentifiers, identifierList.getName()));
         });
         return new IdBasedContingencyList(entity.getId(),
                 entity.getModificationDate(),

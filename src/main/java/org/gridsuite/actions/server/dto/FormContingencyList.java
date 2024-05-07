@@ -8,9 +8,9 @@ package org.gridsuite.actions.server.dto;
 
 import com.powsybl.commons.PowsyblException;
 import com.powsybl.contingency.contingency.list.*;
-import com.powsybl.contingency.contingency.list.criterion.SingleCountryCriterion;
-import com.powsybl.contingency.contingency.list.criterion.TwoCountriesCriterion;
-import com.powsybl.contingency.contingency.list.criterion.TwoNominalVoltageCriterion;
+import com.powsybl.iidm.criteria.SingleCountryCriterion;
+import com.powsybl.iidm.criteria.TwoCountriesCriterion;
+import com.powsybl.iidm.criteria.TwoNominalVoltageCriterion;
 import com.powsybl.iidm.network.Country;
 import com.powsybl.iidm.network.Network;
 import io.swagger.v3.oas.annotations.media.Schema;
