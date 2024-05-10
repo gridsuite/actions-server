@@ -8,9 +8,7 @@ package org.gridsuite.actions.server.dto;
 
 import com.powsybl.commons.PowsyblException;
 import com.powsybl.contingency.contingency.list.*;
-import com.powsybl.iidm.criteria.SingleCountryCriterion;
-import com.powsybl.iidm.criteria.TwoCountriesCriterion;
-import com.powsybl.iidm.criteria.TwoNominalVoltageCriterion;
+import com.powsybl.iidm.criteria.*;
 import com.powsybl.iidm.network.Country;
 import com.powsybl.iidm.network.Network;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -85,6 +83,12 @@ public class FormContingencyList extends AbstractContingencyList {
         this(null, null, equipmentType, nominalVoltage, nominalVoltage1, nominalVoltage2, countries, countries1, countries2);
     }
 
+    private static VoltageInterval getVoltageInterval(SingleNominalVoltageCriterion singleNominalVoltageCriterion) {
+        return singleNominalVoltageCriterion != null ?
+                singleNominalVoltageCriterion.getVoltageInterval()
+                : null;
+    }
+
     @Override
     public ContingencyList toPowsyblContingencyList(Network network) {
         AbstractEquipmentCriterionContingencyList contingencyList;
@@ -112,7 +116,7 @@ public class FormContingencyList extends AbstractContingencyList {
                         ),
                         // TODO ?????
                         new TwoNominalVoltageCriterion(
-                                NumericalFilter.toNominalVoltageCriterion(this.getNominalVoltage()).getVoltageInterval(),
+                                getVoltageInterval(NumericalFilter.toNominalVoltageCriterion(this.getNominalVoltage())),
                                 null
                         ),
                         Collections.emptyList(),
@@ -127,8 +131,8 @@ public class FormContingencyList extends AbstractContingencyList {
                                 this.getCountries2().stream().map(c -> Country.valueOf(c)).collect(Collectors.toList())
                         ),
                         new TwoNominalVoltageCriterion(
-                                NumericalFilter.toNominalVoltageCriterion(this.getNominalVoltage1()).getVoltageInterval(),
-                                NumericalFilter.toNominalVoltageCriterion(this.getNominalVoltage2()).getVoltageInterval()
+                                getVoltageInterval(NumericalFilter.toNominalVoltageCriterion(this.getNominalVoltage1())),
+                                getVoltageInterval(NumericalFilter.toNominalVoltageCriterion(this.getNominalVoltage2()))
                         ),
                         Collections.emptyList(),
                         null
@@ -139,8 +143,8 @@ public class FormContingencyList extends AbstractContingencyList {
                         this.getId().toString(),
                         new SingleCountryCriterion(this.getCountries().stream().map(c -> Country.valueOf(c)).collect(Collectors.toList())),
                         new TwoNominalVoltageCriterion(
-                                NumericalFilter.toNominalVoltageCriterion(this.getNominalVoltage1()).getVoltageInterval(),
-                                NumericalFilter.toNominalVoltageCriterion(this.getNominalVoltage2()).getVoltageInterval()
+                                getVoltageInterval(NumericalFilter.toNominalVoltageCriterion(this.getNominalVoltage1())),
+                                getVoltageInterval(NumericalFilter.toNominalVoltageCriterion(this.getNominalVoltage2()))
                         ),
                         Collections.emptyList(),
                         null

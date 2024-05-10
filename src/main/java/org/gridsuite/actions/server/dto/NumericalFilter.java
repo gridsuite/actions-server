@@ -42,7 +42,7 @@ public class NumericalFilter {
 
     public static SingleNominalVoltageCriterion toNominalVoltageCriterion(NumericalFilter numericalFilter) {
         if (numericalFilter == null) {
-            return new SingleNominalVoltageCriterion(VoltageInterval.builder().build());
+            return null;
         }
         switch (numericalFilter.getType()) {
             case EQUALITY:
