@@ -7,9 +7,9 @@
 package org.gridsuite.actions.server.entities;
 
 import com.powsybl.contingency.contingency.list.IdentifierContingencyList;
-import com.powsybl.contingency.contingency.list.identifier.IdBasedNetworkElementIdentifier;
-import com.powsybl.contingency.contingency.list.identifier.NetworkElementIdentifier;
-import com.powsybl.contingency.contingency.list.identifier.NetworkElementIdentifierList;
+import com.powsybl.iidm.network.identifiers.IdBasedNetworkElementIdentifier;
+import com.powsybl.iidm.network.identifiers.NetworkElementIdentifier;
+import com.powsybl.iidm.network.identifiers.NetworkElementIdentifierContingencyList;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.gridsuite.actions.server.dto.IdBasedContingencyList;
@@ -47,7 +47,7 @@ public class IdBasedContingencyListEntity extends AbstractContingencyEntity {
 
         this.identifiersListEntities = new ArrayList<>();
         identifierContingencyList.getIdentifiants().forEach(networkElementIdentifier -> {
-            List<NetworkElementIdentifier> identifierList = ((NetworkElementIdentifierList) networkElementIdentifier).getNetworkElementIdentifiers();
+            List<NetworkElementIdentifier> identifierList = ((NetworkElementIdentifierContingencyList) networkElementIdentifier).getNetworkElementIdentifiers();
             String contingencyName = networkElementIdentifier.getContingencyId().isPresent() ? networkElementIdentifier.getContingencyId().get() : "";
             if (contingencyName.isEmpty() || identifierList == null || identifierList.isEmpty()) {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "At least one contingency is partially defined for the contingency list " + identifierContingencyList.getName());
