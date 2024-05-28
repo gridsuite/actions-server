@@ -11,6 +11,8 @@ package org.gridsuite.actions.server;
  * @author Kevin Le Saulnier <kevin.lesaulnier at rte-france.com>
  */
 
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.UUID;
 
@@ -43,7 +45,7 @@ public class NotificationService {
         sendElementUpdateMessage(MessageBuilder.withPayload("")
                 .setHeader(HEADER_ELEMENT_UUID, elementUuid)
                 .setHeader(HEADER_MODIFIED_BY, modifiedBy)
-                .setHeader(HEADER_MODIFICATION_DATE, ZonedDateTime.now())
+                .setHeader(HEADER_MODIFICATION_DATE, OffsetDateTime.now(ZoneOffset.UTC))
                 .build()
         );
     }
