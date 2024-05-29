@@ -12,7 +12,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.gridsuite.actions.server.utils.ContingencyListType;
 
-import java.util.Date;
+import java.time.OffsetDateTime;
 import java.util.UUID;
 
 /**
@@ -33,7 +33,7 @@ public abstract class AbstractContingencyList implements PersistentContingencyLi
         return metadata.getId();
     }
 
-    public Date getModificationDate() {
+    public OffsetDateTime getModificationDate() {
         return metadata.getModificationDate();
     }
 

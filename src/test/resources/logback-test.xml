@@ -23,6 +23,7 @@
       >  :: Spring Boot ::                (v3.1.2)
       > 09:32:45.146 [main] INFO  org.springframework.boot.test.mock.web.SpringBootMockServletContext - Initializing Spring TestDispatcherServlet ''
 
+
     TODO: is there a better way to do this ? Or should sprinboot test do this themselves??
     -->
     <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">

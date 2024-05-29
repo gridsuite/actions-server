@@ -13,6 +13,9 @@ import org.gridsuite.actions.server.dto.FormContingencyList;
 import org.gridsuite.actions.server.utils.EquipmentType;
 
 import jakarta.persistence.*;
+
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -93,6 +96,7 @@ public class FormContingencyListEntity extends AbstractContingencyEntity {
         } else {
             this.countries = new HashSet<>(emptyIfNull(formContingencyList.getCountries()));
         }
+        this.setModificationDate(OffsetDateTime.now(ZoneOffset.UTC));
     }
 
     public FormContingencyListEntity update(FormContingencyList formContingencyList) {

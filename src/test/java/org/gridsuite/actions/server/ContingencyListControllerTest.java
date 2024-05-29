@@ -9,6 +9,8 @@ package org.gridsuite.actions.server;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.powsybl.contingency.contingency.list.IdentifierContingencyList;
 import com.powsybl.iidm.network.identifiers.IdBasedNetworkElementIdentifier;
 import com.powsybl.iidm.network.identifiers.NetworkElementIdentifier;
@@ -51,6 +53,8 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -132,6 +136,8 @@ public class ContingencyListControllerTest {
 
     @Before
     public void setUp() {
+        objectMapper.registerModule(new JavaTimeModule());
+        objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
         MockitoAnnotations.initMocks(this);
 
         network = EurostagTutorialExample1Factory.createWithMoreGenerators(new NetworkFactoryImpl());
@@ -401,7 +407,7 @@ public class ContingencyListControllerTest {
         ContingencyListMetadataImpl attributes = getMetadata(id);
 
         assertEquals(id, attributes.getId());
-        Date baseModificationDate = attributes.getModificationDate();
+        OffsetDateTime baseModificationDate = attributes.getModificationDate();
 
         mvc.perform(put("/" + VERSION + "/form-contingency-lists/" + id)
                 .content(list)
@@ -414,7 +420,7 @@ public class ContingencyListControllerTest {
         assertEquals(userId, message.getHeaders().get(NotificationService.HEADER_MODIFIED_BY));
 
         attributes = getMetadata(id);
-        assertTrue(baseModificationDate.getTime() < attributes.getModificationDate().getTime());
+        assertTrue(baseModificationDate.toInstant().toEpochMilli() < attributes.getModificationDate().toInstant().toEpochMilli());
     }
 
     private UUID addNewFormContingencyList(String form) throws Exception {
@@ -792,7 +798,7 @@ public class ContingencyListControllerTest {
         mvc.perform(delete("/" + VERSION + "/contingency-lists/" + scriptContingencyId))
                 .andExpect(status().isOk());
 
-        Date date = new Date();
+        OffsetDateTime date = OffsetDateTime.now(ZoneOffset.UTC);
         IdBasedContingencyList idBasedContingencyList = createIdBasedContingencyList(null, date, "NHV1_NHV2_1", "Test");
         String res = mvc.perform(post("/" + VERSION + "/identifier-contingency-lists")
                         .content(objectMapper.writeValueAsString(idBasedContingencyList))
@@ -1074,7 +1080,7 @@ public class ContingencyListControllerTest {
                 .andExpect(status().isNotFound());
     }
 
-    public IdBasedContingencyList createIdBasedContingencyList(UUID listId, Date modificationDate, String... identifiers) {
+    public IdBasedContingencyList createIdBasedContingencyList(UUID listId, OffsetDateTime modificationDate, String... identifiers) {
         List< NetworkElementIdentifier > networkElementIdentifiers = Arrays.stream(identifiers).map(id -> new NetworkElementIdentifierContingencyList(List.of(new IdBasedNetworkElementIdentifier(id)), id)).collect(Collectors.toList());
         return new IdBasedContingencyList(listId, modificationDate, new IdentifierContingencyList(listId != null ? listId.toString() : "defaultName", networkElementIdentifiers));
     }
@@ -1094,7 +1100,7 @@ public class ContingencyListControllerTest {
     private void matchContingencyListMetadata(ContingencyListMetadata metadata1, ContingencyListMetadata metadata2) {
         assertEquals(metadata1.getId(), metadata2.getId());
         assertEquals(metadata1.getType(), metadata2.getType());
-        assertTrue((metadata1.getModificationDate().getTime() - metadata2.getModificationDate().getTime()) < 2000);
+        assertTrue((metadata1.getModificationDate().toInstant().toEpochMilli() - metadata2.getModificationDate().toInstant().toEpochMilli()) < 2000);
     }
 
     private void matchIdBasedContingencyList(IdBasedContingencyList cl1, IdBasedContingencyList cl2) {
@@ -1109,7 +1115,7 @@ public class ContingencyListControllerTest {
 
     @Test
     public void createIdBasedContingencyList() throws Exception {
-        Date modificationDate = new Date();
+        OffsetDateTime modificationDate = OffsetDateTime.now(ZoneOffset.UTC);
         IdBasedContingencyList idBasedContingencyList = createIdBasedContingencyList(null, modificationDate, "NHV1_NHV2_1");
 
         String res = mvc.perform(post("/" + VERSION + "/identifier-contingency-lists")
@@ -1147,7 +1153,7 @@ public class ContingencyListControllerTest {
 
     @Test
     public void createIdBasedContingencyListError() throws Exception {
-        Date modificationDate = new Date();
+        OffsetDateTime modificationDate = OffsetDateTime.now(ZoneOffset.UTC);
 
         IdBasedContingencyList idBasedContingencyList1 = createIdBasedContingencyList(null, modificationDate, "");
         mvc.perform(post("/" + VERSION + "/identifier-contingency-lists")
@@ -1164,7 +1170,7 @@ public class ContingencyListControllerTest {
 
     @Test
     public void duplicateBasedContingencyList() throws Exception {
-        Date modificationDate = new Date();
+        OffsetDateTime modificationDate = OffsetDateTime.now(ZoneOffset.UTC);
         IdBasedContingencyList idBasedContingencyList = createIdBasedContingencyList(null, modificationDate, "id1");
         String res = mvc.perform(post("/" + VERSION + "/identifier-contingency-lists")
                         .content(objectMapper.writeValueAsString(idBasedContingencyList))
@@ -1184,7 +1190,7 @@ public class ContingencyListControllerTest {
 
     @Test
     public void exportIdBasedContingencyList() throws Exception {
-        Date modificationDate = new Date();
+        OffsetDateTime modificationDate = OffsetDateTime.now(ZoneOffset.UTC);
         IdBasedContingencyList idBasedContingencyList = createIdBasedContingencyList(null, modificationDate, "NHV1_NHV2_1");
 
         String res = mvc.perform(post("/" + VERSION + "/identifier-contingency-lists")
@@ -1242,7 +1248,7 @@ public class ContingencyListControllerTest {
 
     @Test
     public void modifyIdBasedContingencyList() throws Exception {
-        Date modificationDate = new Date();
+        OffsetDateTime modificationDate = OffsetDateTime.now(ZoneOffset.UTC);
         IdBasedContingencyList idBasedContingencyList = createIdBasedContingencyList(null, modificationDate, "LINE1");
 
         String res = mvc.perform(post("/" + VERSION + "/identifier-contingency-lists")

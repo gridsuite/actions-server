@@ -13,7 +13,6 @@ package org.gridsuite.actions.server;
 
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
 import java.util.UUID;
 
 import org.slf4j.Logger;

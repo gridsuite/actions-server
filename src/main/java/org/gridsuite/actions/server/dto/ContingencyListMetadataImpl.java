@@ -12,7 +12,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.gridsuite.actions.server.utils.ContingencyListType;
 
-import java.util.Date;
+import java.time.OffsetDateTime;
 import java.util.UUID;
 
 /**
@@ -32,6 +32,6 @@ public class ContingencyListMetadataImpl implements ContingencyListMetadata {
     private ContingencyListType type;
 
     @Schema(description = "Modification Date")
-    Date modificationDate;
+    OffsetDateTime modificationDate;
 
 }
