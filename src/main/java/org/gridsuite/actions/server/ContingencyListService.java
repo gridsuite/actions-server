@@ -30,8 +30,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.time.OffsetDateTime;
-import java.time.ZoneOffset;
+import java.time.Instant;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -226,7 +225,7 @@ public class ContingencyListService {
     ScriptContingencyList createScriptContingencyList(UUID id, ScriptContingencyList script) {
         ScriptContingencyListEntity entity = new ScriptContingencyListEntity(script);
         entity.setId(id == null ? UUID.randomUUID() : id);
-        entity.setModificationDate(OffsetDateTime.now(ZoneOffset.UTC));
+        entity.setModificationDate(Instant.now());
         return fromScriptContingencyListEntity(scriptContingencyListRepository.save(entity));
     }
 
@@ -247,7 +246,7 @@ public class ContingencyListService {
     public FormContingencyList createFormContingencyList(UUID id, FormContingencyList formContingencyList) {
         FormContingencyListEntity entity = new FormContingencyListEntity(formContingencyList);
         entity.setId(id == null ? UUID.randomUUID() : id);
-        entity.setModificationDate(OffsetDateTime.now(ZoneOffset.UTC));
+        entity.setModificationDate(Instant.now());
         return fromFormContingencyListEntity(formContingencyListRepository.save(entity));
     }
 
@@ -353,7 +352,7 @@ public class ContingencyListService {
     public IdBasedContingencyList createIdBasedContingencyList(UUID id, IdBasedContingencyList idBasedContingencyList) {
         IdBasedContingencyListEntity entity = new IdBasedContingencyListEntity(idBasedContingencyList);
         entity.setId(id == null ? UUID.randomUUID() : id);
-        entity.setModificationDate(OffsetDateTime.now(ZoneOffset.UTC));
+        entity.setModificationDate(Instant.now());
         return fromIdBasedContingencyListEntity(idBasedContingencyListRepository.save(entity), null);
     }
 

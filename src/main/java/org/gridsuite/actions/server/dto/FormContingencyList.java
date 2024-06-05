@@ -17,7 +17,7 @@ import lombok.NoArgsConstructor;
 import org.gridsuite.actions.server.utils.ContingencyListType;
 import org.gridsuite.actions.server.utils.EquipmentType;
 
-import java.time.OffsetDateTime;
+import java.time.Instant;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
@@ -55,7 +55,7 @@ public class FormContingencyList extends AbstractContingencyList {
     private Set<String> countries2;
 
     public FormContingencyList(UUID uuid,
-                               OffsetDateTime date,
+                               Instant date,
                                String equipmentType,
                                NumericalFilter nominalVoltage,
                                NumericalFilter nominalVoltage1,
