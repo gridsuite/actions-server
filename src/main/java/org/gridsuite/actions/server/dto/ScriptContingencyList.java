@@ -17,6 +17,7 @@ import org.codehaus.groovy.control.customizers.ImportCustomizer;
 import org.gridsuite.actions.server.utils.ContingencyListType;
 import org.springframework.util.CollectionUtils;
 
+import java.time.Instant;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -33,7 +34,7 @@ public class ScriptContingencyList extends AbstractContingencyList {
     @Schema(description = "Script")
     private String script;
 
-    public ScriptContingencyList(UUID uuid, Date date, String script) {
+    public ScriptContingencyList(UUID uuid, Instant date, String script) {
         super(new ContingencyListMetadataImpl(uuid, ContingencyListType.SCRIPT, date));
         this.script = script;
     }

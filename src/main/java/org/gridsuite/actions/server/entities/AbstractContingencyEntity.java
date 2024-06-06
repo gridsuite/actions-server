@@ -16,11 +16,9 @@ import jakarta.persistence.Column;
 import jakarta.persistence.EntityListeners;
 import jakarta.persistence.Id;
 import jakarta.persistence.MappedSuperclass;
-import jakarta.persistence.Temporal;
-import java.util.Date;
-import java.util.UUID;
 
-import static jakarta.persistence.TemporalType.TIMESTAMP;
+import java.time.Instant;
+import java.util.UUID;
 
 /**
  * @author Jacques Borsenberger <jacques.borsenberger at rte-france.com>
@@ -37,7 +35,6 @@ public abstract class AbstractContingencyEntity {
     private UUID id;
 
     @LastModifiedDate
-    @Temporal(TIMESTAMP)
-    @Column(name = "modificationDate")
-    private Date modificationDate;
+    @Column(name = "modificationDate", columnDefinition = "timestamptz")
+    private Instant modificationDate;
 }
