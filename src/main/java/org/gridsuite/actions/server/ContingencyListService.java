@@ -195,12 +195,18 @@ public class ContingencyListService {
 
         notFoundElements.entrySet().stream()
                 .filter(stringSetEntry -> contingencies.stream().noneMatch(c -> c.getId().equals(stringSetEntry.getKey())))
-                .map(stringSetEntry -> new ContingencyInfos(stringSetEntry.getKey(), null, stringSetEntry.getValue(), null))
+                .map(stringSetEntry -> new ContingencyInfos(stringSetEntry.getKey(), null, stringSetEntry.getValue()))
                 .forEach(contingencyInfos::add);
+
+        contingencies.stream()
+                .map(contingency -> new ContingencyInfos(contingency, notFoundElements.get(contingency.getId())))
+                .forEach(contingencyInfos::add);
+
+//        return contingencyInfos;
         // we add all the contingencies that have only wrong ids
-        Map<String, Set<String>> notFoundElementsFiltred = notFoundElements.entrySet().stream()
-                .filter(stringSetEntry -> contingencies.stream().noneMatch(c -> c.getId().equals(stringSetEntry.getKey())))
-                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+//        Map<String, Set<String>> notFoundElementsFiltred = notFoundElements.entrySet().stream()
+//                .filter(stringSetEntry -> contingencies.stream().noneMatch(c -> c.getId().equals(stringSetEntry.getKey())))
+//                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 
 
 //                .map(stringSetEntry -> new ContingencyInfos(stringSetEntry.getKey(), null, stringSetEntry.getValue()))
