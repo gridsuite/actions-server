@@ -91,23 +91,23 @@ public class ContingencyListService {
 
     List<ContingencyListMetadata> getContingencyListsMetadata() {
         return Stream.of(
-                scriptContingencyListRepository.findAll().stream().map(scriptContingencyListEntity ->
-                        fromContingencyListEntity(scriptContingencyListEntity, ContingencyListType.SCRIPT)),
-                formContingencyListRepository.findAll().stream().map(formContingencyListEntity ->
-                        fromContingencyListEntity(formContingencyListEntity, ContingencyListType.FORM)),
-                idBasedContingencyListRepository.findAll().stream().map(idBasedContingencyListEntity ->
-                        fromContingencyListEntity(idBasedContingencyListEntity, ContingencyListType.IDENTIFIERS))
+            scriptContingencyListRepository.findAll().stream().map(scriptContingencyListEntity ->
+                    fromContingencyListEntity(scriptContingencyListEntity, ContingencyListType.SCRIPT)),
+            formContingencyListRepository.findAll().stream().map(formContingencyListEntity ->
+                    fromContingencyListEntity(formContingencyListEntity, ContingencyListType.FORM)),
+            idBasedContingencyListRepository.findAll().stream().map(idBasedContingencyListEntity ->
+                    fromContingencyListEntity(idBasedContingencyListEntity, ContingencyListType.IDENTIFIERS))
         ).flatMap(Function.identity()).collect(Collectors.toList());
     }
 
     List<ContingencyListMetadata> getContingencyListsMetadata(List<UUID> ids) {
         return Stream.of(
-                scriptContingencyListRepository.findAllById(ids).stream().map(scriptContingencyListEntity ->
-                        fromContingencyListEntity(scriptContingencyListEntity, ContingencyListType.SCRIPT)),
-                formContingencyListRepository.findAllById(ids).stream().map(formContingencyListEntity ->
-                        fromContingencyListEntity(formContingencyListEntity, ContingencyListType.FORM)),
-                idBasedContingencyListRepository.findAllById(ids).stream().map(idBasedContingencyListEntity ->
-                        fromContingencyListEntity(idBasedContingencyListEntity, ContingencyListType.IDENTIFIERS))
+            scriptContingencyListRepository.findAllById(ids).stream().map(scriptContingencyListEntity ->
+                    fromContingencyListEntity(scriptContingencyListEntity, ContingencyListType.SCRIPT)),
+            formContingencyListRepository.findAllById(ids).stream().map(formContingencyListEntity ->
+                    fromContingencyListEntity(formContingencyListEntity, ContingencyListType.FORM)),
+            idBasedContingencyListRepository.findAllById(ids).stream().map(idBasedContingencyListEntity ->
+                    fromContingencyListEntity(idBasedContingencyListEntity, ContingencyListType.IDENTIFIERS))
         ).flatMap(Function.identity()).collect(Collectors.toList());
     }
 
@@ -148,11 +148,11 @@ public class ContingencyListService {
     public Integer getContingencyCount(List<UUID> ids, UUID networkUuid, String variantId) {
         Network network = getNetworkFromUuid(networkUuid, variantId);
         return ids.stream()
-                .map(uuid -> {
-                    Optional<PersistentContingencyList> contingencyList = getAnyContingencyList(uuid, network);
-                    return contingencyList.map(l -> getContingencies(l, network).size()).orElse(0);
-                })
-                .reduce(0, Integer::sum);
+            .map(uuid -> {
+                Optional<PersistentContingencyList> contingencyList = getAnyContingencyList(uuid, network);
+                return contingencyList.map(l -> getContingencies(l, network).size()).orElse(0);
+            })
+            .reduce(0, Integer::sum);
     }
 
     @Transactional(readOnly = true)
