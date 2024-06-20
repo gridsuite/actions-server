@@ -94,4 +94,15 @@ public class FiltersUtilsTest {
         assertFalse(FiltersUtils.transfoMatch(transfo2, List.of("FR")));
         assertFalse(FiltersUtils.transfoMatch(transfo2, List.of("ES", "ZA", "DE", "FR")));
     }
+
+    @Test
+    public void testDisconnectEquipment(){
+        Network network = EurostagTutorialExample1Factory.create(new NetworkFactoryImpl());
+        Connectable<?> connectable = network.getConnectable("NHV1_NHV2_1");
+
+        assertFalse(FiltersUtils.isDisconnected(connectable));
+        // disconnect the line
+        connectable.disconnect();
+        assertTrue(FiltersUtils.isDisconnected(connectable));
+    }
 }
