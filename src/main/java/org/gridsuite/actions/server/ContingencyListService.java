@@ -191,42 +191,24 @@ public class ContingencyListService {
         List<Contingency> contingencies = getPowsyblContingencies(persistentContingencyList, network);
         Map<String, Set<String>> notFoundElements = persistentContingencyList.getNotFoundElements(network);
 
-        List<ContingencyInfos> contingencyInfos = new ArrayList<>();
 
-        notFoundElements.entrySet().stream()
-                .filter(stringSetEntry -> contingencies.stream().noneMatch(c -> c.getId().equals(stringSetEntry.getKey())))
-                .map(stringSetEntry -> new ContingencyInfos(stringSetEntry.getKey(), null, stringSetEntry.getValue()))
-                .forEach(contingencyInfos::add);
-
-        contingencies.stream()
-                .map(contingency -> new ContingencyInfos(contingency, notFoundElements.get(contingency.getId())))
-                .forEach(contingencyInfos::add);
-
-//        return contingencyInfos;
-        // we add all the contingencies that have only wrong ids
-//        Map<String, Set<String>> notFoundElementsFiltred = notFoundElements.entrySet().stream()
-//                .filter(stringSetEntry -> contingencies.stream().noneMatch(c -> c.getId().equals(stringSetEntry.getKey())))
-//                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
-
-
-//                .map(stringSetEntry -> new ContingencyInfos(stringSetEntry.getKey(), null, stringSetEntry.getValue()))
-//                .forEach(contingencyInfos::add);
-
-         Map<String, List<ContingencyElement>> notConnected = contingencies.stream()
+         Map<String, Set<String>> notConnected = contingencies.stream()
                 .map( contingency -> {
-                    List<ContingencyElement> disconnects = contingency.getElements().stream()
+                    Set<String> disconnects = contingency.getElements().stream()
                             .filter(contingencyElement -> {
                                 var connectable = network.getConnectable(contingencyElement.getId());
                                 return connectable != null && isDisconnected(connectable);
-                            }).toList();
+                            })
+                            .map(ContingencyElement::getId)
+                            .collect(Collectors.toSet());
                     return new AbstractMap.SimpleEntry<>(contingency.getId(),disconnects);
                 })
                  .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 
-         System.out.println("not connected"+ notConnected.size());
-//        contingencies.stream()
-//                .map(contingency -> new ContingencyInfos(contingency, notFoundElements.get(contingency.getId())))
-//                .forEach(contingencyInfos::add);
+        List<ContingencyInfos> contingencyInfos = contingencies.stream()
+                .map( contingency -> new ContingencyInfos(contingency, notFoundElements.getOrDefault(contingency.getId(), null),
+                notConnected.getOrDefault(contingency.getId(), null))).toList();
+
 
         return contingencyInfos;
     }
