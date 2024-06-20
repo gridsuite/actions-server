@@ -96,7 +96,7 @@ public class FiltersUtilsTest {
     }
 
     @Test
-    public void testDisconnectEquipment(){
+    public void testDisconnectEquipment() {
         Network network = EurostagTutorialExample1Factory.create(new NetworkFactoryImpl());
         Connectable<?> connectable = network.getConnectable("NHV1_NHV2_1");
 
