@@ -101,6 +101,9 @@ public class FiltersUtilsTest {
         Connectable<?> connectable = network.getConnectable("NHV1_NHV2_1");
 
         assertFalse(FiltersUtils.isDisconnected(connectable));
+        //disconnect only one side
+        connectable.getTerminals().get(1).disconnect();
+        assertFalse(FiltersUtils.isDisconnected(connectable));
         // disconnect the line
         connectable.disconnect();
         assertTrue(FiltersUtils.isDisconnected(connectable));
