@@ -173,6 +173,13 @@ public class ContingencyListService {
         return evaluateContingencyList(findContingencyList(id, network), network);
     }
 
+    @Transactional(readOnly = true)
+    public List<ContingencyInfos> exportContingencyInfosList(List<UUID> ids, UUID networkUuid, String variantId) {
+        Network network = getNetworkFromUuid(networkUuid, variantId);
+        List<ContingencyInfos> result = ids.stream().map( id -> evaluateContingencyList(findContingencyList(id, network), network)).flatMap(Collection::stream).toList();
+        return result;
+    }
+
     private PersistentContingencyList findContingencyList(UUID id, Network network) {
         Objects.requireNonNull(id);
         return getAnyContingencyList(id, network)
