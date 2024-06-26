@@ -28,10 +28,4 @@ public class ContingencyInfos {
     private Contingency contingency;
     private Set<String> notFoundElements;
     private Set<String> notConnectedElements;
-
-    public ContingencyInfos(Contingency contingency, Set<String> notFoundElements, Set<String> notConnectedElements) {
-        this.id = contingency == null ? null : contingency.getId();
-        this.contingency = contingency;
-        this.notFoundElements = notFoundElements;
-    }
 }

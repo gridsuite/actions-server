@@ -48,16 +48,4 @@ public final class FiltersUtils {
         return filterByCountries(transfo.getTerminal1(), transfo.getTerminal2(), countries, List.of());
     }
 
-    public static boolean isDisconnected(Connectable<?> connectable) {
-        List<? extends Terminal> terminals = connectable.getTerminals();
-        // check if the connectable are connected with terminal.isConnected()
-        boolean alteastOneIsConnected = false;
-        for (Terminal terminal : terminals) {
-            if (terminal != null && terminal.isConnected()) {
-                alteastOneIsConnected = true;
-                break;
-            }
-        }
-        return !alteastOneIsConnected;
-    }
 }

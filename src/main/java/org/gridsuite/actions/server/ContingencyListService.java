@@ -35,8 +35,6 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static org.gridsuite.actions.server.utils.FiltersUtils.isDisconnected;
-
 /**
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at rte-france.com>
  * @author Franck Lecuyer <franck.lecuyer at rte-france.com>
@@ -214,6 +212,19 @@ public class ContingencyListService {
                 .map(ContingencyElement::getId)
                 .collect(Collectors.toSet());
         return new ContingencyInfos(contingency.getId(), contingency, null, disconnects);
+    }
+
+    public static boolean isDisconnected(Connectable<?> connectable) {
+        List<? extends Terminal> terminals = connectable.getTerminals();
+        // check if the connectable are connected with terminal.isConnected()
+        boolean alteastOneIsConnected = false;
+        for (Terminal terminal : terminals) {
+            if (terminal != null && terminal.isConnected()) {
+                alteastOneIsConnected = true;
+                break;
+            }
+        }
+        return !alteastOneIsConnected;
     }
 
     private Network getNetworkFromUuid(UUID networkUuid, String variantId) {
