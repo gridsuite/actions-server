@@ -94,5 +94,4 @@ public class FiltersUtilsTest {
         assertFalse(FiltersUtils.transfoMatch(transfo2, List.of("FR")));
         assertFalse(FiltersUtils.transfoMatch(transfo2, List.of("ES", "ZA", "DE", "FR")));
     }
-
 }

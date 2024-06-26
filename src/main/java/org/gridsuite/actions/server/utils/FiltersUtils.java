@@ -47,5 +47,4 @@ public final class FiltersUtils {
     public static boolean transfoMatch(TwoWindingsTransformer transfo, List<String> countries) {
         return filterByCountries(transfo.getTerminal1(), transfo.getTerminal2(), countries, List.of());
     }
-
 }

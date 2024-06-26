@@ -151,7 +151,7 @@ public class ContingencyListControllerTest {
         network.getVariantManager().setWorkingVariant(VariantManagerConstants.INITIAL_VARIANT_ID);
         network.getVariantManager().cloneVariant(VariantManagerConstants.INITIAL_VARIANT_ID, VARIANT_ID_2);
         network.getVariantManager().setWorkingVariant(VARIANT_ID_2);
-        //disconnect a line NHV1_NHV2_2
+        //disconnect a line NHV1_NHV2_1
         network.getConnectable("NHV1_NHV2_1").getTerminals().forEach(Terminal::disconnect);
         network.getVariantManager().setWorkingVariant(VariantManagerConstants.INITIAL_VARIANT_ID);
 
