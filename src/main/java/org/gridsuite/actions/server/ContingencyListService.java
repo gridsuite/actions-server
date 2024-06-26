@@ -191,6 +191,7 @@ public class ContingencyListService {
         List<Contingency> contingencies = getPowsyblContingencies(persistentContingencyList, network);
         Map<String, Set<String>> notFoundElements = persistentContingencyList.getNotFoundElements(network);
 
+        // we add all the contingencies that have only wrong ids
         List<ContingencyInfos> contingencyInfos = new ArrayList<>();
         notFoundElements.entrySet().stream()
                 .filter(stringSetEntry -> contingencies.stream().noneMatch(c -> c.getId().equals(stringSetEntry.getKey())))
@@ -198,18 +199,21 @@ public class ContingencyListService {
                 .forEach(contingencyInfos::add);
 
         contingencies.stream()
-                .map(contingency -> {
-                    Set<String> disconnects = contingency.getElements().stream()
-                            .filter(contingencyElement -> {
-                                var connectable = network.getConnectable(contingencyElement.getId());
-                                return connectable != null && isDisconnected(connectable);
-                            })
-                            .map(ContingencyElement::getId)
-                            .collect(Collectors.toSet());
-                    return new ContingencyInfos(contingency.getId(), contingency, null, disconnects);
-                }).forEach(contingencyInfos::add);
+                .map(contingency -> createContingencyInfoWithDisconnects(contingency, network))
+                .forEach(contingencyInfos::add);
 
         return contingencyInfos;
+    }
+
+    private ContingencyInfos createContingencyInfoWithDisconnects(Contingency contingency, Network network) {
+        Set<String> disconnects = contingency.getElements().stream()
+                .filter(contingencyElement -> {
+                    var connectable = network.getConnectable(contingencyElement.getId());
+                    return connectable != null && isDisconnected(connectable);
+                })
+                .map(ContingencyElement::getId)
+                .collect(Collectors.toSet());
+        return new ContingencyInfos(contingency.getId(), contingency, null, disconnects);
     }
 
     private Network getNetworkFromUuid(UUID networkUuid, String variantId) {
