@@ -780,6 +780,42 @@ public class ContingencyListControllerTest {
     }
 
     @Test
+    public void testExportMultiContingenciesInfo() throws Exception {
+        Set<String> noCountries = Collections.emptySet();
+        String lineForm = genFormContingencyList(EquipmentType.LINE, -1., EQUALITY, noCountries);
+        String genForm = genFormContingencyList(EquipmentType.GENERATOR, 100., LESS_THAN, noCountries);
+
+        List<UUID> contingencies = new ArrayList<>();
+        contingencies.add(addNewFormContingencyList(lineForm));
+        contingencies.add(addNewFormContingencyList(genForm));
+
+        StringBuilder urlBuilder = new StringBuilder();
+        urlBuilder.append("/").append(VERSION).append("/contingency-lists/contingency-infos/export");
+        urlBuilder.append("?networkUuid=").append(NETWORK_UUID);
+        urlBuilder.append("&variantId=").append(VARIANT_ID_1);
+
+        contingencies.forEach( id -> urlBuilder.append("&").append("ids").append("=").append(id));
+
+
+        mvc.perform(get(urlBuilder.toString())
+                        .contentType(APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+                .andExpect(content().json("[{\"id\":\"NHV1_NHV2_1\",\"contingency\":{\"id\":\"NHV1_NHV2_1\",\"elements\":[{\"id\":\"NHV1_NHV2_1\",\"type\":\"LINE\"}]},\"notFoundElements\":null},{\"id\":\"TEST2\",\"contingency\":null,\"notFoundElements\":[\"TEST2\"]}]"));
+        // delete data
+        contingencies.forEach(id -> {
+                    try {
+                        mvc.perform(delete("/" + VERSION + "/contingency-lists/" + id.toString()))
+                                .andExpect(status().isOk());
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+        );
+
+    }
+
+    @Test
     public void testExportContingenciesInfos() throws Exception {
         ScriptContingencyList scriptContingencyList = new ScriptContingencyList("contingency('NHV1_NHV2_1') {\n" +
                 "    equipments 'NHV1_NHV2_1'}\n" +
