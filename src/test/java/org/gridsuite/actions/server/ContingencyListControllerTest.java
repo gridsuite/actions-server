@@ -826,7 +826,8 @@ public class ContingencyListControllerTest {
     public void testExportContingenciesInfosNotConnectedAndNotFound() throws Exception {
 
         Instant modificationDate = Instant.now();
-        IdBasedContingencyList idBasedContingencyList = createIdBasedContingencyList(null, modificationDate, "NHV1_NHV2_1", "NHV1_NHV2_2", "TEST1");
+        NetworkElementIdentifierContingencyList networkElementIdentifierContingencyList = new NetworkElementIdentifierContingencyList(List.of(new IdBasedNetworkElementIdentifier("NHV1_NHV2_1"), new IdBasedNetworkElementIdentifier("NHV1_NHV2_2"), new IdBasedNetworkElementIdentifier("TEST1")), "default");
+        IdBasedContingencyList idBasedContingencyList = new IdBasedContingencyList(null, modificationDate, new IdentifierContingencyList( "defaultName", List.of(networkElementIdentifierContingencyList)));
 
         String res = mvc.perform(post("/" + VERSION + "/identifier-contingency-lists")
                         .content(objectMapper.writeValueAsString(idBasedContingencyList))
@@ -840,7 +841,7 @@ public class ContingencyListControllerTest {
                         .contentType(APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-                .andExpect(content().json("[{\"id\":\"TEST1\",\"contingency\":null,\"notFoundElements\":[\"TEST1\"],\"notConnectedElements\":null},{\"id\":\"NHV1_NHV2_1\",\"contingency\":{\"id\":\"NHV1_NHV2_1\",\"elements\":[{\"id\":\"NHV1_NHV2_1\",\"type\":\"LINE\"}]},\"notFoundElements\":null,\"notConnectedElements\":[\"NHV1_NHV2_1\"]},{\"id\":\"NHV1_NHV2_2\",\"contingency\":{\"id\":\"NHV1_NHV2_2\",\"elements\":[{\"id\":\"NHV1_NHV2_2\",\"type\":\"LINE\"}]},\"notFoundElements\":null,\"notConnectedElements\":[]}]"))
+                .andExpect(content().json("[{\"id\":\"default\",\"contingency\":{\"id\":\"default\",\"elements\":[{\"id\":\"NHV1_NHV2_2\",\"type\":\"LINE\"},{\"id\":\"NHV1_NHV2_1\",\"type\":\"LINE\"}]},\"notFoundElements\":[\"TEST1\"],\"notConnectedElements\":[\"NHV1_NHV2_1\"]}]"))
                 .andReturn();
 
         // delete data
