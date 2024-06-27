@@ -827,7 +827,7 @@ public class ContingencyListControllerTest {
 
         Instant modificationDate = Instant.now();
         NetworkElementIdentifierContingencyList networkElementIdentifierContingencyList = new NetworkElementIdentifierContingencyList(List.of(new IdBasedNetworkElementIdentifier("NHV1_NHV2_1"), new IdBasedNetworkElementIdentifier("NHV1_NHV2_2"), new IdBasedNetworkElementIdentifier("TEST1")), "default");
-        IdBasedContingencyList idBasedContingencyList = new IdBasedContingencyList(null, modificationDate, new IdentifierContingencyList( "defaultName", List.of(networkElementIdentifierContingencyList)));
+        IdBasedContingencyList idBasedContingencyList = new IdBasedContingencyList(null, modificationDate, new IdentifierContingencyList("defaultName", List.of(networkElementIdentifierContingencyList)));
 
         String res = mvc.perform(post("/" + VERSION + "/identifier-contingency-lists")
                         .content(objectMapper.writeValueAsString(idBasedContingencyList))
@@ -835,7 +835,6 @@ public class ContingencyListControllerTest {
                 .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
 
         UUID contingencyListId = objectMapper.readValue(res, IdBasedContingencyList.class).getId();
-
 
         mvc.perform(get("/" + VERSION + "/contingency-lists/contingency-infos/" + contingencyListId + "/export?networkUuid=" + NETWORK_UUID + "&variantId=" + VARIANT_ID_2)
                         .contentType(APPLICATION_JSON))
