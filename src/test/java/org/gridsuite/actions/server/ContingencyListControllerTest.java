@@ -825,20 +825,24 @@ public class ContingencyListControllerTest {
     @Test
     public void testExportContingenciesInfosNotConnectedAndNotFound() throws Exception {
 
-        Instant date = Instant.now();
-        IdBasedContingencyList idBasedContingencyList = createIdBasedContingencyList(null, date, "NHV1_NHV2_1", "Test");
+        Instant modificationDate = Instant.now();
+        IdBasedContingencyList idBasedContingencyList = createIdBasedContingencyList(null, modificationDate, "NHV1_NHV2_1", "NHV1_NHV2_2", "TEST1");
+
         String res = mvc.perform(post("/" + VERSION + "/identifier-contingency-lists")
                         .content(objectMapper.writeValueAsString(idBasedContingencyList))
                         .contentType(APPLICATION_JSON))
                 .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
 
         UUID contingencyListId = objectMapper.readValue(res, IdBasedContingencyList.class).getId();
+
+
         mvc.perform(get("/" + VERSION + "/contingency-lists/contingency-infos/" + contingencyListId + "/export?networkUuid=" + NETWORK_UUID + "&variantId=" + VARIANT_ID_2)
                         .contentType(APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-                .andExpect(content().json("[{\"id\":\"Test\",\"contingency\":null,\"notFoundElements\":[\"Test\"],\"notConnectedElements\":null},{\"id\":\"NHV1_NHV2_1\",\"contingency\":{\"id\":\"NHV1_NHV2_1\",\"elements\":[{\"id\":\"NHV1_NHV2_1\",\"type\":\"LINE\"}]},\"notFoundElements\":null,\"notConnectedElements\":[\"NHV1_NHV2_1\"]}]"))
+                .andExpect(content().json("[{\"id\":\"TEST1\",\"contingency\":null,\"notFoundElements\":[\"TEST1\"],\"notConnectedElements\":null},{\"id\":\"NHV1_NHV2_1\",\"contingency\":{\"id\":\"NHV1_NHV2_1\",\"elements\":[{\"id\":\"NHV1_NHV2_1\",\"type\":\"LINE\"}]},\"notFoundElements\":null,\"notConnectedElements\":[\"NHV1_NHV2_1\"]},{\"id\":\"NHV1_NHV2_2\",\"contingency\":{\"id\":\"NHV1_NHV2_2\",\"elements\":[{\"id\":\"NHV1_NHV2_2\",\"type\":\"LINE\"}]},\"notFoundElements\":null,\"notConnectedElements\":[]}]"))
                 .andReturn();
+
         // delete data
         mvc.perform(delete("/" + VERSION + "/contingency-lists/" + contingencyListId))
                 .andExpect(status().isOk());
