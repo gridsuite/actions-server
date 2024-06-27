@@ -189,7 +189,7 @@ public class ContingencyListService {
         List<Contingency> contingencies = getPowsyblContingencies(persistentContingencyList, network);
         Map<String, Set<String>> notFoundElements = persistentContingencyList.getNotFoundElements(network);
 
-        // we add all the contingencies that have only wrong ids
+        // For a gridsuite contingency with all equipments not found the powsybl contingency is not created
         List<ContingencyInfos> contingencyInfos = new ArrayList<>();
         notFoundElements.entrySet().stream()
                 .filter(stringSetEntry -> contingencies.stream().noneMatch(c -> c.getId().equals(stringSetEntry.getKey())))
@@ -197,13 +197,13 @@ public class ContingencyListService {
                 .forEach(contingencyInfos::add);
 
         contingencies.stream()
-                .map(contingency -> createContingencyInfoWithDisconnects(contingency, network))
+                .map(contingency -> createContingencyInfoWithDisconnects(contingency, network, notFoundElements.getOrDefault(contingency.getId(), null)))
                 .forEach(contingencyInfos::add);
 
         return contingencyInfos;
     }
 
-    private ContingencyInfos createContingencyInfoWithDisconnects(Contingency contingency, Network network) {
+    private ContingencyInfos createContingencyInfoWithDisconnects(Contingency contingency, Network network, Set<String> notFoundElements) {
         Set<String> disconnects = contingency.getElements().stream()
                 .filter(contingencyElement -> {
                     var connectable = network.getConnectable(contingencyElement.getId());
@@ -211,7 +211,7 @@ public class ContingencyListService {
                 })
                 .map(ContingencyElement::getId)
                 .collect(Collectors.toSet());
-        return new ContingencyInfos(contingency.getId(), contingency, null, disconnects);
+        return new ContingencyInfos(contingency.getId(), contingency, notFoundElements, disconnects);
     }
 
     public static boolean isDisconnected(Connectable<?> connectable) {
