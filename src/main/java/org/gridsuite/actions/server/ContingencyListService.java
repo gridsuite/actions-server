@@ -197,21 +197,21 @@ public class ContingencyListService {
                 .forEach(contingencyInfos::add);
 
         contingencies.stream()
-                .map(contingency -> createContingencyInfoWithDisconnects(contingency, network, notFoundElements.getOrDefault(contingency.getId(), null)))
+                .map(contingency -> createContingencyInfoWithDisconnects(contingency, network, notFoundElements.get(contingency.getId())))
                 .forEach(contingencyInfos::add);
 
         return contingencyInfos;
     }
 
     private ContingencyInfos createContingencyInfoWithDisconnects(Contingency contingency, Network network, Set<String> notFoundElements) {
-        Set<String> disconnects = contingency.getElements().stream()
+        Set<String> disconnectedElements = contingency.getElements().stream()
                 .filter(contingencyElement -> {
                     var connectable = network.getConnectable(contingencyElement.getId());
                     return connectable != null && isDisconnected(connectable);
                 })
                 .map(ContingencyElement::getId)
                 .collect(Collectors.toSet());
-        return new ContingencyInfos(contingency.getId(), contingency, notFoundElements, disconnects);
+        return new ContingencyInfos(contingency.getId(), contingency, notFoundElements, disconnectedElements);
     }
 
     public static boolean isDisconnected(Connectable<?> connectable) {
