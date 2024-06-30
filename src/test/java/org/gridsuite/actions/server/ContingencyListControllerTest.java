@@ -11,6 +11,9 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.powsybl.contingency.Contingency;
+import com.powsybl.contingency.GeneratorContingency;
+import com.powsybl.contingency.LineContingency;
 import com.powsybl.contingency.contingency.list.IdentifierContingencyList;
 import com.powsybl.iidm.network.identifiers.IdBasedNetworkElementIdentifier;
 import com.powsybl.iidm.network.identifiers.NetworkElementIdentifier;
@@ -796,12 +799,15 @@ public class ContingencyListControllerTest {
 
         contingencies.forEach( id -> urlBuilder.append("&").append("ids").append("=").append(id));
 
+        ContingencyInfos expectedContingency1 = new ContingencyInfos("NHV1_NHV2_1", new Contingency("NHV1_NHV2_1", null, List.of(new LineContingency("NHV1_NHV2_1"))), null);
+        ContingencyInfos expectedContingency2 = new ContingencyInfos("NHV1_NHV2_2", new Contingency("NHV1_NHV2_2", null, List.of(new LineContingency("NHV1_NHV2_2"))), null);
+        ContingencyInfos expectedContingency3 = new ContingencyInfos("GEN", new Contingency("GEN", null, List.of(new GeneratorContingency("GEN"))), null);
 
         mvc.perform(get(urlBuilder.toString())
                         .contentType(APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-                .andExpect(content().json("[{\"id\":\"NHV1_NHV2_1\",\"contingency\":{\"id\":\"NHV1_NHV2_1\",\"elements\":[{\"id\":\"NHV1_NHV2_1\",\"type\":\"LINE\"}]},\"notFoundElements\":null},{\"id\":\"TEST2\",\"contingency\":null,\"notFoundElements\":[\"TEST2\"]}]"));
+                .andExpect(content().json(objectMapper.writeValueAsString(List.of(expectedContingency1, expectedContingency2, expectedContingency3))));
         // delete data
         contingencies.forEach(id -> {
                     try {
