@@ -197,24 +197,23 @@ public class ContingencyListService {
                 .forEach(contingencyInfos::add);
 
         contingencies.stream()
-                .map(contingency -> createContingencyInfoWithDisconnects(contingency, network, notFoundElements.get(contingency.getId())))
+                .map(contingency -> new ContingencyInfos(contingency.getId(), contingency, notFoundElements.get(contingency.getId()), getDisconnectedElements(contingency, network)))
                 .forEach(contingencyInfos::add);
 
         return contingencyInfos;
     }
 
-    private ContingencyInfos createContingencyInfoWithDisconnects(Contingency contingency, Network network, Set<String> notFoundElements) {
-        Set<String> disconnectedElements = contingency.getElements().stream()
+    private Set<String> getDisconnectedElements(Contingency contingency, Network network) {
+        return contingency.getElements().stream()
                 .filter(contingencyElement -> {
                     var connectable = network.getConnectable(contingencyElement.getId());
                     return connectable != null && isDisconnected(connectable);
                 })
                 .map(ContingencyElement::getId)
                 .collect(Collectors.toSet());
-        return new ContingencyInfos(contingency.getId(), contingency, notFoundElements, disconnectedElements);
     }
 
-    public static boolean isDisconnected(Connectable<?> connectable) {
+    private boolean isDisconnected(Connectable<?> connectable) {
         List<? extends Terminal> terminals = connectable.getTerminals();
         // check if the connectable are connected with terminal.isConnected()
         boolean alteastOneIsConnected = false;

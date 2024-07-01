@@ -825,11 +825,9 @@ public class ContingencyListControllerTest {
     }
 
     @Test
-    public void testExportContingenciesInfosNotConnectedAndNotFound() throws Exception {
-
-        Instant modificationDate = Instant.now();
+    public void testExportContingenciesNotConnectedAndNotFoundElements() throws Exception {
         NetworkElementIdentifierContingencyList networkElementIdentifierContingencyList = new NetworkElementIdentifierContingencyList(List.of(new IdBasedNetworkElementIdentifier("NHV1_NHV2_1"), new IdBasedNetworkElementIdentifier("NHV1_NHV2_2"), new IdBasedNetworkElementIdentifier("TEST1")), "default");
-        IdBasedContingencyList idBasedContingencyList = new IdBasedContingencyList(null, modificationDate, new IdentifierContingencyList("defaultName", List.of(networkElementIdentifierContingencyList)));
+        IdBasedContingencyList idBasedContingencyList = new IdBasedContingencyList(null, Instant.now(), new IdentifierContingencyList("defaultName", List.of(networkElementIdentifierContingencyList)));
 
         String res = mvc.perform(post("/" + VERSION + "/identifier-contingency-lists")
                         .content(objectMapper.writeValueAsString(idBasedContingencyList))
