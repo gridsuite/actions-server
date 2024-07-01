@@ -196,18 +196,41 @@ public class ContingencyListService {
         List<Contingency> contingencies = getPowsyblContingencies(persistentContingencyList, network);
         Map<String, Set<String>> notFoundElements = persistentContingencyList.getNotFoundElements(network);
 
+        // For a gridsuite contingency with all equipments not found the powsybl contingency is not created
         List<ContingencyInfos> contingencyInfos = new ArrayList<>();
-        // we add all the contingencies that have only wrong ids
         notFoundElements.entrySet().stream()
                 .filter(stringSetEntry -> contingencies.stream().noneMatch(c -> c.getId().equals(stringSetEntry.getKey())))
-                .map(stringSetEntry -> new ContingencyInfos(stringSetEntry.getKey(), null, stringSetEntry.getValue()))
+                .map(stringSetEntry -> new ContingencyInfos(stringSetEntry.getKey(), null, stringSetEntry.getValue(), null))
                 .forEach(contingencyInfos::add);
 
         contingencies.stream()
-                .map(contingency -> new ContingencyInfos(contingency, notFoundElements.get(contingency.getId())))
+                .map(contingency -> new ContingencyInfos(contingency.getId(), contingency, notFoundElements.get(contingency.getId()), getDisconnectedElements(contingency, network)))
                 .forEach(contingencyInfos::add);
 
         return contingencyInfos;
+    }
+
+    private Set<String> getDisconnectedElements(Contingency contingency, Network network) {
+        return contingency.getElements().stream()
+                .filter(contingencyElement -> {
+                    var connectable = network.getConnectable(contingencyElement.getId());
+                    return connectable != null && isDisconnected(connectable);
+                })
+                .map(ContingencyElement::getId)
+                .collect(Collectors.toSet());
+    }
+
+    private boolean isDisconnected(Connectable<?> connectable) {
+        List<? extends Terminal> terminals = connectable.getTerminals();
+        // check if the connectable are connected with terminal.isConnected()
+        boolean atleastOneIsConnected = false;
+        for (Terminal terminal : terminals) {
+            if (terminal != null && terminal.isConnected()) {
+                atleastOneIsConnected = true;
+                break;
+            }
+        }
+        return !atleastOneIsConnected;
     }
 
     private Network getNetworkFromUuid(UUID networkUuid, String variantId) {
