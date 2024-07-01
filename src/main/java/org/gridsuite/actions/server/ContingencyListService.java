@@ -216,14 +216,14 @@ public class ContingencyListService {
     private boolean isDisconnected(Connectable<?> connectable) {
         List<? extends Terminal> terminals = connectable.getTerminals();
         // check if the connectable are connected with terminal.isConnected()
-        boolean alteastOneIsConnected = false;
+        boolean atleastOneIsConnected = false;
         for (Terminal terminal : terminals) {
             if (terminal != null && terminal.isConnected()) {
-                alteastOneIsConnected = true;
+                atleastOneIsConnected = true;
                 break;
             }
         }
-        return !alteastOneIsConnected;
+        return !atleastOneIsConnected;
     }
 
     private Network getNetworkFromUuid(UUID networkUuid, String variantId) {
