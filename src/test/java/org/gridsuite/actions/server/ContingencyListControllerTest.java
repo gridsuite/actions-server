@@ -11,7 +11,10 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.powsybl.contingency.Contingency;
+import com.powsybl.contingency.LineContingency;
 import com.powsybl.contingency.contingency.list.IdentifierContingencyList;
+import com.powsybl.iidm.network.Terminal;
 import com.powsybl.iidm.network.identifiers.IdBasedNetworkElementIdentifier;
 import com.powsybl.iidm.network.identifiers.NetworkElementIdentifier;
 import com.powsybl.iidm.network.identifiers.NetworkElementIdentifierContingencyList;
@@ -85,6 +88,7 @@ public class ContingencyListControllerTest {
     private static final UUID NETWORK_UUID_4 = UUID.fromString("7928181c-7977-4592-ba19-88027e4254e7");
     private static final UUID NETWORK_UUID_5 = UUID.fromString("0313daa6-9419-4d4f-8ed1-af555998665f");
     private static final String VARIANT_ID_1 = "variant_1";
+    private static final String VARIANT_ID_2 = "variant_2";
     private static final String USER_ID_HEADER = "userId";
 
     private final String elementUpdateDestination = "element.update";
@@ -146,6 +150,11 @@ public class ContingencyListControllerTest {
         network.getVariantManager().setWorkingVariant(VARIANT_ID_1);
         // remove generator 'GEN2' from network in variant VARIANT_ID_1
         network.getGenerator("GEN2").remove();
+        network.getVariantManager().setWorkingVariant(VariantManagerConstants.INITIAL_VARIANT_ID);
+        network.getVariantManager().cloneVariant(VariantManagerConstants.INITIAL_VARIANT_ID, VARIANT_ID_2);
+        network.getVariantManager().setWorkingVariant(VARIANT_ID_2);
+        //disconnect a line NHV1_NHV2_1
+        network.getConnectable("NHV1_NHV2_1").getTerminals().forEach(Terminal::disconnect);
         network.getVariantManager().setWorkingVariant(VariantManagerConstants.INITIAL_VARIANT_ID);
 
         Network network2 = HvdcTestNetwork.createVsc(new NetworkFactoryImpl());
@@ -810,6 +819,32 @@ public class ContingencyListControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
                 .andExpect(content().json("[{\"id\":\"NHV1_NHV2_1\",\"contingency\":{\"id\":\"NHV1_NHV2_1\",\"elements\":[{\"id\":\"NHV1_NHV2_1\",\"type\":\"LINE\"}]},\"notFoundElements\":null},{\"id\":\"Test\",\"contingency\":null,\"notFoundElements\":[\"Test\"]}]"));
+        // delete data
+        mvc.perform(delete("/" + VERSION + "/contingency-lists/" + contingencyListId))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    public void testExportContingenciesNotConnectedAndNotFoundElements() throws Exception {
+        NetworkElementIdentifierContingencyList networkElementIdentifierContingencyList = new NetworkElementIdentifierContingencyList(List.of(new IdBasedNetworkElementIdentifier("NHV1_NHV2_1"), new IdBasedNetworkElementIdentifier("NHV1_NHV2_2"), new IdBasedNetworkElementIdentifier("TEST1")), "default");
+        IdBasedContingencyList idBasedContingencyList = new IdBasedContingencyList(null, Instant.now(), new IdentifierContingencyList("defaultName", List.of(networkElementIdentifierContingencyList)));
+
+        String res = mvc.perform(post("/" + VERSION + "/identifier-contingency-lists")
+                        .content(objectMapper.writeValueAsString(idBasedContingencyList))
+                        .contentType(APPLICATION_JSON))
+                .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
+
+        UUID contingencyListId = objectMapper.readValue(res, IdBasedContingencyList.class).getId();
+        Contingency contingency = new Contingency("default", null, List.of(new LineContingency("NHV1_NHV2_2"), new LineContingency("NHV1_NHV2_1")));
+        ContingencyInfos contingencyExpectedResult = new ContingencyInfos("default", contingency, Set.of("TEST1"), Set.of("NHV1_NHV2_1"));
+
+        mvc.perform(get("/" + VERSION + "/contingency-lists/contingency-infos/" + contingencyListId + "/export?networkUuid=" + NETWORK_UUID + "&variantId=" + VARIANT_ID_2)
+                        .contentType(APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+                .andExpect(content().json(objectMapper.writeValueAsString(List.of(contingencyExpectedResult))))
+                .andReturn();
+
         // delete data
         mvc.perform(delete("/" + VERSION + "/contingency-lists/" + contingencyListId))
                 .andExpect(status().isOk());
