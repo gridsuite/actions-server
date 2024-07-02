@@ -12,6 +12,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.powsybl.contingency.Contingency;
+import com.powsybl.contingency.GeneratorContingency;
 import com.powsybl.contingency.LineContingency;
 import com.powsybl.contingency.contingency.list.IdentifierContingencyList;
 import com.powsybl.iidm.network.Terminal;
@@ -786,6 +787,45 @@ public class ContingencyListControllerTest {
         // delete data
         mvc.perform(delete("/" + VERSION + "/contingency-lists/" + formContingencyListId))
                 .andExpect(status().isOk());
+    }
+
+    @Test
+    public void testExportMultiContingenciesInfo() throws Exception {
+        Set<String> noCountries = Collections.emptySet();
+        String lineForm = genFormContingencyList(EquipmentType.LINE, -1., EQUALITY, noCountries);
+        String genForm = genFormContingencyList(EquipmentType.GENERATOR, 100., LESS_THAN, noCountries);
+
+        List<UUID> contingencies = new ArrayList<>();
+        contingencies.add(addNewFormContingencyList(lineForm));
+        contingencies.add(addNewFormContingencyList(genForm));
+
+        StringBuilder urlBuilder = new StringBuilder();
+        urlBuilder.append("/").append(VERSION).append("/contingency-lists/contingency-infos/export");
+        urlBuilder.append("?networkUuid=").append(NETWORK_UUID);
+        urlBuilder.append("&variantId=").append(VARIANT_ID_1);
+
+        contingencies.forEach(id -> urlBuilder.append("&").append("ids").append("=").append(id));
+
+        ContingencyInfos expectedContingency1 = new ContingencyInfos("NHV1_NHV2_1", new Contingency("NHV1_NHV2_1", null, List.of(new LineContingency("NHV1_NHV2_1"))), null, Set.of());
+        ContingencyInfos expectedContingency2 = new ContingencyInfos("NHV1_NHV2_2", new Contingency("NHV1_NHV2_2", null, List.of(new LineContingency("NHV1_NHV2_2"))), null, Set.of());
+        ContingencyInfos expectedContingency3 = new ContingencyInfos("GEN", new Contingency("GEN", null, List.of(new GeneratorContingency("GEN"))), null, Set.of());
+
+        mvc.perform(get(urlBuilder.toString())
+                        .contentType(APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+                .andExpect(content().json(objectMapper.writeValueAsString(List.of(expectedContingency1, expectedContingency2, expectedContingency3))));
+        // delete data
+        contingencies.forEach(id -> {
+            try {
+                mvc.perform(delete("/" + VERSION + "/contingency-lists/" + id.toString()))
+                    .andExpect(status().isOk());
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        );
+
     }
 
     @Test
