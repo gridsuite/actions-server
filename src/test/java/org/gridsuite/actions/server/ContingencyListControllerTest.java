@@ -804,11 +804,11 @@ public class ContingencyListControllerTest {
         urlBuilder.append("?networkUuid=").append(NETWORK_UUID);
         urlBuilder.append("&variantId=").append(VARIANT_ID_1);
 
-        contingencies.forEach( id -> urlBuilder.append("&").append("ids").append("=").append(id));
+        contingencies.forEach(id -> urlBuilder.append("&").append("ids").append("=").append(id));
 
-        ContingencyInfos expectedContingency1 = new ContingencyInfos("NHV1_NHV2_1", new Contingency("NHV1_NHV2_1", null, List.of(new LineContingency("NHV1_NHV2_1"))), null, null);
-        ContingencyInfos expectedContingency2 = new ContingencyInfos("NHV1_NHV2_2", new Contingency("NHV1_NHV2_2", null, List.of(new LineContingency("NHV1_NHV2_2"))), null, null);
-        ContingencyInfos expectedContingency3 = new ContingencyInfos("GEN", new Contingency("GEN", null, List.of(new GeneratorContingency("GEN"))), null, null);
+        ContingencyInfos expectedContingency1 = new ContingencyInfos("NHV1_NHV2_1", new Contingency("NHV1_NHV2_1", null, List.of(new LineContingency("NHV1_NHV2_1"))), null, Set.of());
+        ContingencyInfos expectedContingency2 = new ContingencyInfos("NHV1_NHV2_2", new Contingency("NHV1_NHV2_2", null, List.of(new LineContingency("NHV1_NHV2_2"))), null, Set.of());
+        ContingencyInfos expectedContingency3 = new ContingencyInfos("GEN", new Contingency("GEN", null, List.of(new GeneratorContingency("GEN"))), null, Set.of());
 
         mvc.perform(get(urlBuilder.toString())
                         .contentType(APPLICATION_JSON))
@@ -817,13 +817,13 @@ public class ContingencyListControllerTest {
                 .andExpect(content().json(objectMapper.writeValueAsString(List.of(expectedContingency1, expectedContingency2, expectedContingency3))));
         // delete data
         contingencies.forEach(id -> {
-                    try {
-                        mvc.perform(delete("/" + VERSION + "/contingency-lists/" + id.toString()))
-                                .andExpect(status().isOk());
-                    } catch (Exception e) {
-                        throw new RuntimeException(e);
-                    }
+            try {
+                mvc.perform(delete("/" + VERSION + "/contingency-lists/" + id.toString()))
+                    .andExpect(status().isOk());
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
                 }
+            }
         );
 
     }
