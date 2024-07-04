@@ -154,9 +154,9 @@ public class ContingencyListService {
     }
 
     @Transactional(readOnly = true)
-    public List<Contingency> exportContingencyList(UUID id, UUID networkUuid, String variantId) {
+    public List<Contingency> exportContingencyList(List<UUID> ids, UUID networkUuid, String variantId) {
         Network network = getNetworkFromUuid(networkUuid, variantId);
-        return getContingencies(findContingencyList(id, network), network);
+        return ids.stream().map(id -> getContingencies(findContingencyList(id, network), network)).flatMap(Collection::stream).toList();
     }
 
     private List<Contingency> getContingencies(PersistentContingencyList persistentContingencyList, Network network) {
