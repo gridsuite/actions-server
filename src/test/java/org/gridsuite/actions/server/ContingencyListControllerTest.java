@@ -293,21 +293,21 @@ public class ContingencyListControllerTest {
                 .contentType(APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-                .andExpect(content().json(objectMapper.writeValueAsString(new Contingencies(List.of(),List.of())), true)); // there is no network so all contingencies are invalid
+                .andExpect(content().json(objectMapper.writeValueAsString(new Contingencies(List.of(), List.of())), true)); // there is no network so all contingencies are invalid
 
         mvc.perform(get("/" + VERSION + "/contingency-lists/export")
                         .queryParam("ids", ticId.toString())
                 .contentType(APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-                .andExpect(content().json(objectMapper.writeValueAsString(new Contingencies(List.of(),List.of())), true)); // there is no network so all contingencies are invalid
+                .andExpect(content().json(objectMapper.writeValueAsString(new Contingencies(List.of(), List.of())), true)); // there is no network so all contingencies are invalid
 
         mvc.perform(get("/" + VERSION + "/contingency-lists/export?networkUuid=" + NETWORK_UUID)
                         .queryParam("ids", scriptId.toString())
                 .contentType(APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-                .andExpect(content().json(objectMapper.writeValueAsString(new Contingencies(List.of(new Contingency("NHV1_NHV2_1", List.of(new LineContingency("NHV1_NHV2_1")))),List.of())), true));
+                .andExpect(content().json(objectMapper.writeValueAsString(new Contingencies(List.of(new Contingency("NHV1_NHV2_1", List.of(new LineContingency("NHV1_NHV2_1")))), List.of())), true));
 
         // delete data
         mvc.perform(delete("/" + VERSION + "/contingency-lists/" + scriptId))
@@ -481,13 +481,16 @@ public class ContingencyListControllerTest {
         String lineForm5 = genFormContingencyList(EquipmentType.LINE, 100., GREATER_THAN, noCountries);
         String lineForm6 = genFormContingencyList(EquipmentType.LINE, -1., GREATER_THAN, france);
 
-        testExportContingencies(lineForm, " [{\"id\":\"NHV1_NHV2_2\",\"elements\":[{\"id\":\"NHV1_NHV2_2\",\"type\":\"LINE\"}]},{\"id\":\"NHV1_NHV2_1\",\"elements\":[{\"id\":\"NHV1_NHV2_1\",\"type\":\"LINE\"}]}]", NETWORK_UUID);
-        testExportContingencies(lineForm1, " []", NETWORK_UUID);
-        testExportContingencies(lineForm2, " [{\"id\":\"NHV1_NHV2_2\",\"elements\":[{\"id\":\"NHV1_NHV2_2\",\"type\":\"LINE\"}]},{\"id\":\"NHV1_NHV2_1\",\"elements\":[{\"id\":\"NHV1_NHV2_1\",\"type\":\"LINE\"}]}]", NETWORK_UUID);
-        testExportContingencies(lineForm3, " []", NETWORK_UUID);
-        testExportContingencies(lineForm4, " [{\"id\":\"NHV1_NHV2_2\",\"elements\":[{\"id\":\"NHV1_NHV2_2\",\"type\":\"LINE\"}]},{\"id\":\"NHV1_NHV2_1\",\"elements\":[{\"id\":\"NHV1_NHV2_1\",\"type\":\"LINE\"}]}]", NETWORK_UUID);
-        testExportContingencies(lineForm5, " [{\"id\":\"NHV1_NHV2_2\",\"elements\":[{\"id\":\"NHV1_NHV2_2\",\"type\":\"LINE\"}]},{\"id\":\"NHV1_NHV2_1\",\"elements\":[{\"id\":\"NHV1_NHV2_1\",\"type\":\"LINE\"}]}]", NETWORK_UUID);
-        testExportContingencies(lineForm6, " [{\"id\":\"NHV1_NHV2_2\",\"elements\":[{\"id\":\"NHV1_NHV2_2\",\"type\":\"LINE\"}]},{\"id\":\"NHV1_NHV2_1\",\"elements\":[{\"id\":\"NHV1_NHV2_1\",\"type\":\"LINE\"}]}]", NETWORK_UUID);
+        Contingency nhv1nload = new Contingency("NHV1_NHV2_1", List.of(new LineContingency("NHV1_NHV2_1")));
+        Contingency nhv2nload = new Contingency("NHV1_NHV2_2", List.of(new LineContingency("NHV1_NHV2_2")));
+
+        testExportContingencies(lineForm, objectMapper.writeValueAsString(new Contingencies(List.of(nhv1nload, nhv2nload), List.of())), NETWORK_UUID);
+        testExportContingencies(lineForm1, objectMapper.writeValueAsString(new Contingencies(List.of(), List.of())), NETWORK_UUID);
+        testExportContingencies(lineForm2, objectMapper.writeValueAsString(new Contingencies(List.of(nhv1nload, nhv2nload), List.of())), NETWORK_UUID);
+        testExportContingencies(lineForm3, objectMapper.writeValueAsString(new Contingencies(List.of(), List.of())), NETWORK_UUID);
+        testExportContingencies(lineForm4, objectMapper.writeValueAsString(new Contingencies(List.of(nhv1nload, nhv2nload), List.of())), NETWORK_UUID);
+        testExportContingencies(lineForm5, objectMapper.writeValueAsString(new Contingencies(List.of(nhv1nload, nhv2nload), List.of())), NETWORK_UUID);
+        testExportContingencies(lineForm6, objectMapper.writeValueAsString(new Contingencies(List.of(nhv1nload, nhv2nload), List.of())), NETWORK_UUID);
     }
 
     @Test
@@ -498,7 +501,7 @@ public class ContingencyListControllerTest {
         // - NHV2_NLOAD term1: 380 kV term2: 150 kV
         var ngennhv1 = new Contingency("NGEN_NHV1", List.of(new TwoWindingsTransformerContingency("NGEN_NHV1")));
         var nvh2nload = new Contingency("NHV2_NLOAD", List.of(new TwoWindingsTransformerContingency("NHV2_NLOAD")));
-        final String bothMatch = objectMapper.writeValueAsString(new Contingencies(List.of(ngennhv1, nvh2nload ), List.of()));
+        final String bothMatch = objectMapper.writeValueAsString(new Contingencies(List.of(ngennhv1, nvh2nload), List.of()));
         final String matchLOAD = objectMapper.writeValueAsString(new Contingencies(List.of(nvh2nload), List.of()));
         final String matchGEN = objectMapper.writeValueAsString(new Contingencies(List.of(ngennhv1), List.of()));
         final String noMatch = objectMapper.writeValueAsString(new Contingencies(List.of(), List.of()));
@@ -607,9 +610,9 @@ public class ContingencyListControllerTest {
         testExportContingencies(generatorForm1, objectMapper.writeValueAsString(new Contingencies(List.of(gen), List.of())), NETWORK_UUID, VARIANT_ID_1);
         network.getVariantManager().setWorkingVariant(VariantManagerConstants.INITIAL_VARIANT_ID);
 
-        testExportContingencies(generatorForm4, objectMapper.writeValueAsString(new Contingencies(List.of(),List.of())), NETWORK_UUID);
+        testExportContingencies(generatorForm4, objectMapper.writeValueAsString(new Contingencies(List.of(), List.of())), NETWORK_UUID);
         testExportContingencies(generatorForm5, objectMapper.writeValueAsString(new Contingencies(List.of(gen, gen2), List.of())), NETWORK_UUID);
-        testExportContingencies(generatorForm6, objectMapper.writeValueAsString(new Contingencies(List.of(),List.of())), NETWORK_UUID);
+        testExportContingencies(generatorForm6, objectMapper.writeValueAsString(new Contingencies(List.of(), List.of())), NETWORK_UUID);
     }
 
     @Test
@@ -635,7 +638,7 @@ public class ContingencyListControllerTest {
         Set<String> noCountries = Collections.emptySet();
         String scForm1 = genFormContingencyList(EquipmentType.SHUNT_COMPENSATOR, -1., EQUALITY, noCountries);
         String scForm4 = genFormContingencyList(EquipmentType.SHUNT_COMPENSATOR, 300., EQUALITY, noCountries);
-        testExportContingencies(scForm1,objectMapper.writeValueAsString(new Contingencies(List.of(new Contingency("SHUNT", List.of(new ShuntCompensatorContingency("SHUNT")))), List.of())), NETWORK_UUID_4);
+        testExportContingencies(scForm1, objectMapper.writeValueAsString(new Contingencies(List.of(new Contingency("SHUNT", List.of(new ShuntCompensatorContingency("SHUNT")))), List.of())), NETWORK_UUID_4);
         testExportContingencies(scForm4, objectMapper.writeValueAsString(new Contingencies(List.of(), List.of())), NETWORK_UUID_4);
     }
 
@@ -655,7 +658,7 @@ public class ContingencyListControllerTest {
         Set<String> noCountries = Collections.emptySet();
 
         String bbsForm = genFormContingencyList(EquipmentType.BUSBAR_SECTION, -1., EQUALITY, noCountries);
-        testExportContingencies(bbsForm, objectMapper.writeValueAsString(new Contingencies(List.of(),List.of())), NETWORK_UUID);
+        testExportContingencies(bbsForm, objectMapper.writeValueAsString(new Contingencies(List.of(), List.of())), NETWORK_UUID);
     }
 
     @Test
@@ -663,7 +666,7 @@ public class ContingencyListControllerTest {
         Set<String> noCountries = Collections.emptySet();
 
         String dlForm = genFormContingencyList(EquipmentType.DANGLING_LINE, -1., EQUALITY, noCountries);
-        testExportContingencies(dlForm, objectMapper.writeValueAsString(new Contingencies(List.of(),List.of())), NETWORK_UUID);
+        testExportContingencies(dlForm, objectMapper.writeValueAsString(new Contingencies(List.of(), List.of())), NETWORK_UUID);
     }
 
     void compareFormContingencyList(FormContingencyList expected, FormContingencyList current) {
@@ -812,15 +815,24 @@ public class ContingencyListControllerTest {
 
         contingencies.forEach(id -> urlBuilder.append("&").append("ids").append("=").append(id));
 
-        Contingency expectedContingency1 = new Contingency("NHV1_NHV2_1", null, List.of(new LineContingency("NHV1_NHV2_1")));
-        Contingency expectedContingency2 = new Contingency("NHV1_NHV2_2", null, List.of(new LineContingency("NHV1_NHV2_2")));
-        Contingency expectedContingency3 = new Contingency("GEN", null, List.of(new GeneratorContingency("GEN")));
+        Contingency expectedContingency1 = new Contingency("NHV1_NHV2_1", List.of(new LineContingency("NHV1_NHV2_1")));
+        Contingency expectedContingency2 = new Contingency("NHV1_NHV2_2", List.of(new LineContingency("NHV1_NHV2_2")));
+        Contingency expectedContingency3 = new Contingency("GEN", List.of(new GeneratorContingency("GEN")));
 
         mvc.perform(get(urlBuilder.toString())
                         .contentType(APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-                .andExpect(content().json(objectMapper.writeValueAsString(List.of(expectedContingency1, expectedContingency2, expectedContingency3))));
+                .andExpect(content().json(objectMapper.writeValueAsString(new Contingencies(List.of(expectedContingency1, expectedContingency2, expectedContingency3), List.of()))));
+
+        // not found contingency
+        UUID wrongUuid = UUID.randomUUID();
+        urlBuilder.append("&ids=").append(wrongUuid);
+        mvc.perform(get(urlBuilder.toString())
+                        .contentType(APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+                .andExpect(content().json(objectMapper.writeValueAsString(new Contingencies(List.of(expectedContingency1, expectedContingency2, expectedContingency3), List.of(wrongUuid)))));
         // delete data
         contingencies.forEach(id -> {
             try {
