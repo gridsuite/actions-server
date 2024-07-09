@@ -11,9 +11,7 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import com.powsybl.contingency.Contingency;
-import com.powsybl.contingency.GeneratorContingency;
-import com.powsybl.contingency.LineContingency;
+import com.powsybl.contingency.*;
 import com.powsybl.contingency.contingency.list.IdentifierContingencyList;
 import com.powsybl.iidm.network.Terminal;
 import com.powsybl.iidm.network.identifiers.IdBasedNetworkElementIdentifier;
@@ -498,10 +496,12 @@ public class ContingencyListControllerTest {
         // with this network (EurostagTutorialExample1Factory::create), we have 2 FR substations and 2 2WT Transfos:
         // - NGEN_NHV1  term1: 24 kV term2: 380 kV
         // - NHV2_NLOAD term1: 380 kV term2: 150 kV
-        final String bothMatch = "[{\"id\":\"NGEN_NHV1\",\"elements\":[{\"id\":\"NGEN_NHV1\",\"type\":\"TWO_WINDINGS_TRANSFORMER\"}]},{\"id\":\"NHV2_NLOAD\",\"elements\":[{\"id\":\"NHV2_NLOAD\",\"type\":\"TWO_WINDINGS_TRANSFORMER\"}]}]";
-        final String matchLOAD = "[{\"id\":\"NHV2_NLOAD\",\"elements\":[{\"id\":\"NHV2_NLOAD\",\"type\":\"TWO_WINDINGS_TRANSFORMER\"}]}]";
-        final String matchGEN = "[{\"id\":\"NGEN_NHV1\",\"elements\":[{\"id\":\"NGEN_NHV1\",\"type\":\"TWO_WINDINGS_TRANSFORMER\"}]}]";
-        final String noMatch = "[]";
+        var ngennhv1 = new Contingency("NGEN_NHV1", List.of(new TwoWindingsTransformerContingency("NGEN_NHV1")));
+        var nvh2nload = new Contingency("NHV2_NLOAD", List.of(new TwoWindingsTransformerContingency("NHV2_NLOAD")));
+        final String bothMatch = objectMapper.writeValueAsString(new Contingencies(List.of(ngennhv1, nvh2nload ), List.of()));
+        final String matchLOAD = objectMapper.writeValueAsString(new Contingencies(List.of(nvh2nload), List.of()));
+        final String matchGEN = objectMapper.writeValueAsString(new Contingencies(List.of(ngennhv1), List.of()));
+        final String noMatch = objectMapper.writeValueAsString(new Contingencies(List.of(), List.of()));
 
         // single voltage filter
         String twtForm = genFormContingencyList(EquipmentType.TWO_WINDINGS_TRANSFORMER, -1., EQUALITY, noCountries);
@@ -902,7 +902,7 @@ public class ContingencyListControllerTest {
                 .contentType(APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-                .andExpect(content().json("[]"));
+                .andExpect(content().json(objectMapper.writeValueAsString(new Contingencies(List.of(), List.of()))));
 
         ContingencyListMetadataImpl attributes = getMetadata(id);
         assertEquals(attributes.getId(), id);

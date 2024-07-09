@@ -6,7 +6,6 @@
  */
 package org.gridsuite.actions.server;
 
-import com.powsybl.contingency.Contingency;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -95,7 +94,7 @@ public class ContingencyListController {
     @Operation(summary = "Evaluate and export a contingency list to PowSyBl JSON format")
     @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "The contingency list in PowSyBl JSON format"),
                            @ApiResponse(responseCode = "404", description = "The contingency list does not exists")})
-    public ResponseEntity<List<Contingency>> exportContingencyList(@RequestParam(value = "networkUuid", required = false) UUID networkUuid,
+    public ResponseEntity<Contingencies> exportContingencyList(@RequestParam(value = "networkUuid", required = false) UUID networkUuid,
                                                                    @RequestParam(value = "variantId", required = false) String variantId,
                                                                    @RequestParam(value = "ids") List<UUID> ids) {
         return ResponseEntity.ok().body(service.exportContingencyList(ids, networkUuid, variantId));
