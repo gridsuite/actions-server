@@ -293,21 +293,21 @@ public class ContingencyListControllerTest {
                 .contentType(APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-                .andExpect(content().json("[]", true)); // there is no network so all contingencies are invalid
+                .andExpect(content().json(objectMapper.writeValueAsString(new Contingencies(List.of(),List.of())), true)); // there is no network so all contingencies are invalid
 
         mvc.perform(get("/" + VERSION + "/contingency-lists/export")
                         .queryParam("ids", ticId.toString())
                 .contentType(APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-                .andExpect(content().json("[]", true)); // there is no network so all contingencies are invalid
+                .andExpect(content().json(objectMapper.writeValueAsString(new Contingencies(List.of(),List.of())), true)); // there is no network so all contingencies are invalid
 
         mvc.perform(get("/" + VERSION + "/contingency-lists/export?networkUuid=" + NETWORK_UUID)
                         .queryParam("ids", scriptId.toString())
                 .contentType(APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-                .andExpect(content().json("[{\"id\":\"NHV1_NHV2_1\",\"elements\":[{\"id\":\"NHV1_NHV2_1\",\"type\":\"LINE\"}]}]", true));
+                .andExpect(content().json(objectMapper.writeValueAsString(new Contingencies(List.of(new Contingency("NHV1_NHV2_1", List.of(new LineContingency("NHV1_NHV2_1")))),List.of())), true));
 
         // delete data
         mvc.perform(delete("/" + VERSION + "/contingency-lists/" + scriptId))
@@ -539,9 +539,9 @@ public class ContingencyListControllerTest {
     public void testExportContingencies2WTransfoWith2NumFilter() throws Exception {
         Set<String> noCountries = Collections.emptySet();
 
-        final String matchLOAD = "[{\"id\":\"NHV2_NLOAD\",\"elements\":[{\"id\":\"NHV2_NLOAD\",\"type\":\"TWO_WINDINGS_TRANSFORMER\"}]}]";
-        final String matchGEN = "[{\"id\":\"NGEN_NHV1\",\"elements\":[{\"id\":\"NGEN_NHV1\",\"type\":\"TWO_WINDINGS_TRANSFORMER\"}]}]";
-        final String noMatch = "[]";
+        final String matchLOAD = objectMapper.writeValueAsString(new Contingencies(List.of(new Contingency("NHV2_NLOAD", List.of(new TwoWindingsTransformerContingency("NHV2_NLOAD")))), List.of()));
+        final String matchGEN = objectMapper.writeValueAsString(new Contingencies(List.of(new Contingency("NGEN_NHV1", List.of(new TwoWindingsTransformerContingency("NGEN_NHV1")))), List.of()));
+        final String noMatch = objectMapper.writeValueAsString(new Contingencies(List.of(), List.of()));
 
         // 2 voltage filters
         String twtForm = genFormContingencyList(EquipmentType.TWO_WINDINGS_TRANSFORMER, -1.0, -1.0, EQUALITY, 400., 500., RANGE, 24., -1., EQUALITY, noCountries, noCountries, noCountries);
@@ -562,10 +562,13 @@ public class ContingencyListControllerTest {
         Set<String> italy = Collections.singleton("IT");
         Set<String> belgiumAndFrance = Set.of("FR", "BE");
 
-        final String bothMatch = "[{\"id\":\"NGEN_NHV1\",\"elements\":[{\"id\":\"NGEN_NHV1\",\"type\":\"TWO_WINDINGS_TRANSFORMER\"}]},{\"id\":\"NHV2_NLOAD\",\"elements\":[{\"id\":\"NHV2_NLOAD\",\"type\":\"TWO_WINDINGS_TRANSFORMER\"}]}]";
-        final String matchLOAD = "[{\"id\":\"NHV2_NLOAD\",\"elements\":[{\"id\":\"NHV2_NLOAD\",\"type\":\"TWO_WINDINGS_TRANSFORMER\"}]}]";
-        final String matchGEN = "[{\"id\":\"NGEN_NHV1\",\"elements\":[{\"id\":\"NGEN_NHV1\",\"type\":\"TWO_WINDINGS_TRANSFORMER\"}]}]";
-        final String noMatch = "[]";
+        Contingency nhv1nload = new Contingency("NGEN_NHV1", List.of(new TwoWindingsTransformerContingency("NGEN_NHV1")));
+        Contingency nhv2nload = new Contingency("NHV2_NLOAD", List.of(new TwoWindingsTransformerContingency("NHV2_NLOAD")));
+
+        final String bothMatch = objectMapper.writeValueAsString(new Contingencies(List.of(nhv1nload, nhv2nload), List.of()));
+        final String matchLOAD = objectMapper.writeValueAsString(new Contingencies(List.of(nhv2nload), List.of()));
+        final String matchGEN = objectMapper.writeValueAsString(new Contingencies(List.of(nhv1nload), List.of()));
+        final String noMatch = objectMapper.writeValueAsString(new Contingencies(List.of(), List.of()));
 
         String twtForm = genFormContingencyList(EquipmentType.TWO_WINDINGS_TRANSFORMER, -1., GREATER_THAN, france);
         testExportContingencies(twtForm, bothMatch, NETWORK_UUID);
@@ -595,19 +598,18 @@ public class ContingencyListControllerTest {
         String generatorForm4 = genFormContingencyList(EquipmentType.GENERATOR, 10., LESS_THAN, noCountries);
         String generatorForm5 = genFormContingencyList(EquipmentType.GENERATOR, -1., GREATER_THAN, france);
         String generatorForm6 = genFormContingencyList(EquipmentType.GENERATOR, -1., GREATER_THAN, belgium);
-        System.out.println("generatorForm1=>" + generatorForm1);
-        System.out.println("generatorForm4=>" + generatorForm4);
-        System.out.println("generatorForm5=>" + generatorForm5);
-        System.out.println("generatorForm6=>" + generatorForm6);
-        testExportContingencies(generatorForm1, " [{\"id\":\"GEN\",\"elements\":[{\"id\":\"GEN\",\"type\":\"GENERATOR\"}]},{\"id\":\"GEN2\",\"elements\":[{\"id\":\"GEN2\",\"type\":\"GENERATOR\"}]}]", NETWORK_UUID);
+        Contingency gen = new Contingency("GEN", List.of(new GeneratorContingency("GEN")));
+        Contingency gen2 = new Contingency("GEN2", List.of(new GeneratorContingency("GEN2")));
+
+        testExportContingencies(generatorForm1, objectMapper.writeValueAsString(new Contingencies(List.of(gen, gen2), List.of())), NETWORK_UUID);
 
         // test export on specific variant where generator 'GEN2' has been removed
-        testExportContingencies(generatorForm1, " [{\"id\":\"GEN\",\"elements\":[{\"id\":\"GEN\",\"type\":\"GENERATOR\"}]}]", NETWORK_UUID, VARIANT_ID_1);
+        testExportContingencies(generatorForm1, objectMapper.writeValueAsString(new Contingencies(List.of(gen), List.of())), NETWORK_UUID, VARIANT_ID_1);
         network.getVariantManager().setWorkingVariant(VariantManagerConstants.INITIAL_VARIANT_ID);
 
-        testExportContingencies(generatorForm4, " []", NETWORK_UUID);
-        testExportContingencies(generatorForm5, " [{\"id\":\"GEN\",\"elements\":[{\"id\":\"GEN\",\"type\":\"GENERATOR\"}]},{\"id\":\"GEN2\",\"elements\":[{\"id\":\"GEN2\",\"type\":\"GENERATOR\"}]}]", NETWORK_UUID);
-        testExportContingencies(generatorForm6, " []", NETWORK_UUID);
+        testExportContingencies(generatorForm4, objectMapper.writeValueAsString(new Contingencies(List.of(),List.of())), NETWORK_UUID);
+        testExportContingencies(generatorForm5, objectMapper.writeValueAsString(new Contingencies(List.of(gen, gen2), List.of())), NETWORK_UUID);
+        testExportContingencies(generatorForm6, objectMapper.writeValueAsString(new Contingencies(List.of(),List.of())), NETWORK_UUID);
     }
 
     @Test
@@ -620,11 +622,12 @@ public class ContingencyListControllerTest {
         String svcForm4 = genFormContingencyList(EquipmentType.STATIC_VAR_COMPENSATOR, 100., LESS_THAN, noCountries);
         String svcForm5 = genFormContingencyList(EquipmentType.STATIC_VAR_COMPENSATOR, -1., LESS_THAN, france);
         String svcForm6 = genFormContingencyList(EquipmentType.STATIC_VAR_COMPENSATOR, -1., LESS_THAN, belgium);
-        testExportContingencies(svcForm1, " [{\"id\":\"SVC3\",\"elements\":[{\"id\":\"SVC3\",\"type\":\"STATIC_VAR_COMPENSATOR\"}]}," +
-                "{\"id\":\"SVC2\",\"elements\":[{\"id\":\"SVC2\",\"type\":\"STATIC_VAR_COMPENSATOR\"}]}]", NETWORK_UUID_3);
-        testExportContingencies(svcForm4, " []", NETWORK_UUID_3);
-        testExportContingencies(svcForm5, " [{\"id\":\"SVC3\",\"elements\":[{\"id\":\"SVC3\",\"type\":\"STATIC_VAR_COMPENSATOR\"}]},{\"id\":\"SVC2\",\"elements\":[{\"id\":\"SVC2\",\"type\":\"STATIC_VAR_COMPENSATOR\"}]}]", NETWORK_UUID_3);
-        testExportContingencies(svcForm6, " []", NETWORK_UUID_3);
+        Contingency svc2 = new Contingency("SVC2", List.of(new StaticVarCompensatorContingency("SVC2")));
+        Contingency svc3 = new Contingency("SVC3", List.of(new StaticVarCompensatorContingency("SVC3")));
+        testExportContingencies(svcForm1, objectMapper.writeValueAsString(new Contingencies(List.of(svc3, svc2), List.of())), NETWORK_UUID_3);
+        testExportContingencies(svcForm4, objectMapper.writeValueAsString(new Contingencies(List.of(), List.of())), NETWORK_UUID_3);
+        testExportContingencies(svcForm5, objectMapper.writeValueAsString(new Contingencies(List.of(svc3, svc2), List.of())), NETWORK_UUID_3);
+        testExportContingencies(svcForm6, objectMapper.writeValueAsString(new Contingencies(List.of(), List.of())), NETWORK_UUID_3);
     }
 
     @Test
@@ -632,8 +635,8 @@ public class ContingencyListControllerTest {
         Set<String> noCountries = Collections.emptySet();
         String scForm1 = genFormContingencyList(EquipmentType.SHUNT_COMPENSATOR, -1., EQUALITY, noCountries);
         String scForm4 = genFormContingencyList(EquipmentType.SHUNT_COMPENSATOR, 300., EQUALITY, noCountries);
-        testExportContingencies(scForm1, " [{\"id\":\"SHUNT\",\"elements\":[{\"id\":\"SHUNT\",\"type\":\"SHUNT_COMPENSATOR\"}]}]", NETWORK_UUID_4);
-        testExportContingencies(scForm4, " []", NETWORK_UUID_4);
+        testExportContingencies(scForm1,objectMapper.writeValueAsString(new Contingencies(List.of(new Contingency("SHUNT", List.of(new ShuntCompensatorContingency("SHUNT")))), List.of())), NETWORK_UUID_4);
+        testExportContingencies(scForm4, objectMapper.writeValueAsString(new Contingencies(List.of(), List.of())), NETWORK_UUID_4);
     }
 
     @Test
@@ -642,9 +645,9 @@ public class ContingencyListControllerTest {
         String hvdcForm1 = genFormContingencyList(EquipmentType.HVDC_LINE, -1., EQUALITY, noCountries);
         String hvdcForm4 = genFormContingencyList(EquipmentType.HVDC_LINE, 400., EQUALITY, noCountries);
         String hvdcForm5 = genFormContingencyList(EquipmentType.HVDC_LINE, 300., LESS_THAN, noCountries);
-        testExportContingencies(hvdcForm1, " [{\"id\":\"L\",\"elements\":[{\"id\":\"L\",\"type\":\"HVDC_LINE\"}]}]", NETWORK_UUID_2);
-        testExportContingencies(hvdcForm4, " [{\"id\":\"L\",\"elements\":[{\"id\":\"L\",\"type\":\"HVDC_LINE\"}]}]", NETWORK_UUID_2);
-        testExportContingencies(hvdcForm5, " []", NETWORK_UUID_2);
+        testExportContingencies(hvdcForm1, objectMapper.writeValueAsString(new Contingencies(List.of(new Contingency("L", List.of(new HvdcLineContingency("L")))), List.of())), NETWORK_UUID_2);
+        testExportContingencies(hvdcForm4, objectMapper.writeValueAsString(new Contingencies(List.of(new Contingency("L", List.of(new HvdcLineContingency("L")))), List.of())), NETWORK_UUID_2);
+        testExportContingencies(hvdcForm5, objectMapper.writeValueAsString(new Contingencies(List.of(), List.of())), NETWORK_UUID_2);
     }
 
     @Test
@@ -652,7 +655,7 @@ public class ContingencyListControllerTest {
         Set<String> noCountries = Collections.emptySet();
 
         String bbsForm = genFormContingencyList(EquipmentType.BUSBAR_SECTION, -1., EQUALITY, noCountries);
-        testExportContingencies(bbsForm, " []", NETWORK_UUID);
+        testExportContingencies(bbsForm, objectMapper.writeValueAsString(new Contingencies(List.of(),List.of())), NETWORK_UUID);
     }
 
     @Test
@@ -660,7 +663,7 @@ public class ContingencyListControllerTest {
         Set<String> noCountries = Collections.emptySet();
 
         String dlForm = genFormContingencyList(EquipmentType.DANGLING_LINE, -1., EQUALITY, noCountries);
-        testExportContingencies(dlForm, " []", NETWORK_UUID);
+        testExportContingencies(dlForm, objectMapper.writeValueAsString(new Contingencies(List.of(),List.of())), NETWORK_UUID);
     }
 
     void compareFormContingencyList(FormContingencyList expected, FormContingencyList current) {
