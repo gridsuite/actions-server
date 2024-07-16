@@ -846,6 +846,45 @@ public class ContingencyListControllerTest {
     }
 
     @Test
+    public void testExportMultiContingenciesInfo() throws Exception {
+        Set<String> noCountries = Collections.emptySet();
+        String lineForm = genFormContingencyList(EquipmentType.LINE, -1., EQUALITY, noCountries);
+        String genForm = genFormContingencyList(EquipmentType.GENERATOR, 100., LESS_THAN, noCountries);
+
+        List<UUID> contingencies = new ArrayList<>();
+        contingencies.add(addNewFormContingencyList(lineForm));
+        contingencies.add(addNewFormContingencyList(genForm));
+
+        StringBuilder urlBuilder = new StringBuilder();
+        urlBuilder.append("/").append(VERSION).append("/contingency-lists/contingency-infos/export");
+        urlBuilder.append("?networkUuid=").append(NETWORK_UUID);
+        urlBuilder.append("&variantId=").append(VARIANT_ID_1);
+
+        contingencies.forEach(id -> urlBuilder.append("&").append("ids").append("=").append(id));
+
+        ContingencyInfos expectedContingency1 = new ContingencyInfos("NHV1_NHV2_1", new Contingency("NHV1_NHV2_1", null, List.of(new LineContingency("NHV1_NHV2_1"))), null, Set.of());
+        ContingencyInfos expectedContingency2 = new ContingencyInfos("NHV1_NHV2_2", new Contingency("NHV1_NHV2_2", null, List.of(new LineContingency("NHV1_NHV2_2"))), null, Set.of());
+        ContingencyInfos expectedContingency3 = new ContingencyInfos("GEN", new Contingency("GEN", null, List.of(new GeneratorContingency("GEN"))), null, Set.of());
+
+        mvc.perform(get(urlBuilder.toString())
+                        .contentType(APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+                .andExpect(content().json(objectMapper.writeValueAsString(List.of(expectedContingency1, expectedContingency2, expectedContingency3))));
+        // delete data
+        contingencies.forEach(id -> {
+            try {
+                mvc.perform(delete("/" + VERSION + "/contingency-lists/" + id.toString()))
+                    .andExpect(status().isOk());
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        );
+
+    }
+
+    @Test
     public void testExportContingenciesInfos() throws Exception {
         ScriptContingencyList scriptContingencyList = new ScriptContingencyList("contingency('NHV1_NHV2_1') {\n" +
                 "    equipments 'NHV1_NHV2_1'}\n" +
@@ -854,7 +893,7 @@ public class ContingencyListControllerTest {
 
         UUID scriptContingencyId = addNewScriptContingencyList(objectMapper.writeValueAsString(scriptContingencyList));
 
-        mvc.perform(get("/" + VERSION + "/contingency-lists/contingency-infos/" + scriptContingencyId + "/export?networkUuid=" + NETWORK_UUID + "&variantId=" + VARIANT_ID_1)
+        mvc.perform(get("/" + VERSION + "/contingency-lists/contingency-infos/export?networkUuid=" + NETWORK_UUID + "&variantId=" + VARIANT_ID_1 + "&ids=" + scriptContingencyId)
                         .contentType(APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
@@ -871,7 +910,7 @@ public class ContingencyListControllerTest {
                 .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
 
         UUID contingencyListId = objectMapper.readValue(res, IdBasedContingencyList.class).getId();
-        mvc.perform(get("/" + VERSION + "/contingency-lists/contingency-infos/" + contingencyListId + "/export?networkUuid=" + NETWORK_UUID + "&variantId=" + VARIANT_ID_1)
+        mvc.perform(get("/" + VERSION + "/contingency-lists/contingency-infos/export?networkUuid=" + NETWORK_UUID + "&variantId=" + VARIANT_ID_1 + "&ids=" + contingencyListId)
                         .contentType(APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
@@ -895,7 +934,7 @@ public class ContingencyListControllerTest {
         Contingency contingency = new Contingency("default", null, List.of(new LineContingency("NHV1_NHV2_2"), new LineContingency("NHV1_NHV2_1")));
         ContingencyInfos contingencyExpectedResult = new ContingencyInfos("default", contingency, Set.of("TEST1"), Set.of("NHV1_NHV2_1"));
 
-        mvc.perform(get("/" + VERSION + "/contingency-lists/contingency-infos/" + contingencyListId + "/export?networkUuid=" + NETWORK_UUID + "&variantId=" + VARIANT_ID_2)
+        mvc.perform(get("/" + VERSION + "/contingency-lists/contingency-infos/export?networkUuid=" + NETWORK_UUID + "&variantId=" + VARIANT_ID_2 + "&ids=" + contingencyListId)
                         .contentType(APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
