@@ -96,8 +96,8 @@ public class ContingencyListController {
                            @ApiResponse(responseCode = "404", description = "The contingency list does not exists")})
     public ResponseEntity<ContingencyListExportResult> exportContingencyList(@RequestParam(value = "networkUuid", required = false) UUID networkUuid,
                                                                              @RequestParam(value = "variantId", required = false) String variantId,
-                                                                             @RequestParam(value = "ids") List<UUID> ids) {
-        return ResponseEntity.ok().body(service.exportContingencyList(ids, networkUuid, variantId));
+                                                                             @RequestParam(value = "contingencyListIds") List<UUID> contingencyListIds) {
+        return ResponseEntity.ok().body(service.exportContingencyList(contingencyListIds, networkUuid, variantId));
     }
 
     @GetMapping(value = "/contingency-lists/contingency-infos/export", produces = MediaType.APPLICATION_JSON_VALUE)

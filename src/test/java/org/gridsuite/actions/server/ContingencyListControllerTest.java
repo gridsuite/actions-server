@@ -289,21 +289,21 @@ public class ContingencyListControllerTest {
 
         // export contingencies
         mvc.perform(get("/" + VERSION + "/contingency-lists/export")
-                        .queryParam("ids", scriptId.toString())
+                        .queryParam("contingencyListIds", scriptId.toString())
                 .contentType(APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
                 .andExpect(content().json(objectMapper.writeValueAsString(new ContingencyListExportResult(List.of(), List.of())), true)); // there is no network so all contingencies are invalid
 
         mvc.perform(get("/" + VERSION + "/contingency-lists/export")
-                        .queryParam("ids", ticId.toString())
+                        .queryParam("contingencyListIds", ticId.toString())
                 .contentType(APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
                 .andExpect(content().json(objectMapper.writeValueAsString(new ContingencyListExportResult(List.of(), List.of())), true)); // there is no network so all contingencies are invalid
 
         mvc.perform(get("/" + VERSION + "/contingency-lists/export?networkUuid=" + NETWORK_UUID)
-                        .queryParam("ids", scriptId.toString())
+                        .queryParam("contingencyListIds", scriptId.toString())
                 .contentType(APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
@@ -788,7 +788,7 @@ public class ContingencyListControllerTest {
         // put the data
         UUID formContingencyListId = addNewFormContingencyList(content);
         // search matching equipments
-        mvc.perform(get("/" + VERSION + "/contingency-lists/export?networkUuid=" + networkId + (variantId != null ? "&variantId=" + variantId : "") + "&ids=" + formContingencyListId)
+        mvc.perform(get("/" + VERSION + "/contingency-lists/export?networkUuid=" + networkId + (variantId != null ? "&variantId=" + variantId : "") + "&contingencyListIds=" + formContingencyListId)
                 .contentType(APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
@@ -813,7 +813,7 @@ public class ContingencyListControllerTest {
         urlBuilder.append("?networkUuid=").append(NETWORK_UUID);
         urlBuilder.append("&variantId=").append(VARIANT_ID_1);
 
-        contingencies.forEach(id -> urlBuilder.append("&").append("ids").append("=").append(id));
+        contingencies.forEach(id -> urlBuilder.append("&").append("contingencyListIds").append("=").append(id));
 
         Contingency expectedContingency1 = new Contingency("NHV1_NHV2_1", List.of(new LineContingency("NHV1_NHV2_1")));
         Contingency expectedContingency2 = new Contingency("NHV1_NHV2_2", List.of(new LineContingency("NHV1_NHV2_2")));
@@ -827,7 +827,7 @@ public class ContingencyListControllerTest {
 
         // not found contingency
         UUID wrongUuid = UUID.randomUUID();
-        urlBuilder.append("&ids=").append(wrongUuid);
+        urlBuilder.append("&contingencyListIds=").append(wrongUuid);
         mvc.perform(get(urlBuilder.toString())
                         .contentType(APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -952,7 +952,7 @@ public class ContingencyListControllerTest {
                 "\"script\" : \"\"}");
 
         mvc.perform(get("/" + VERSION + "/contingency-lists/export")
-                        .queryParam("ids", id.toString())
+                        .queryParam("contingencyListIds", id.toString())
                 .contentType(APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
@@ -1332,7 +1332,7 @@ public class ContingencyListControllerTest {
         UUID contingencyListId = objectMapper.readValue(res, IdBasedContingencyList.class).getId();
 
         mvc.perform(get("/" + VERSION + "/contingency-lists/export?networkUuid=" + NETWORK_UUID + "&variantId=" + VARIANT_ID_1)
-                        .queryParam("ids", contingencyListId.toString())
+                        .queryParam("contingencyListIds", contingencyListId.toString())
                         .contentType(APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andReturn().getResponse().getContentAsString();

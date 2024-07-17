@@ -154,17 +154,17 @@ public class ContingencyListService {
     }
 
     @Transactional(readOnly = true)
-    public ContingencyListExportResult exportContingencyList(List<UUID> ids, UUID networkUuid, String variantId) {
+    public ContingencyListExportResult exportContingencyList(List<UUID> contingencyListIds, UUID networkUuid, String variantId) {
         Network network = getNetworkFromUuid(networkUuid, variantId);
         List<Contingency> contingencies = new ArrayList<>();
         List<UUID> notFoundIds = new ArrayList<>();
 
-        ids.forEach(id -> {
+        contingencyListIds.forEach(contingencyListId -> {
             try {
-                PersistentContingencyList contingencyList = findContingencyList(id, network);
+                PersistentContingencyList contingencyList = findContingencyList(contingencyListId, network);
                 contingencies.addAll(getContingencies(contingencyList, network));
             } catch (ResponseStatusException e) {
-                notFoundIds.add(id);
+                notFoundIds.add(contingencyListId);
             }
         });
         return new ContingencyListExportResult(contingencies, notFoundIds);
