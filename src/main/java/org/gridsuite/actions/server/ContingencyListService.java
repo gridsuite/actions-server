@@ -160,12 +160,11 @@ public class ContingencyListService {
         List<UUID> notFoundIds = new ArrayList<>();
 
         contingencyListIds.forEach(contingencyListId -> {
-            try {
-                PersistentContingencyList contingencyList = findContingencyList(contingencyListId, network);
-                contingencies.addAll(getContingencies(contingencyList, network));
-            } catch (ResponseStatusException e) {
-                notFoundIds.add(contingencyListId);
-            }
+            Optional<PersistentContingencyList> contingencyList = getAnyContingencyList(contingencyListId, network);
+            contingencyList.ifPresentOrElse(
+                    list -> contingencies.addAll(getContingencies(list, network)),
+                    () -> notFoundIds.add(contingencyListId)
+            );
         });
         return new ContingencyListExportResult(contingencies, notFoundIds);
     }
