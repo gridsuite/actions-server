@@ -154,9 +154,19 @@ public class ContingencyListService {
     }
 
     @Transactional(readOnly = true)
-    public List<Contingency> exportContingencyList(UUID id, UUID networkUuid, String variantId) {
+    public ContingencyListExportResult exportContingencyList(List<UUID> contingencyListIds, UUID networkUuid, String variantId) {
         Network network = getNetworkFromUuid(networkUuid, variantId);
-        return getContingencies(findContingencyList(id, network), network);
+        List<Contingency> contingencies = new ArrayList<>();
+        List<UUID> notFoundIds = new ArrayList<>();
+
+        contingencyListIds.forEach(contingencyListId -> {
+            Optional<PersistentContingencyList> contingencyList = getAnyContingencyList(contingencyListId, network);
+            contingencyList.ifPresentOrElse(
+                    list -> contingencies.addAll(getContingencies(list, network)),
+                    () -> notFoundIds.add(contingencyListId)
+            );
+        });
+        return new ContingencyListExportResult(contingencies, notFoundIds);
     }
 
     private List<Contingency> getContingencies(PersistentContingencyList persistentContingencyList, Network network) {
