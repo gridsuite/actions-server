@@ -15,7 +15,7 @@ import lombok.NoArgsConstructor;
 import java.util.List;
 import java.util.UUID;
 
-/*
+/**
     @author Jamal KHEYYAD <jamal.kheyyad at rte-international.com>
  */
 @AllArgsConstructor
