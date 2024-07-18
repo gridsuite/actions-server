@@ -16,7 +16,7 @@ import java.util.List;
 import java.util.UUID;
 
 /**
-    @author Jamal KHEYYAD <jamal.kheyyad at rte-international.com>
+ * @author Jamal KHEYYAD <jamal.kheyyad at rte-international.com>
  */
 @AllArgsConstructor
 @NoArgsConstructor
