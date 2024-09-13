@@ -124,6 +124,7 @@
         <dependency>
             <groupId>com.powsybl</groupId>
             <artifactId>powsybl-network-store-client</artifactId>
+            <!-- Add Fixme : to be removed when dependencies is upgraded -->
             <version>${powsybl-network-store.version}</version>
         </dependency>
         <!-- FIXME: to be removed at next powsybl-ws-dependencies upgrade  -->
