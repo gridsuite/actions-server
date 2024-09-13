@@ -45,6 +45,8 @@
         <gridsuite-dependencies.version>31</gridsuite-dependencies.version>
         <string-template.version>4.3.1</string-template.version>
         <liquibase-hibernate-package>org.gridsuite.actions.server</liquibase-hibernate-package>
+        <powsybl-network-store.version>1.17.1</powsybl-network-store.version>
+        <collections4.version>4.5.0-M2</collections4.version>
     </properties>
 
     <build>
@@ -122,6 +124,20 @@
         <dependency>
             <groupId>com.powsybl</groupId>
             <artifactId>powsybl-network-store-client</artifactId>
+            <!-- Add Fixme : to be removed when dependencies is upgraded -->
+            <version>${powsybl-network-store.version}</version>
+        </dependency>
+        <!-- FIXME: to be removed at next powsybl-ws-dependencies upgrade  -->
+        <dependency>
+            <groupId>com.powsybl</groupId>
+            <artifactId>powsybl-network-store-model</artifactId>
+            <version>${powsybl-network-store.version}</version>
+        </dependency>
+        <!-- FIXME: to be removed at next powsybl-ws-dependencies upgrade  -->
+        <dependency>
+            <groupId>com.powsybl</groupId>
+            <artifactId>powsybl-network-store-iidm-impl</artifactId>
+            <version>${powsybl-network-store.version}</version>
         </dependency>
         <dependency>
             <groupId>com.powsybl</groupId>
