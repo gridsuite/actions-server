@@ -13,13 +13,13 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.powsybl.contingency.*;
 import com.powsybl.contingency.contingency.list.IdentifierContingencyList;
+import com.powsybl.contingency.json.ContingencyJsonModule;
+import com.powsybl.iidm.network.Network;
 import com.powsybl.iidm.network.Terminal;
+import com.powsybl.iidm.network.VariantManagerConstants;
 import com.powsybl.iidm.network.identifiers.IdBasedNetworkElementIdentifier;
 import com.powsybl.iidm.network.identifiers.NetworkElementIdentifier;
 import com.powsybl.iidm.network.identifiers.NetworkElementIdentifierContingencyList;
-import com.powsybl.contingency.json.ContingencyJsonModule;
-import com.powsybl.iidm.network.Network;
-import com.powsybl.iidm.network.VariantManagerConstants;
 import com.powsybl.iidm.network.test.EurostagTutorialExample1Factory;
 import com.powsybl.iidm.network.test.HvdcTestNetwork;
 import com.powsybl.iidm.network.test.ShuntTestCaseFactory;
@@ -37,12 +37,11 @@ import org.gridsuite.actions.server.repositories.IdBasedContingencyListRepositor
 import org.gridsuite.actions.server.repositories.ScriptContingencyListRepository;
 import org.gridsuite.actions.server.utils.ContingencyListType;
 import org.gridsuite.actions.server.utils.EquipmentType;
+import org.gridsuite.actions.server.utils.MatcherJson;
 import org.gridsuite.actions.server.utils.NumericalFilterOperator;
-import org.gridsuite.actions.utils.MatcherJson;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -51,8 +50,6 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.cloud.stream.binder.test.OutputDestination;
 import org.springframework.cloud.stream.binder.test.TestChannelBinderConfiguration;
 import org.springframework.messaging.Message;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.Instant;
@@ -62,7 +59,7 @@ import java.util.stream.Collectors;
 import static com.powsybl.network.store.model.NetworkStoreApi.VERSION;
 import static org.apache.commons.lang3.StringUtils.join;
 import static org.gridsuite.actions.server.utils.NumericalFilterOperator.*;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.BDDMockito.given;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -73,11 +70,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at rte-france.com>
  * @author Franck Lecuyer <franck.lecuyer at rte-france.com>
  */
-@RunWith(SpringRunner.class)
-@SpringBootTest
+@SpringBootTest(classes = {ActionsApplication.class, TestChannelBinderConfiguration.class})
 @AutoConfigureMockMvc
-@ContextConfiguration(classes = {ActionsApplication.class, TestChannelBinderConfiguration.class})
-public class ContingencyListControllerTest {
+class ContingencyListControllerTest {
 
     private static final long TIMEOUT = 1000;
 
@@ -112,25 +107,21 @@ public class ContingencyListControllerTest {
     @Autowired
     private OutputDestination output;
 
-    ObjectMapper objectMapper = new ObjectMapper();
+    private ObjectMapper objectMapper;
 
-    @After
-    public void tearDown() {
+    @AfterEach
+    void tearDown() {
         List<String> destinations = List.of(elementUpdateDestination);
 
-        cleanDB();
-        assertQueuesEmptyThenClear(destinations, output);
-    }
-
-    private void cleanDB() {
         scriptContingencyListRepository.deleteAll();
         formContingencyListRepository.deleteAll();
         idBasedContingencyListRepository.deleteAll();
+        assertQueuesEmptyThenClear(destinations, output);
     }
 
-    private void assertQueuesEmptyThenClear(List<String> destinations, OutputDestination output) {
+    private static void assertQueuesEmptyThenClear(List<String> destinations, OutputDestination output) {
         try {
-            destinations.forEach(destination -> assertNull("Should not be any messages in queue " + destination + " : ", output.receive(TIMEOUT, destination)));
+            destinations.forEach(destination -> assertNull(output.receive(TIMEOUT, destination), "Should not be any messages in queue " + destination + " : "));
         } catch (NullPointerException e) {
             // Ignoring
         } finally {
@@ -138,8 +129,9 @@ public class ContingencyListControllerTest {
         }
     }
 
-    @Before
-    public void setUp() {
+    @BeforeEach
+    void setUp() {
+        objectMapper = new ObjectMapper();
         objectMapper.registerModule(new JavaTimeModule());
         objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
         MockitoAnnotations.initMocks(this);
@@ -169,11 +161,13 @@ public class ContingencyListControllerTest {
         objectMapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
         objectMapper.registerModule(new ContingencyJsonModule());
 
-        cleanDB();
+        scriptContingencyListRepository.deleteAll();
+        formContingencyListRepository.deleteAll();
+        idBasedContingencyListRepository.deleteAll();
     }
 
     @Test
-    public void test() throws Exception {
+    void test() throws Exception {
         UUID notFoundId = UUID.fromString("abcdef01-1234-5678-abcd-e123456789aa");
         String script = "{ \n" +
                 "\"script\" : \"contingency('NHV1_NHV2_1') {" +
@@ -242,7 +236,7 @@ public class ContingencyListControllerTest {
         } catch (Throwable ex) {
             e = ex;
         }
-        assertTrue(e instanceof ServletException);
+        assertInstanceOf(ServletException.class, e);
 
         // Check data
         mvc.perform(get("/" + VERSION + "/contingency-lists")
@@ -323,17 +317,17 @@ public class ContingencyListControllerTest {
                 .andExpect(status().isNotFound());
     }
 
-    public StringBuilder jsonVal(String id, String val, boolean trailingComma) {
+    private static StringBuilder jsonVal(String id, String val, boolean trailingComma) {
         return new StringBuilder("\"").append(id).append("\": \"").append(val).append("\"").append(trailingComma ? ", " : "");
     }
 
-    public StringBuilder jsonVal(String id, Double val, boolean trailingComma) {
+    private static StringBuilder jsonVal(String id, Double val, boolean trailingComma) {
         return new StringBuilder("\"").append(id).append("\": ").append(val).append(trailingComma ? ", " : "");
     }
 
-    public String genFormContingencyList(EquipmentType type, Double nominalVoltage, NumericalFilterOperator nominalVoltageOperator, Set<String> countries) {
+    private static String genFormContingencyList(EquipmentType type, Double nominalVoltage, NumericalFilterOperator nominalVoltageOperator, Set<String> countries) {
         // single nominalVoltage => no range allowed
-        assertNotEquals(nominalVoltageOperator, RANGE);
+        assertNotEquals(RANGE, nominalVoltageOperator);
 
         return switch (type) {
             case LINE -> genFormContingencyListForLine(nominalVoltage, nominalVoltageOperator, countries);
@@ -344,24 +338,24 @@ public class ContingencyListControllerTest {
         };
     }
 
-    public String genFormContingencyListForLine(Double nominalVoltage, NumericalFilterOperator nominalVoltageOperator, Set<String> countries) {
+    private static String genFormContingencyListForLine(Double nominalVoltage, NumericalFilterOperator nominalVoltageOperator, Set<String> countries) {
         return genFormContingencyList(EquipmentType.LINE, -1.0, -1.0, EQUALITY, nominalVoltage, -1.0, nominalVoltageOperator, -1.0, -1.0, EQUALITY, Collections.emptySet(), countries, Collections.emptySet());
     }
 
-    public String genFormContingencyListForHVDC(Double nominalVoltage, NumericalFilterOperator nominalVoltageOperator, Set<String> countries) {
+    private static String genFormContingencyListForHVDC(Double nominalVoltage, NumericalFilterOperator nominalVoltageOperator, Set<String> countries) {
         return genFormContingencyList(EquipmentType.HVDC_LINE, nominalVoltage, -1.0, nominalVoltageOperator, -1.0, -1.0, EQUALITY, -1.0, -1.0, EQUALITY, Collections.emptySet(), countries, Collections.emptySet());
     }
 
-    public String genFormContingencyListFor2WT(Double nominalVoltage, NumericalFilterOperator nominalVoltageOperator, Set<String> countries) {
+    private static String genFormContingencyListFor2WT(Double nominalVoltage, NumericalFilterOperator nominalVoltageOperator, Set<String> countries) {
         return genFormContingencyList(EquipmentType.TWO_WINDINGS_TRANSFORMER, -1.0, -1.0, EQUALITY, nominalVoltage, -1.0, nominalVoltageOperator, -1.0, -1.0, EQUALITY, countries, Collections.emptySet(), Collections.emptySet());
     }
 
-    public String genFormContingencyListForOthers(EquipmentType type, Double nominalVoltage, NumericalFilterOperator nominalVoltageOperator,
+    private static String genFormContingencyListForOthers(EquipmentType type, Double nominalVoltage, NumericalFilterOperator nominalVoltageOperator,
                                                   Set<String> countries) {
         return genFormContingencyList(type, nominalVoltage, -1.0, nominalVoltageOperator, -1.0, -1.0, EQUALITY, -1.0, -1.0, EQUALITY, countries, Collections.emptySet(), Collections.emptySet());
     }
 
-    public String genFormContingencyList(EquipmentType type,
+    private static String genFormContingencyList(EquipmentType type,
                                          Double value01, Double value02, NumericalFilterOperator operator0,
                                          Double value11, Double value12, NumericalFilterOperator operator1,
                                          Double value21, Double value22, NumericalFilterOperator operator2,
@@ -410,7 +404,7 @@ public class ContingencyListControllerTest {
     }
 
     @Test
-    public void testDateFormContingencyList() throws Exception {
+    void testDateFormContingencyList() throws Exception {
         String userId = "userId";
         String list = genFormContingencyList(EquipmentType.LINE, 11., EQUALITY, Set.of());
         UUID id = addNewFormContingencyList(list);
@@ -469,7 +463,7 @@ public class ContingencyListControllerTest {
     }
 
     @Test
-    public void testExportContingenciesLine() throws Exception {
+    void testExportContingenciesLine() throws Exception {
         Set<String> noCountries = Collections.emptySet();
         Set<String> france = Collections.singleton("FR");
 
@@ -494,7 +488,7 @@ public class ContingencyListControllerTest {
     }
 
     @Test
-    public void testExportContingencies2WTransfoWith1NumFilter() throws Exception {
+    void testExportContingencies2WTransfoWith1NumFilter() throws Exception {
         Set<String> noCountries = Collections.emptySet();
         // with this network (EurostagTutorialExample1Factory::create), we have 2 FR substations and 2 2WT Transfos:
         // - NGEN_NHV1  term1: 24 kV term2: 380 kV
@@ -539,7 +533,7 @@ public class ContingencyListControllerTest {
     }
 
     @Test
-    public void testExportContingencies2WTransfoWith2NumFilter() throws Exception {
+    void testExportContingencies2WTransfoWith2NumFilter() throws Exception {
         Set<String> noCountries = Collections.emptySet();
 
         final String matchLOAD = objectMapper.writeValueAsString(new ContingencyListExportResult(List.of(new Contingency("NHV2_NLOAD", List.of(new TwoWindingsTransformerContingency("NHV2_NLOAD")))), List.of()));
@@ -558,7 +552,7 @@ public class ContingencyListControllerTest {
     }
 
     @Test
-    public void testExportContingencies2WTransfoWithCountryFilter() throws Exception {
+    void testExportContingencies2WTransfoWithCountryFilter() throws Exception {
         Set<String> france = Collections.singleton("FR");
         Set<String> franceAndMore = Set.of("FR", "ZA", "ES");
         Set<String> belgium = Collections.singleton("BE");
@@ -592,7 +586,7 @@ public class ContingencyListControllerTest {
     }
 
     @Test
-    public void testExportContingenciesGenerator() throws Exception {
+    void testExportContingenciesGenerator() throws Exception {
         Set<String> noCountries = Collections.emptySet();
         Set<String> france = Collections.singleton("FR");
         Set<String> belgium = Collections.singleton("BE");
@@ -616,7 +610,7 @@ public class ContingencyListControllerTest {
     }
 
     @Test
-    public void testExportContingenciesSVC() throws Exception {
+    void testExportContingenciesSVC() throws Exception {
         Set<String> noCountries = Collections.emptySet();
         Set<String> france = Collections.singleton("FR");
         Set<String> belgium = Collections.singleton("BE");
@@ -634,7 +628,7 @@ public class ContingencyListControllerTest {
     }
 
     @Test
-    public void testExportContingenciesShuntCompensator() throws Exception {
+    void testExportContingenciesShuntCompensator() throws Exception {
         Set<String> noCountries = Collections.emptySet();
         String scForm1 = genFormContingencyList(EquipmentType.SHUNT_COMPENSATOR, -1., EQUALITY, noCountries);
         String scForm4 = genFormContingencyList(EquipmentType.SHUNT_COMPENSATOR, 300., EQUALITY, noCountries);
@@ -643,7 +637,7 @@ public class ContingencyListControllerTest {
     }
 
     @Test
-    public void testExportContingenciesHVDC() throws Exception {
+    void testExportContingenciesHVDC() throws Exception {
         Set<String> noCountries = Collections.emptySet();
         String hvdcForm1 = genFormContingencyList(EquipmentType.HVDC_LINE, -1., EQUALITY, noCountries);
         String hvdcForm4 = genFormContingencyList(EquipmentType.HVDC_LINE, 400., EQUALITY, noCountries);
@@ -654,7 +648,7 @@ public class ContingencyListControllerTest {
     }
 
     @Test
-    public void testExportContingenciesBusBar() throws Exception {
+    void testExportContingenciesBusBar() throws Exception {
         Set<String> noCountries = Collections.emptySet();
 
         String bbsForm = genFormContingencyList(EquipmentType.BUSBAR_SECTION, -1., EQUALITY, noCountries);
@@ -662,14 +656,14 @@ public class ContingencyListControllerTest {
     }
 
     @Test
-    public void testExportContingenciesDanglingLine() throws Exception {
+    void testExportContingenciesDanglingLine() throws Exception {
         Set<String> noCountries = Collections.emptySet();
 
         String dlForm = genFormContingencyList(EquipmentType.DANGLING_LINE, -1., EQUALITY, noCountries);
         testExportContingencies(dlForm, objectMapper.writeValueAsString(new ContingencyListExportResult(List.of(), List.of())), NETWORK_UUID);
     }
 
-    void compareFormContingencyList(FormContingencyList expected, FormContingencyList current) {
+    private static void compareFormContingencyList(FormContingencyList expected, FormContingencyList current) {
         // Ideally we shouldn't do that... it's because in the app null <=> [] for country list
         Set<String> expectedCountries = expected.getCountries();
         if (expectedCountries == null) {
@@ -705,7 +699,7 @@ public class ContingencyListControllerTest {
     }
 
     @Test
-    public void modifyFormContingencyList() throws Exception {
+    void modifyFormContingencyList() throws Exception {
         String userId = "userId";
         UUID id = addNewFormContingencyList(genFormContingencyList(EquipmentType.LINE,
                 10., GREATER_OR_EQUAL,
@@ -740,7 +734,7 @@ public class ContingencyListControllerTest {
     }
 
     @Test
-    public void modifyScriptContingencyList() throws Exception {
+    void modifyScriptContingencyList() throws Exception {
         String userId = "userId";
         UUID id = addNewScriptContingencyList("{ \n" +
                 "\"script\" : \"contingency('NHV1_NHV2_1') {" +
@@ -776,7 +770,7 @@ public class ContingencyListControllerTest {
                 .andExpect(status().isNotFound());
     }
 
-    private void compareScriptList(ScriptContingencyList expected, ScriptContingencyList current) {
+    private static void compareScriptList(ScriptContingencyList expected, ScriptContingencyList current) {
         assertEquals(expected.getScript(), current.getScript());
     }
 
@@ -799,7 +793,7 @@ public class ContingencyListControllerTest {
     }
 
     @Test
-    public void testExportMultiContingencies() throws Exception {
+    void testExportMultiContingencies() throws Exception {
         Set<String> noCountries = Collections.emptySet();
         String lineForm = genFormContingencyList(EquipmentType.LINE, -1., EQUALITY, noCountries);
         String genForm = genFormContingencyList(EquipmentType.GENERATOR, 100., LESS_THAN, noCountries);
@@ -846,7 +840,7 @@ public class ContingencyListControllerTest {
     }
 
     @Test
-    public void testExportMultiContingenciesInfo() throws Exception {
+    void testExportMultiContingenciesInfo() throws Exception {
         Set<String> noCountries = Collections.emptySet();
         String lineForm = genFormContingencyList(EquipmentType.LINE, -1., EQUALITY, noCountries);
         String genForm = genFormContingencyList(EquipmentType.GENERATOR, 100., LESS_THAN, noCountries);
@@ -885,7 +879,7 @@ public class ContingencyListControllerTest {
     }
 
     @Test
-    public void testExportContingenciesInfos() throws Exception {
+    void testExportContingenciesInfos() throws Exception {
         ScriptContingencyList scriptContingencyList = new ScriptContingencyList("contingency('NHV1_NHV2_1') {\n" +
                 "    equipments 'NHV1_NHV2_1'}\n" +
                 "contingency('TEST2') {\n" +
@@ -921,7 +915,7 @@ public class ContingencyListControllerTest {
     }
 
     @Test
-    public void testExportContingenciesNotConnectedAndNotFoundElements() throws Exception {
+    void testExportContingenciesNotConnectedAndNotFoundElements() throws Exception {
         NetworkElementIdentifierContingencyList networkElementIdentifierContingencyList = new NetworkElementIdentifierContingencyList(List.of(new IdBasedNetworkElementIdentifier("NHV1_NHV2_1"), new IdBasedNetworkElementIdentifier("NHV1_NHV2_2"), new IdBasedNetworkElementIdentifier("TEST1")), "default");
         IdBasedContingencyList idBasedContingencyList = new IdBasedContingencyList(null, Instant.now(), new IdentifierContingencyList("defaultName", List.of(networkElementIdentifierContingencyList)));
 
@@ -947,7 +941,7 @@ public class ContingencyListControllerTest {
     }
 
     @Test
-    public void emptyScriptTest() throws Exception {
+    void emptyScriptTest() throws Exception {
         UUID id = addNewScriptContingencyList("{" +
                 "\"script\" : \"\"}");
 
@@ -966,14 +960,13 @@ public class ContingencyListControllerTest {
         var res = mvc.perform(get("/" + VERSION + "/contingency-lists/metadata?ids=" + id))
                 .andExpect(status().isOk())
                 .andReturn().getResponse().getContentAsString();
-        List<ContingencyListMetadataImpl> contingencyListAttributes = objectMapper.readValue(res, new TypeReference<>() {
-        });
+        List<ContingencyListMetadataImpl> contingencyListAttributes = objectMapper.readValue(res, new TypeReference<>() { });
         assertEquals(1, contingencyListAttributes.size());
         return contingencyListAttributes.get(0);
     }
 
     @Test
-    public void testExportContingencies3() {
+    void testExportContingencies3() {
         Throwable e = null;
         UUID id = UUID.fromString("7928181c-7977-4592-ba19-88027e4254e8");
         String lineFilters = genFormContingencyList(EquipmentType.LINE, -1., EQUALITY, Collections.emptySet());
@@ -982,12 +975,12 @@ public class ContingencyListControllerTest {
         } catch (Throwable ex) {
             e = ex;
         }
-        assertTrue(e instanceof ServletException);
+        assertInstanceOf(ServletException.class, e);
         assertEquals("Request processing failed: com.powsybl.commons.PowsyblException: Network '7928181c-7977-4592-ba19-88027e4254e8' not found", e.getMessage());
     }
 
     @Test
-    public void testCreateContingencyBadOperator() throws Exception {
+    void testCreateContingencyBadOperator() throws Exception {
         String lineFilters = "{\n" +
                 "  \"equipmentType\": \"LINE\"," +
                 "  \"nominalVoltage1\": {" +
@@ -1005,7 +998,7 @@ public class ContingencyListControllerTest {
     }
 
     @Test
-    public void testCreateContingencyNoValue1() throws Exception {
+    void testCreateContingencyNoValue1() throws Exception {
         String formContingencyList = "{\n" +
                 "  \"equipmentType\": \"LINE\"," +
                 "  \"nominalVoltage1\": {" +
@@ -1038,7 +1031,7 @@ public class ContingencyListControllerTest {
     }
 
     @Test
-    public void testCreateContingencyNoValue2ForRange() throws Exception {
+    void testCreateContingencyNoValue2ForRange() throws Exception {
         String formContingencyList = "{\n" +
                 "  \"equipmentType\": \"LINE\"," +
                 "  \"nominalVoltage1\": {" +
@@ -1071,7 +1064,7 @@ public class ContingencyListControllerTest {
     }
 
     @Test
-    public void contingencyListAttributesTest() {
+    void contingencyListAttributesTest() {
         UUID contingencyListAttrId = UUID.randomUUID();
         ContingencyListMetadataImpl contingencyListAttributes = new ContingencyListMetadataImpl(contingencyListAttrId, ContingencyListType.SCRIPT, null);
         assertEquals(contingencyListAttrId, contingencyListAttributes.getId());
@@ -1082,7 +1075,7 @@ public class ContingencyListControllerTest {
     }
 
     @Test
-    public void scriptContingencyListEntityTest() {
+    void scriptContingencyListEntityTest() {
         ScriptContingencyListEntity entity = new ScriptContingencyListEntity();
         entity.setScript("");
 
@@ -1090,7 +1083,7 @@ public class ContingencyListControllerTest {
     }
 
     @Test
-    public void formContingencyListEntityTest() {
+    void formContingencyListEntityTest() {
         FormContingencyListEntity entity = new FormContingencyListEntity();
         entity.setEquipmentType("LINE");
         entity.setNominalVoltage1(new NumericalFilterEntity(null, EQUALITY, 225., null));
@@ -1104,7 +1097,7 @@ public class ContingencyListControllerTest {
     }
 
     @Test
-    public void replaceFormWithScriptTest() throws Exception {
+    void replaceFormWithScriptTest() throws Exception {
         String userId = "userId";
         String form = "{\n" +
                 "  \"equipmentType\": \"GENERATOR\"," +
@@ -1143,7 +1136,7 @@ public class ContingencyListControllerTest {
     }
 
     @Test
-    public void copyFormToScriptTest() throws Exception {
+    void copyFormToScriptTest() throws Exception {
         String form = "{\n" +
                 "  \"equipmentType\": \"GENERATOR\"," +
                 "  \"nominalVoltage\": {" +
@@ -1173,7 +1166,7 @@ public class ContingencyListControllerTest {
     }
 
     @Test
-    public void addScriptWithIdTest() throws Exception {
+    void addScriptWithIdTest() throws Exception {
         UUID id = UUID.fromString("abcdef01-1234-5678-abcd-e123456789aa");
 
         String script = "{ \n" +
@@ -1186,7 +1179,7 @@ public class ContingencyListControllerTest {
     }
 
     @Test
-    public void duplicateFormContingencyList() throws Exception {
+    void duplicateFormContingencyList() throws Exception {
         String list = genFormContingencyList(EquipmentType.LINE, 11., EQUALITY, Set.of());
         UUID id = addNewFormContingencyList(list);
 
@@ -1198,7 +1191,7 @@ public class ContingencyListControllerTest {
     }
 
     @Test
-    public void duplicateScriptContingencyList() throws Exception {
+    void duplicateScriptContingencyList() throws Exception {
         String script = "{ " + "\"script\" : \"contingency('NHV1_NHV2_1') {" +
                 "     equipments 'NHV1_NHV2_1'}\"" +
                 "}";
@@ -1211,24 +1204,23 @@ public class ContingencyListControllerTest {
                 .andExpect(status().isNotFound());
     }
 
-    public IdBasedContingencyList createIdBasedContingencyList(UUID listId, Instant modificationDate, String... identifiers) {
+    private static IdBasedContingencyList createIdBasedContingencyList(UUID listId, Instant modificationDate, String... identifiers) {
         List< NetworkElementIdentifier > networkElementIdentifiers = Arrays.stream(identifiers).map(id -> new NetworkElementIdentifierContingencyList(List.of(new IdBasedNetworkElementIdentifier(id)), id)).collect(Collectors.toList());
         return new IdBasedContingencyList(listId, modificationDate, new IdentifierContingencyList(listId != null ? listId.toString() : "defaultName", networkElementIdentifiers));
     }
 
-    public int getContingencyListsCount() throws Exception {
+    private int getContingencyListsCount() throws Exception {
         String res = mvc.perform(get("/" + VERSION + "/contingency-lists")
                         .contentType(APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
                 .andReturn().getResponse().getContentAsString();
 
-        List<IdBasedContingencyList> contingencyListAttributes = objectMapper.readValue(res, new TypeReference<>() {
-        });
+        List<IdBasedContingencyList> contingencyListAttributes = objectMapper.readValue(res, new TypeReference<>() { });
         return contingencyListAttributes.size();
     }
 
-    private void matchContingencyListMetadata(ContingencyListMetadata metadata1, ContingencyListMetadata metadata2) {
+    private static void matchContingencyListMetadata(ContingencyListMetadata metadata1, ContingencyListMetadata metadata2) {
         assertEquals(metadata1.getId(), metadata2.getId());
         assertEquals(metadata1.getType(), metadata2.getType());
         assertTrue((metadata1.getModificationDate().toEpochMilli() - metadata2.getModificationDate().toEpochMilli()) < 2000);
@@ -1239,13 +1231,8 @@ public class ContingencyListControllerTest {
         assertTrue(new MatcherJson<>(objectMapper, cl1.getIdentifierContingencyList()).matchesSafely(cl2.getIdentifierContingencyList()));
     }
 
-    private void matchScriptContingencyList(ScriptContingencyList cl1, ScriptContingencyList cl2) {
-        matchContingencyListMetadata(cl1.getMetadata(), cl2.getMetadata());
-        assertTrue(cl1.getScript().contains(cl1.getScript()));
-    }
-
     @Test
-    public void createIdBasedContingencyList() throws Exception {
+    void createIdBasedContingencyList() throws Exception {
         Instant modificationDate = Instant.now();
         IdBasedContingencyList idBasedContingencyList = createIdBasedContingencyList(null, modificationDate, "NHV1_NHV2_1");
 
@@ -1283,7 +1270,7 @@ public class ContingencyListControllerTest {
     }
 
     @Test
-    public void createIdBasedContingencyListError() throws Exception {
+    void createIdBasedContingencyListError() throws Exception {
         Instant modificationDate = Instant.now();
 
         IdBasedContingencyList idBasedContingencyList1 = createIdBasedContingencyList(null, modificationDate, "");
@@ -1300,7 +1287,7 @@ public class ContingencyListControllerTest {
     }
 
     @Test
-    public void duplicateBasedContingencyList() throws Exception {
+    void duplicateBasedContingencyList() throws Exception {
         Instant modificationDate = Instant.now();
         IdBasedContingencyList idBasedContingencyList = createIdBasedContingencyList(null, modificationDate, "id1");
         String res = mvc.perform(post("/" + VERSION + "/identifier-contingency-lists")
@@ -1320,7 +1307,7 @@ public class ContingencyListControllerTest {
     }
 
     @Test
-    public void exportIdBasedContingencyList() throws Exception {
+    void exportIdBasedContingencyList() throws Exception {
         Instant modificationDate = Instant.now();
         IdBasedContingencyList idBasedContingencyList = createIdBasedContingencyList(null, modificationDate, "NHV1_NHV2_1");
 
@@ -1343,7 +1330,7 @@ public class ContingencyListControllerTest {
     }
 
     @Test
-    public void testExportUnknownContingencyList() throws Exception {
+    void testExportUnknownContingencyList() throws Exception {
         mvc.perform(get("/" + VERSION + "/contingency-lists/" + UUID.randomUUID() + "/export?networkUuid=" + NETWORK_UUID + "&variantId=" + VARIANT_ID_1)
                         .contentType(APPLICATION_JSON))
                 .andExpect(status().isNotFound())
@@ -1351,7 +1338,7 @@ public class ContingencyListControllerTest {
     }
 
     @Test
-    public void testCountUnknownContingencyList() throws Exception {
+    void testCountUnknownContingencyList() throws Exception {
         String res = mvc.perform(get("/" + VERSION + "/contingency-lists/count?ids=" + UUID.randomUUID() + "&networkUuid=" + NETWORK_UUID + "&variantId=" + VARIANT_ID_1)
                         .contentType(APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -1360,7 +1347,7 @@ public class ContingencyListControllerTest {
     }
 
     @Test
-    public void testCountContingencyList() throws Exception {
+    void testCountContingencyList() throws Exception {
         // insert 3 contingency lists
         Set<String> noCountries = Collections.emptySet();
         String lineForm1 = genFormContingencyList(EquipmentType.LINE, -1., EQUALITY, noCountries); // 2 defaults
@@ -1379,7 +1366,7 @@ public class ContingencyListControllerTest {
     }
 
     @Test
-    public void modifyIdBasedContingencyList() throws Exception {
+    void modifyIdBasedContingencyList() throws Exception {
         Instant modificationDate = Instant.now();
         IdBasedContingencyList idBasedContingencyList = createIdBasedContingencyList(null, modificationDate, "LINE1");
 
