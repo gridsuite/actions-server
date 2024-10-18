@@ -111,11 +111,11 @@ class ContingencyListControllerTest {
 
     @AfterEach
     void tearDown() {
-        List<String> destinations = List.of(elementUpdateDestination);
-
         scriptContingencyListRepository.deleteAll();
         formContingencyListRepository.deleteAll();
         idBasedContingencyListRepository.deleteAll();
+
+        List<String> destinations = List.of(elementUpdateDestination);
         assertQueuesEmptyThenClear(destinations, output);
     }
 
@@ -160,10 +160,6 @@ class ContingencyListControllerTest {
 
         objectMapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
         objectMapper.registerModule(new ContingencyJsonModule());
-
-        scriptContingencyListRepository.deleteAll();
-        formContingencyListRepository.deleteAll();
-        idBasedContingencyListRepository.deleteAll();
     }
 
     @Test
