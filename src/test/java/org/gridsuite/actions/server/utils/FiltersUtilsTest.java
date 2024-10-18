@@ -4,25 +4,24 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
-package org.gridsuite.actions.test;
+package org.gridsuite.actions.server.utils;
 
 import com.powsybl.iidm.network.*;
 import com.powsybl.iidm.network.test.EurostagTutorialExample1Factory;
 import com.powsybl.iidm.network.test.HvdcTestNetwork;
 import com.powsybl.network.store.iidm.impl.NetworkFactoryImpl;
-import org.gridsuite.actions.server.utils.FiltersUtils;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * @author Franck Lecuyer <franck.lecuyer at rte-france.com>
  */
-public class FiltersUtilsTest {
+class FiltersUtilsTest {
     @Test
-    public void testInjection() {
+    void testInjection() {
         Network network = EurostagTutorialExample1Factory.createWithMoreGenerators(new NetworkFactoryImpl());
         // just test Generator for common injection equipment
         // Injection eqpt can have 1 single country filter
@@ -34,7 +33,7 @@ public class FiltersUtilsTest {
     }
 
     @Test
-    public void testHvdcLine() {
+    void testHvdcLine() {
         Network network = HvdcTestNetwork.createVsc(new NetworkFactoryImpl());
         network.getSubstation("S2").setCountry(Country.IT);
         // S1 = FR, S2 = IT
@@ -55,7 +54,7 @@ public class FiltersUtilsTest {
     }
 
     @Test
-    public void testLine() {
+    void testLine() {
         Network network = EurostagTutorialExample1Factory.create(new NetworkFactoryImpl());
         network.getSubstation("P2").setCountry(Country.PT);
         Line line1 = network.getLine("NHV1_NHV2_1");
@@ -76,7 +75,7 @@ public class FiltersUtilsTest {
     }
 
     @Test
-    public void test2WTransfo() {
+    void test2WTransfo() {
         Network network = EurostagTutorialExample1Factory.create(new NetworkFactoryImpl());
         network.getSubstation("P2").setCountry(Country.PT);
         TwoWindingsTransformer transfo1 = network.getTwoWindingsTransformer("NGEN_NHV1"); // belongs to FR
