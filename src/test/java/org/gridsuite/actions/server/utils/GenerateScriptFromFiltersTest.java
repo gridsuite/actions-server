@@ -4,25 +4,24 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
-package org.gridsuite.actions.test;
+package org.gridsuite.actions.server.utils;
 
 import org.gridsuite.actions.server.FormToGroovyScript;
 import org.gridsuite.actions.server.dto.FormContingencyList;
 import org.gridsuite.actions.server.dto.NumericalFilter;
-import org.gridsuite.actions.server.utils.NumericalFilterOperator;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * @author Franck Lecuyer <franck.lecuyer at rte-france.com>
  */
-public class GenerateScriptFromFiltersTest {
+class GenerateScriptFromFiltersTest {
     @Test
-    public void generateScriptTestInjection() {
+    void generateScriptTestInjection() {
         FormToGroovyScript formToScript = new FormToGroovyScript();
 
         LinkedHashSet<String> countries = new LinkedHashSet<>();
@@ -84,7 +83,7 @@ public class GenerateScriptFromFiltersTest {
     }
 
     @Test
-    public void generateScriptTestHvdcLine() {
+    void generateScriptTestHvdcLine() {
         FormToGroovyScript formToScript = new FormToGroovyScript();
         LinkedHashSet<String> countries = new LinkedHashSet<>();
         countries.add("FR");
@@ -134,7 +133,7 @@ public class GenerateScriptFromFiltersTest {
     }
 
     @Test
-    public void generateScriptTestLine() {
+    void generateScriptTestLine() {
         FormToGroovyScript formToScript = new FormToGroovyScript();
         LinkedHashSet<String> countries = new LinkedHashSet<>();
         countries.add("FR");
@@ -186,7 +185,7 @@ public class GenerateScriptFromFiltersTest {
     }
 
     @Test
-    public void generateScriptTest2WTransfo() {
+    void generateScriptTest2WTransfo() {
         FormToGroovyScript formToScript = new FormToGroovyScript();
         LinkedHashSet<String> countries = new LinkedHashSet<>();
         countries.add("FR");

@@ -43,9 +43,7 @@
 
     <properties>
         <gridsuite-dependencies.version>34</gridsuite-dependencies.version>
-        <string-template.version>4.3.1</string-template.version>
         <liquibase-hibernate-package>org.gridsuite.actions.server</liquibase-hibernate-package>
-        <collections4.version>4.5.0-M2</collections4.version>
         <!-- FIXME: powsybl-network-store modules'version is overloaded in the dependencies section.The overloads and this property below have to be removed at next powsybl-ws-dependencies.version upgrade -->
         <powsybl-network-store.version>1.18.2</powsybl-network-store.version>
     </properties>
@@ -169,7 +167,6 @@
         <dependency>
             <groupId>org.antlr</groupId>
             <artifactId>ST4</artifactId>
-            <version>${string-template.version}</version>
         </dependency>
 
         <!-- Runtime dependencies -->
@@ -232,20 +229,9 @@
             </exclusions>
         </dependency>
         <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.junit.vintage</groupId>
-            <artifactId>junit-vintage-engine</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
         </dependency>
     </dependencies>
-
 </project>
