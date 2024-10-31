@@ -9,7 +9,7 @@ on:
 
 jobs:
   run-patch:
-    uses: powsybl/github-ci/.github/workflows/patch-generic.yml@baf0d2ed84b70d359132693880d5e530cd93f168
+    uses: powsybl/github-ci/.github/workflows/patch-generic.yml@v1
     with:
       githubappId: ${{ vars.GRIDSUITE_ACTIONS_APPID }}
       sonarOrganization: gridsuite
