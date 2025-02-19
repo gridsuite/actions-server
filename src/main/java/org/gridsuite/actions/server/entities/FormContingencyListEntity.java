@@ -6,13 +6,12 @@
  */
 package org.gridsuite.actions.server.entities;
 
-import lombok.NoArgsConstructor;
+import jakarta.persistence.*;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.gridsuite.actions.server.dto.FormContingencyList;
 import org.gridsuite.actions.server.utils.EquipmentType;
-
-import jakarta.persistence.*;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -60,17 +59,17 @@ public class FormContingencyListEntity extends AbstractContingencyEntity {
     @Column(name = "country")
     @ElementCollection
     @CollectionTable(foreignKey = @ForeignKey(name = "formContingencyListEntity_countries_fk"), indexes = {@Index(name = "formContingencyListEntity_countries_idx", columnList = "form_contingency_list_entity_id")})
-    private Set<String> countries;
+    private Set<String> countries = new HashSet<>();
 
     @Column(name = "country1")
     @ElementCollection
     @CollectionTable(foreignKey = @ForeignKey(name = "formContingencyListEntity_countries1_fk"), indexes = {@Index(name = "formContingencyListEntity_countries1_idx", columnList = "form_contingency_list_entity_id")})
-    private Set<String> countries1;
+    private Set<String> countries1 = new HashSet<>();
 
     @Column(name = "country2")
     @ElementCollection
     @CollectionTable(foreignKey = @ForeignKey(name = "formContingencyListEntity_countries2_fk"), indexes = {@Index(name = "formContingencyListEntity_countries2_idx", columnList = "form_contingency_list_entity_id")})
-    private Set<String> countries2;
+    private Set<String> countries2 = new HashSet<>();
 
     public FormContingencyListEntity(FormContingencyList formContingencyList) {
         super();
