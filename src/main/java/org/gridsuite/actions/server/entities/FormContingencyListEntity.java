@@ -59,17 +59,17 @@ public class FormContingencyListEntity extends AbstractContingencyEntity {
     @Column(name = "country")
     @ElementCollection
     @CollectionTable(foreignKey = @ForeignKey(name = "formContingencyListEntity_countries_fk"), indexes = {@Index(name = "formContingencyListEntity_countries_idx", columnList = "form_contingency_list_entity_id")})
-    private Set<String> countries = new HashSet<>();
+    private Set<String> countries;
 
     @Column(name = "country1")
     @ElementCollection
     @CollectionTable(foreignKey = @ForeignKey(name = "formContingencyListEntity_countries1_fk"), indexes = {@Index(name = "formContingencyListEntity_countries1_idx", columnList = "form_contingency_list_entity_id")})
-    private Set<String> countries1 = new HashSet<>();
+    private Set<String> countries1;
 
     @Column(name = "country2")
     @ElementCollection
     @CollectionTable(foreignKey = @ForeignKey(name = "formContingencyListEntity_countries2_fk"), indexes = {@Index(name = "formContingencyListEntity_countries2_idx", columnList = "form_contingency_list_entity_id")})
-    private Set<String> countries2 = new HashSet<>();
+    private Set<String> countries2;
 
     public FormContingencyListEntity(FormContingencyList formContingencyList) {
         super();

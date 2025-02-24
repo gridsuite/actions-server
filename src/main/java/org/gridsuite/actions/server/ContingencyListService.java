@@ -75,7 +75,10 @@ public class ContingencyListService {
     }
 
     private static FormContingencyList fromFormContingencyListEntity(FormContingencyListEntity entity) {
-        return new FormContingencyList(entity.getId(), entity.getModificationDate(), entity.getEquipmentType(), NumericalFilterEntity.convert(entity.getNominalVoltage()), NumericalFilterEntity.convert(entity.getNominalVoltage1()), NumericalFilterEntity.convert(entity.getNominalVoltage2()), Set.copyOf(entity.getCountries()), Set.copyOf(entity.getCountries1()), Set.copyOf(entity.getCountries2()));
+        return new FormContingencyList(entity.getId(), entity.getModificationDate(), entity.getEquipmentType(), NumericalFilterEntity.convert(entity.getNominalVoltage()), NumericalFilterEntity.convert(entity.getNominalVoltage1()), NumericalFilterEntity.convert(entity.getNominalVoltage2()),
+            entity.getCountries() == null ? entity.getCountries() : Set.copyOf(entity.getCountries()),
+            entity.getCountries1() == null ? entity.getCountries1() : Set.copyOf(entity.getCountries1()),
+            entity.getCountries2() == null ? entity.getCountries2() : Set.copyOf(entity.getCountries2()));
     }
 
     List<PersistentContingencyList> getScriptContingencyLists() {
