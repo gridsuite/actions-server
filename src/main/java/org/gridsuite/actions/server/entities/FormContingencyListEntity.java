@@ -6,13 +6,12 @@
  */
 package org.gridsuite.actions.server.entities;
 
-import lombok.NoArgsConstructor;
+import jakarta.persistence.*;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.gridsuite.actions.server.dto.FormContingencyList;
 import org.gridsuite.actions.server.utils.EquipmentType;
-
-import jakarta.persistence.*;
 
 import java.util.HashSet;
 import java.util.Set;

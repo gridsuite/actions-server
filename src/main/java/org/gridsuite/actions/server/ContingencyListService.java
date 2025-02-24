@@ -7,12 +7,16 @@
 package org.gridsuite.actions.server;
 
 import com.powsybl.commons.PowsyblException;
-import com.powsybl.contingency.*;
-import com.powsybl.contingency.contingency.list.*;
+import com.powsybl.contingency.Contingency;
+import com.powsybl.contingency.ContingencyElement;
+import com.powsybl.contingency.contingency.list.ContingencyList;
+import com.powsybl.contingency.contingency.list.IdentifierContingencyList;
+import com.powsybl.iidm.network.Connectable;
+import com.powsybl.iidm.network.Network;
+import com.powsybl.iidm.network.Terminal;
 import com.powsybl.iidm.network.identifiers.IdBasedNetworkElementIdentifier;
 import com.powsybl.iidm.network.identifiers.NetworkElementIdentifier;
 import com.powsybl.iidm.network.identifiers.NetworkElementIdentifierContingencyList;
-import com.powsybl.iidm.network.*;
 import com.powsybl.network.store.client.NetworkStoreService;
 import com.powsybl.network.store.client.PreloadingStrategy;
 import com.powsybl.network.store.iidm.impl.NetworkFactoryImpl;
@@ -22,7 +26,6 @@ import org.gridsuite.actions.server.repositories.FormContingencyListRepository;
 import org.gridsuite.actions.server.repositories.IdBasedContingencyListRepository;
 import org.gridsuite.actions.server.repositories.ScriptContingencyListRepository;
 import org.gridsuite.actions.server.utils.ContingencyListType;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.HttpStatus;
@@ -55,10 +58,6 @@ public class ContingencyListService {
 
     private final FormToGroovyScript formToScript = new FormToGroovyScript();
 
-    // Self injection for @transactional support in internal calls to other methods of this service
-    @Autowired
-    ContingencyListService self;
-
     public ContingencyListService(ScriptContingencyListRepository scriptContingencyListRepository,
                                   FormContingencyListRepository formContingencyListRepository,
                                   IdBasedContingencyListRepository idBasedContingencyListRepository,
@@ -76,7 +75,10 @@ public class ContingencyListService {
     }
 
     private static FormContingencyList fromFormContingencyListEntity(FormContingencyListEntity entity) {
-        return new FormContingencyList(entity.getId(), entity.getModificationDate(), entity.getEquipmentType(), NumericalFilterEntity.convert(entity.getNominalVoltage()), NumericalFilterEntity.convert(entity.getNominalVoltage1()), NumericalFilterEntity.convert(entity.getNominalVoltage2()), entity.getCountries(), entity.getCountries1(), entity.getCountries2());
+        return new FormContingencyList(entity.getId(), entity.getModificationDate(), entity.getEquipmentType(), NumericalFilterEntity.convert(entity.getNominalVoltage()), NumericalFilterEntity.convert(entity.getNominalVoltage1()), NumericalFilterEntity.convert(entity.getNominalVoltage2()),
+            entity.getCountries() == null ? entity.getCountries() : Set.copyOf(entity.getCountries()),
+            entity.getCountries1() == null ? entity.getCountries1() : Set.copyOf(entity.getCountries1()),
+            entity.getCountries2() == null ? entity.getCountries2() : Set.copyOf(entity.getCountries2()));
     }
 
     List<PersistentContingencyList> getScriptContingencyLists() {
@@ -109,7 +111,8 @@ public class ContingencyListService {
         ).flatMap(Function.identity()).collect(Collectors.toList());
     }
 
-    List<PersistentContingencyList> getFormContingencyLists() {
+    @Transactional(readOnly = true)
+    public List<PersistentContingencyList> getFormContingencyLists() {
         return formContingencyListRepository.findAllWithCountries().stream().map(ContingencyListService::fromFormContingencyListEntity).collect(Collectors.toList());
     }
 
@@ -118,8 +121,7 @@ public class ContingencyListService {
         return scriptContingencyListRepository.findById(id).map(ContingencyListService::fromScriptContingencyListEntity);
     }
 
-    @Transactional(readOnly = true)
-    public Optional<FormContingencyListEntity> doGetFormContingencyListWithPreFetchedCountries(UUID name) {
+    private Optional<FormContingencyListEntity> doGetFormContingencyListWithPreFetchedCountries(UUID name) {
         return formContingencyListRepository.findById(name).map(entity -> {
             @SuppressWarnings("unused")
             int ignoreSize = entity.getCountries1().size();
@@ -127,12 +129,22 @@ public class ContingencyListService {
         });
     }
 
+    @Transactional(readOnly = true)
     public Optional<PersistentContingencyList> getFormContingencyList(UUID id) {
-        Objects.requireNonNull(id);
-        return self.doGetFormContingencyListWithPreFetchedCountries(id).map(ContingencyListService::fromFormContingencyListEntity);
+        return doGetFormContingencyList(id);
     }
 
+    private Optional<PersistentContingencyList> doGetFormContingencyList(UUID id) {
+        Objects.requireNonNull(id);
+        return doGetFormContingencyListWithPreFetchedCountries(id).map(ContingencyListService::fromFormContingencyListEntity);
+    }
+
+    @Transactional(readOnly = true)
     public Optional<PersistentContingencyList> getIdBasedContingencyList(UUID id, Network network) {
+        return doGetIdBasedContingencyList(id, network);
+    }
+
+    private Optional<PersistentContingencyList> doGetIdBasedContingencyList(UUID id, Network network) {
         Objects.requireNonNull(id);
         return idBasedContingencyListRepository.findById(id).map(idBasedContingencyListEntity -> fromIdBasedContingencyListEntity(idBasedContingencyListEntity, network));
     }
@@ -190,8 +202,8 @@ public class ContingencyListService {
     }
 
     private Optional<PersistentContingencyList> getAnyContingencyList(UUID id, Network network) {
-        return getFormContingencyList(id)
-                .or(() -> getIdBasedContingencyList(id, network))
+        return doGetFormContingencyList(id)
+                .or(() -> doGetIdBasedContingencyList(id, network))
                 .or(() -> getScriptContingencyList(id));
     }
 
@@ -269,19 +281,26 @@ public class ContingencyListService {
         }
     }
 
-    void modifyScriptContingencyList(UUID id, ScriptContingencyList script, String userId) {
+    @Transactional
+    public void modifyScriptContingencyList(UUID id, ScriptContingencyList script, String userId) {
         scriptContingencyListRepository.save(scriptContingencyListRepository.getReferenceById(id).update(script));
         notificationService.emitElementUpdated(id, userId);
     }
 
+    @Transactional
     public FormContingencyList createFormContingencyList(UUID id, FormContingencyList formContingencyList) {
+        return doCreateFormContingencyList(id, formContingencyList);
+    }
+
+    private FormContingencyList doCreateFormContingencyList(UUID id, FormContingencyList formContingencyList) {
         FormContingencyListEntity entity = new FormContingencyListEntity(formContingencyList);
         entity.setId(id == null ? UUID.randomUUID() : id);
         return fromFormContingencyListEntity(formContingencyListRepository.save(entity));
     }
 
+    @Transactional
     public Optional<UUID> duplicateFormContingencyList(UUID sourceListId) {
-        Optional<FormContingencyList> formContingencyList = getFormContingencyList(sourceListId).map(s -> createFormContingencyList(null, (FormContingencyList) s));
+        Optional<FormContingencyList> formContingencyList = doGetFormContingencyList(sourceListId).map(s -> doCreateFormContingencyList(null, (FormContingencyList) s));
         if (!formContingencyList.isPresent()) {
             throw createNotFoundException(sourceListId.toString(), "Form contingency list");
         } else {
@@ -289,8 +308,9 @@ public class ContingencyListService {
         }
     }
 
+    @Transactional
     public Optional<UUID> duplicateIdentifierContingencyList(UUID sourceListId) {
-        Optional<IdBasedContingencyList> idBasedContingencyList = getIdBasedContingencyList(sourceListId, null).map(s -> createIdBasedContingencyList(null, (IdBasedContingencyList) s));
+        Optional<IdBasedContingencyList> idBasedContingencyList = doGetIdBasedContingencyList(sourceListId, null).map(s -> createIdBasedContingencyList(null, (IdBasedContingencyList) s));
         if (!idBasedContingencyList.isPresent()) {
             throw createNotFoundException(sourceListId.toString(), "Identifier contingency list");
         } else {
@@ -298,12 +318,14 @@ public class ContingencyListService {
         }
     }
 
+    @Transactional
     public void modifyFormContingencyList(UUID id, FormContingencyList formContingencyList, String userId) {
         // throw if not found
         formContingencyListRepository.save(formContingencyListRepository.getReferenceById(id).update(formContingencyList));
         notificationService.emitElementUpdated(id, userId);
     }
 
+    @Transactional
     public void modifyIdBasedContingencyList(UUID id, IdBasedContingencyList idBasedContingencyList, String userId) {
         // throw if not found
         idBasedContingencyListRepository.save(idBasedContingencyListRepository.getReferenceById(id).update(idBasedContingencyList));
@@ -330,7 +352,7 @@ public class ContingencyListService {
     @Transactional
     public ScriptContingencyList replaceFormContingencyListWithScript(UUID id, String userId) {
         Objects.requireNonNull(id);
-        Optional<FormContingencyListEntity> formContingencyList = self.doGetFormContingencyListWithPreFetchedCountries(id);
+        Optional<FormContingencyListEntity> formContingencyList = doGetFormContingencyListWithPreFetchedCountries(id);
         ScriptContingencyList result = formContingencyList.map(entity -> {
             String script = generateGroovyScriptFromForm(fromFormContingencyListEntity(entity));
             var scriptContingencyListEntity = new ScriptContingencyListEntity(new ScriptContingencyList(id, null, script));
@@ -348,7 +370,7 @@ public class ContingencyListService {
     @Transactional
     public ScriptContingencyList newScriptFromFormContingencyList(UUID id, UUID newId) {
         Objects.requireNonNull(id);
-        Optional<FormContingencyListEntity> formContingencyList = self.doGetFormContingencyListWithPreFetchedCountries(id);
+        Optional<FormContingencyListEntity> formContingencyList = doGetFormContingencyListWithPreFetchedCountries(id);
         return formContingencyList.map(entity -> {
             String script = generateGroovyScriptFromForm(fromFormContingencyListEntity(entity));
             ScriptContingencyListEntity scriptEntity = new ScriptContingencyListEntity(new ScriptContingencyList(script));
