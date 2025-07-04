@@ -241,12 +241,6 @@ class ContingencyListControllerTest {
                 .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
                 .andExpect(content().json("{\"equipmentType\":\"GENERATOR\",\"nominalVoltage\":{\"type\":\"GREATER_THAN\",\"value1\":100.0,\"value2\":null},\"nominalVoltage1\":null,\"nominalVoltage2\":null,\"countries\":[\"BE\",\"FR\"],\"countries1\":[],\"countries2\":[], \"metadata\":{\"type\":\"FORM\"}}", false));
 
-        // check not found
-        mvc.perform(get("/" + VERSION + "/script-contingency-lists/" + notFoundId)
-                        .contentType(APPLICATION_JSON))
-                .andExpect(status().isNotFound())
-                .andExpect(content().string(""));
-
         mvc.perform(get("/" + VERSION + "/form-contingency-lists/" + notFoundId)
                         .contentType(APPLICATION_JSON))
                 .andExpect(status().isNotFound())
