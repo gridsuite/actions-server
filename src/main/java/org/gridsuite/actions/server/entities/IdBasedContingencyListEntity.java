@@ -33,6 +33,7 @@ import java.util.stream.Collectors;
 public class IdBasedContingencyListEntity extends AbstractContingencyEntity {
 
     @OneToMany(cascade = CascadeType.ALL)
+    @OrderColumn(name = "identifier_order")
     private List<IdentifierListEntity> identifiersListEntities;
 
     public IdBasedContingencyListEntity(IdBasedContingencyList idBasedContingencyList) {
