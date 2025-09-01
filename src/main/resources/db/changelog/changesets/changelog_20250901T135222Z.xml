@@ -1,0 +1,37 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog" xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext" xmlns:pro="http://www.liquibase.org/xml/ns/pro" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd http://www.liquibase.org/xml/ns/pro http://www.liquibase.org/xml/ns/pro/liquibase-pro-latest.xsd http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+    <changeSet author="elcheikhbas (generated)" id="1756734757338-7">
+        <createTable tableName="filter">
+            <column name="id" type="UUID">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="filterPK"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="elcheikhbas (generated)" id="1756734757338-8">
+        <createTable tableName="filter_based_contingency_list">
+            <column name="id" type="UUID">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="filter_based_contingency_listPK"/>
+            </column>
+            <column name="modification_date" type="TIMESTAMPTZ"/>
+        </createTable>
+    </changeSet>
+    <changeSet author="elcheikhbas (generated)" id="1756734757338-9">
+        <createTable tableName="filter_based_contingency_list_filters_list_entities">
+            <column name="filter_based_contingency_list_entity_id" type="UUID">
+                <constraints nullable="false"/>
+            </column>
+            <column name="filters_list_entities_id" type="UUID">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="elcheikhbas (generated)" id="1756734757338-10">
+        <addUniqueConstraint columnNames="filters_list_entities_id" constraintName="UC_FILTER_BASED_CONTINGENCY_LIST_FILTERS_LIST_ENTITIESFILTERS_L" tableName="filter_based_contingency_list_filters_list_entities"/>
+    </changeSet>
+    <changeSet author="elcheikhbas (generated)" id="1756734757338-14">
+        <addForeignKeyConstraint baseColumnNames="filter_based_contingency_list_entity_id" baseTableName="filter_based_contingency_list_filters_list_entities" constraintName="FK9edqyxdc33w1i725puwjjfhf5" deferrable="false" initiallyDeferred="false" referencedColumnNames="id" referencedTableName="filter_based_contingency_list" validate="true"/>
+    </changeSet>
+    <changeSet author="elcheikhbas (generated)" id="1756734757338-15">
+        <addForeignKeyConstraint baseColumnNames="filters_list_entities_id" baseTableName="filter_based_contingency_list_filters_list_entities" constraintName="FKgvj11ba8of2teiuumbgfho6c8" deferrable="false" initiallyDeferred="false" referencedColumnNames="id" referencedTableName="filter" validate="true"/>
+    </changeSet>
+</databaseChangeLog>
