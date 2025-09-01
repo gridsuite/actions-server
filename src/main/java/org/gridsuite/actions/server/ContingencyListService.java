@@ -299,10 +299,10 @@ public class ContingencyListService {
     public void deleteContingencyList(UUID id) throws EmptyResultDataAccessException {
         Objects.requireNonNull(id);
         // if there is no form contingency list by this Id, deleted count == 0
-        if (formContingencyListRepository.deleteFormContingencyListEntityById(id) == 0) {
-            if (idBasedContingencyListRepository.deleteIdBasedContingencyListEntityById(id) == 0) {
-                throw new EmptyResultDataAccessException("No element found", 1);
-            }
+        if (formContingencyListRepository.deleteFormContingencyListEntityById(id) == 0
+            && idBasedContingencyListRepository.deleteIdBasedContingencyListEntityById(id) == 0
+            && filterBasedContingencyListRepository.deleteFilterBasedContingencyListEntityById(id) == 0) {
+                    throw new EmptyResultDataAccessException("No element found", 1);
         }
     }
 

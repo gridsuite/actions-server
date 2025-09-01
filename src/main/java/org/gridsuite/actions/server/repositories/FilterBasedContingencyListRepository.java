@@ -14,4 +14,5 @@ import java.util.UUID;
 
 @Repository
 public interface FilterBasedContingencyListRepository extends JpaRepository<FilterBasedContingencyListEntity, UUID> {
+    Integer deleteFilterBasedContingencyListEntityById(UUID id);
 }
