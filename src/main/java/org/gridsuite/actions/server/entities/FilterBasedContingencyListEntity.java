@@ -18,6 +18,7 @@ import org.springframework.util.CollectionUtils;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 @NoArgsConstructor
 @Getter
@@ -35,6 +36,6 @@ public class FilterBasedContingencyListEntity extends AbstractContingencyEntity 
             return;
         }
         filtersListEntities = new ArrayList<>();
-        contingencyList.getFilterList().forEach(f -> filtersListEntities.add(new FilterEntity(f)));
+        contingencyList.getFilterList().forEach(f -> filtersListEntities.add(new FilterEntity(UUID.randomUUID(), f)));
     }
 }

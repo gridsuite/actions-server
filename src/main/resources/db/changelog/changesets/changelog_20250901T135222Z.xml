@@ -5,6 +5,9 @@
             <column name="id" type="UUID">
                 <constraints nullable="false" primaryKey="true" primaryKeyName="filterPK"/>
             </column>
+            <column name="filter-id" type="UUID">
+                <constraints nullable="false"/>
+            </column>
         </createTable>
     </changeSet>
     <changeSet author="elcheikhbas (generated)" id="1756734757338-8">
