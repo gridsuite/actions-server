@@ -28,7 +28,7 @@ import java.util.UUID;
 public class FilterBasedContingencyListEntity extends AbstractContingencyEntity {
 
     @OneToMany(cascade = CascadeType.ALL)
-    private List<FilterEntity> filtersListEntities;
+    private List<FilterMetaDataEntity> filtersListEntities;
 
     public FilterBasedContingencyListEntity(FilterBasedContingencyList contingencyList) {
         super();
@@ -36,6 +36,9 @@ public class FilterBasedContingencyListEntity extends AbstractContingencyEntity 
             return;
         }
         filtersListEntities = new ArrayList<>();
-        contingencyList.getFilterList().forEach(f -> filtersListEntities.add(new FilterEntity(UUID.randomUUID(), f)));
+        contingencyList.getFilterList().forEach(f ->
+            filtersListEntities.add(
+                new FilterMetaDataEntity(UUID.randomUUID(), f.getId(), f.getName(), f.getEquipmentType()))
+        );
     }
 }

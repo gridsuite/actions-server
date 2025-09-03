@@ -18,8 +18,8 @@ import java.util.UUID;
 @Getter
 @Setter
 @Entity
-@Table(name = "filter")
-public class FilterEntity {
+@Table(name = "filter_metadata")
+public class FilterMetaDataEntity {
     @Id
     @Column(name = "id")
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -27,4 +27,10 @@ public class FilterEntity {
 
     @Column(name = "filter-id")
     private UUID filterId;
+
+    @Column(name = "name")
+    private String name;
+
+    @Column(name = "equipment-type")
+    private String equipmentType;
 }

@@ -159,6 +159,17 @@ public class ContingencyListController {
             .body(service.createFilterBasedContingencyList(id, filterBasedContingencyList));
     }
 
+    @GetMapping(value = "/filter-based-contingency-lists/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @Operation(summary = "Get filter based contingency list by id")
+    @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "The filter based contingency list"),
+        @ApiResponse(responseCode = "404", description = "The filter based contingency list does not exists")})
+    public ResponseEntity<PersistentContingencyList> getFilterBasedContingencylist(@PathVariable("id") UUID id) {
+        return service.getFilterBasedContingencyList(id).map(contingencyList -> ResponseEntity.ok()
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(contingencyList))
+            .orElse(ResponseEntity.notFound().build());
+    }
+
     @PostMapping(value = "/form-contingency-lists", params = "duplicateFrom")
     @Operation(summary = "Create a form contingency list from another existing one")
     @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "The form contingency list have been duplicated successfully"),

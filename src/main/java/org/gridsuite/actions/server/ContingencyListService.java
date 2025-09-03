@@ -134,6 +134,16 @@ public class ContingencyListService {
         return idBasedContingencyListRepository.findById(id).map(idBasedContingencyListEntity -> fromIdBasedContingencyListEntity(idBasedContingencyListEntity, network));
     }
 
+    @Transactional(readOnly = true)
+    public Optional<PersistentContingencyList> getFilterBasedContingencyList(UUID id) {
+        return doGetFilterBasedContingencyList(id);
+    }
+
+    private Optional<PersistentContingencyList> doGetFilterBasedContingencyList(UUID id) {
+        Objects.requireNonNull(id);
+        return filterBasedContingencyListRepository.findById(id).map(ContingencyListService::fromFilterBasedContingencyListEntity);
+    }
+
     private List<Contingency> getPowsyblContingencies(PersistentContingencyList contingencyList, Network network) {
         ContingencyList powsyblContingencyList = contingencyList.toPowsyblContingencyList(network);
         return powsyblContingencyList == null ? Collections.emptyList() : powsyblContingencyList.getContingencies(network);
@@ -302,7 +312,7 @@ public class ContingencyListService {
         if (formContingencyListRepository.deleteFormContingencyListEntityById(id) == 0
             && idBasedContingencyListRepository.deleteIdBasedContingencyListEntityById(id) == 0
             && filterBasedContingencyListRepository.deleteFilterBasedContingencyListEntityById(id) == 0) {
-                    throw new EmptyResultDataAccessException("No element found", 1);
+            throw new EmptyResultDataAccessException("No element found", 1);
         }
     }
 
@@ -327,8 +337,8 @@ public class ContingencyListService {
     }
 
     private static FilterBasedContingencyList fromFilterBasedContingencyListEntity(FilterBasedContingencyListEntity entity) {
-        List<UUID> filterList = new ArrayList<>();
-        entity.getFiltersListEntities().forEach(f -> filterList.add(f.getId()));
+        List<FilterMetaData> filterList = new ArrayList<>();
+        entity.getFiltersListEntities().forEach(f -> filterList.add(new FilterMetaData(f.getFilterId(), f.getName(), f.getEquipmentType())));
         return new FilterBasedContingencyList(entity.getId(), entity.getModificationDate(), filterList);
     }
 
