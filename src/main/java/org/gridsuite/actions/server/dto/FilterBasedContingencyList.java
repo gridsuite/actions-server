@@ -24,12 +24,12 @@ import java.util.UUID;
 @Schema(description = "filter based contingency list")
 public class FilterBasedContingencyList extends AbstractContingencyList {
 
-    @Schema(description = "filter list")
-    private List<FilterMetaData> filterList;
+    @Schema(description = "filters list")
+    private List<FilterMetaData> filters;
 
     public FilterBasedContingencyList(UUID uuid, Instant date, List<FilterMetaData> filterList) {
         super(new ContingencyListMetadataImpl(uuid, ContingencyListType.FILTERS, date));
-        this.filterList = filterList;
+        this.filters = filterList;
     }
 
     @Override

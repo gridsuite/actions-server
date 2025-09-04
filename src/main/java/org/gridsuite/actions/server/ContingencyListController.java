@@ -149,7 +149,7 @@ public class ContingencyListController {
         }
     }
 
-    @PostMapping(value = "/filter-based-contingency-lists", consumes = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = "/filters-contingency-lists", consumes = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Create an filter base contingency list")
     @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "The filter based contingency list has been created successfully")})
     public ResponseEntity<PersistentContingencyList> createFilterBasedContingencyList(@RequestParam(required = false, value = "id") UUID id,
@@ -159,7 +159,22 @@ public class ContingencyListController {
             .body(service.createFilterBasedContingencyList(id, filterBasedContingencyList));
     }
 
-    @GetMapping(value = "/filter-based-contingency-lists/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @PutMapping(value = "/filters-contingency-lists/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
+    @Operation(summary = "Modify a filter based contingency list")
+    @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "The filter based contingency list have been modified successfully")})
+    public ResponseEntity<Void> modifyFormContingencyList(
+        @PathVariable UUID id,
+        @RequestBody FilterBasedContingencyList contingencyList,
+        @RequestHeader("userId") String userId) {
+        try {
+            service.modifyFilterBasedContingencyList(id, contingencyList, userId);
+            return ResponseEntity.ok().build();
+        } catch (EntityNotFoundException ignored) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @GetMapping(value = "/filters-contingency-lists/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Get filter based contingency list by id")
     @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "The filter based contingency list"),
         @ApiResponse(responseCode = "404", description = "The filter based contingency list does not exists")})

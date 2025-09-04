@@ -306,6 +306,13 @@ public class ContingencyListService {
     }
 
     @Transactional
+    public void modifyFilterBasedContingencyList(UUID id, FilterBasedContingencyList contingencyList, String userId) {
+        // throw if not found
+        filterBasedContingencyListRepository.save(filterBasedContingencyListRepository.getReferenceById(id).update(contingencyList));
+        notificationService.emitElementUpdated(id, userId);
+    }
+
+    @Transactional
     public void deleteContingencyList(UUID id) throws EmptyResultDataAccessException {
         Objects.requireNonNull(id);
         // if there is no form contingency list by this Id, deleted count == 0

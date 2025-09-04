@@ -32,13 +32,23 @@ public class FilterBasedContingencyListEntity extends AbstractContingencyEntity 
 
     public FilterBasedContingencyListEntity(FilterBasedContingencyList contingencyList) {
         super();
-        if (CollectionUtils.isEmpty(contingencyList.getFilterList())) {
+        if (CollectionUtils.isEmpty(contingencyList.getFilters())) {
             return;
         }
+
+        init(contingencyList);
+    }
+
+    private void init(FilterBasedContingencyList contingencyList) {
         filtersListEntities = new ArrayList<>();
-        contingencyList.getFilterList().forEach(f ->
+        contingencyList.getFilters().forEach(f ->
             filtersListEntities.add(
                 new FilterMetaDataEntity(UUID.randomUUID(), f.getId(), f.getName(), f.getEquipmentType()))
         );
+    }
+
+    public FilterBasedContingencyListEntity update(FilterBasedContingencyList contingencyList) {
+        init(contingencyList);
+        return this;
     }
 }
