@@ -33,7 +33,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
-import javax.swing.text.html.Option;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -272,12 +271,6 @@ public class ContingencyListService {
         return fromFormContingencyListEntity(formContingencyListRepository.save(entity));
     }
 
-    private FilterBasedContingencyList doCreateFilterBasedContingencyList(UUID id, FilterBasedContingencyList contingencyList) {
-        FilterBasedContingencyListEntity entity = new FilterBasedContingencyListEntity(contingencyList);
-        entity.setId(id == null ? UUID.randomUUID() : id);
-        return fromFilterBasedContingencyListEntity(filterBasedContingencyListRepository.save(entity));
-    }
-
     @Transactional
     public Optional<UUID> duplicateFormContingencyList(UUID sourceListId) {
         Optional<FormContingencyList> formContingencyList = doGetFormContingencyList(sourceListId).map(s -> doCreateFormContingencyList(null, (FormContingencyList) s));
@@ -294,7 +287,7 @@ public class ContingencyListService {
         if (contingencyList.isEmpty()) {
             throw createNotFoundException(sourceListId.toString(), "Form contingency list");
         } else {
-            FilterBasedContingencyList filterContingencyList = doCreateFilterBasedContingencyList(null, (FilterBasedContingencyList) contingencyList.get());
+            FilterBasedContingencyList filterContingencyList = createFilterBasedContingencyList(null, (FilterBasedContingencyList) contingencyList.get());
             return Optional.of(filterContingencyList.getId());
         }
     }
