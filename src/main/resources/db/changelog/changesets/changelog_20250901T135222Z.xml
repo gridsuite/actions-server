@@ -5,13 +5,13 @@
             <column name="id" type="UUID">
                 <constraints nullable="false" primaryKey="true" primaryKeyName="filterPK"/>
             </column>
-            <column name="filter-id" type="UUID">
+            <column name="filter_id" type="UUID">
                 <constraints nullable="false"/>
             </column>
             <column name="name" type="VARCHAR(255)">
                 <constraints nullable="false"/>
             </column>
-            <column name="equipment-type" type="VARCHAR(255)">
+            <column name="equipment_type" type="VARCHAR(255)">
                 <constraints nullable="false"/>
             </column>
         </createTable>

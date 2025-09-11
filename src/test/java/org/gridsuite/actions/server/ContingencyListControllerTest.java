@@ -347,6 +347,19 @@ class ContingencyListControllerTest {
         return jsonData;
     }
 
+    private static String genFilterBasedContingencyList() {
+        String jsonData = "{\"filters\":[{\"equipmentType\":\"LINE\",\"id\":\"b45df471-ada2-4422-975b-d89b62192191\",\"name\":\"Filter1\"}";
+        jsonData += ",{\"equipmentType\":\"LINE\",\"id\":\"d411e6b5-c1dc-49b4-9c17-4ef9a514196a\",\"name\":\"Filter2\"}";
+        jsonData += ",{\"equipmentType\":\"TWO_WINDINGS_TRANSFORMER\",\"id\":\"2da834f8-6ab7-4781-b3ba-83f6f4a2f509\",\"name\":\"Filter3\"}]}";
+        return jsonData;
+    }
+
+    private static String genModifiedFilterBasedContingencyList() {
+        String jsonData = "{\"filters\":[{\"equipmentType\":\"LINE\",\"id\":\"b45df471-ada2-4422-975b-d89b62192191\",\"name\":\"Filter1\"}";
+        jsonData += ",{\"equipmentType\":\"TWO_WINDINGS_TRANSFORMER\",\"id\":\"2da834f8-6ab7-4781-b3ba-83f6f4a2f509\",\"name\":\"Filter3\"}]}";
+        return jsonData;
+    }
+
     @Test
     void testDateFormContingencyList() throws Exception {
         String userId = "userId";
@@ -381,6 +394,19 @@ class ContingencyListControllerTest {
         FormContingencyList list = objectMapper.readValue(res, FormContingencyList.class);
         FormContingencyList original = objectMapper.readValue(form, FormContingencyList.class);
         compareFormContingencyList(original, list);
+        return list.getId();
+    }
+
+    private UUID addNewFilterBasedContingencyList(String filters) throws Exception {
+
+        String res = mvc.perform(post("/" + VERSION + "/filters-contingency-lists")
+                .content(filters)
+                .contentType(APPLICATION_JSON))
+            .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
+
+        FilterBasedContingencyList list = objectMapper.readValue(res, FilterBasedContingencyList.class);
+        FilterBasedContingencyList original = objectMapper.readValue(filters, FilterBasedContingencyList.class);
+        compareFilterBasedContingencyList(original, list);
         return list.getId();
     }
 
@@ -618,6 +644,23 @@ class ContingencyListControllerTest {
         } else {
             assertEquals(expected.getNominalVoltage1().getValue1(), current.getNominalVoltage1().getValue1());
         }
+    }
+
+    private static void compareFilterBasedContingencyList(FilterBasedContingencyList expected, FilterBasedContingencyList current) {
+        compareFiltersMetaDataLists(expected.getFilters(), current.getFilters());
+    }
+
+    private static void compareFiltersMetaDataLists(List<FilterMetaData> expected, List<FilterMetaData> current) {
+        assertEquals(expected.size(), current.size());
+
+        current.forEach(filter -> {
+            // find element in expected with same uuid
+            Optional<FilterMetaData> expectedFilter = expected.stream().filter(f ->
+                f.getId().equals(filter.getId())).findFirst();
+            assertTrue(expectedFilter.isPresent());
+            assertEquals(expectedFilter.get().getName(), filter.getName());
+            assertEquals(expectedFilter.get().getEquipmentType(), filter.getEquipmentType());
+        });
     }
 
     private void testExportContingencies(String content, String expectedContent, UUID networkId) throws Exception {
@@ -906,6 +949,22 @@ class ContingencyListControllerTest {
     private static IdBasedContingencyList createIdBasedContingencyList(UUID listId, Instant modificationDate, String... identifiers) {
         List<NetworkElementIdentifier> networkElementIdentifiers = Arrays.stream(identifiers).map(id -> new NetworkElementIdentifierContingencyList(List.of(new IdBasedNetworkElementIdentifier(id)), id)).collect(Collectors.toList());
         return new IdBasedContingencyList(listId, modificationDate, new IdentifierContingencyList(listId != null ? listId.toString() : "defaultName", networkElementIdentifiers));
+    }
+
+    @Test
+    void testFilterBasedContingencyList() throws Exception {
+
+        // create test
+        String list = genFilterBasedContingencyList();
+        UUID id = addNewFilterBasedContingencyList(list);
+
+        // duplicate test
+        String newUuid = mvc.perform(post("/" + VERSION + "/filters-contingency-lists?duplicateFrom=" + id))
+            .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
+        assertNotNull(newUuid);
+
+        mvc.perform(post("/" + VERSION + "/filters-contingency-lists?duplicateFrom=" + UUID.randomUUID()))
+            .andExpect(status().isNotFound());
     }
 
     private int getContingencyListsCount() throws Exception {

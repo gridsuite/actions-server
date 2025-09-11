@@ -25,12 +25,12 @@ public class FilterMetaDataEntity {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private UUID id;
 
-    @Column(name = "filter-id")
+    @Column(name = "filter_id")
     private UUID filterId;
 
     @Column(name = "name")
     private String name;
 
-    @Column(name = "equipment-type")
+    @Column(name = "equipment_type")
     private String equipmentType;
 }
