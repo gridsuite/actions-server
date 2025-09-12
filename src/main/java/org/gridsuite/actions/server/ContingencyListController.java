@@ -162,7 +162,7 @@ public class ContingencyListController {
     @PutMapping(value = "/filters-contingency-lists/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Modify a filter based contingency list")
     @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "The filter based contingency list have been modified successfully")})
-    public ResponseEntity<Void> modifyFormContingencyList(
+    public ResponseEntity<Void> modifyFilterBasedContingencyList(
         @PathVariable UUID id,
         @RequestBody FilterBasedContingencyList contingencyList,
         @RequestHeader("userId") String userId) {
