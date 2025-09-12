@@ -276,8 +276,7 @@ class ContingencyListControllerTest {
         return switch (type) {
             case LINE -> genFormContingencyListForLine(nominalVoltage, nominalVoltageOperator, countries);
             case HVDC_LINE -> genFormContingencyListForHVDC(nominalVoltage, nominalVoltageOperator, countries);
-            case TWO_WINDINGS_TRANSFORMER ->
-                    genFormContingencyListFor2WT(nominalVoltage, nominalVoltageOperator, countries);
+            case TWO_WINDINGS_TRANSFORMER -> genFormContingencyListFor2WT(nominalVoltage, nominalVoltageOperator, countries);
             default -> genFormContingencyListForOthers(type, nominalVoltage, nominalVoltageOperator, countries);
         };
     }
@@ -952,7 +951,7 @@ class ContingencyListControllerTest {
     }
 
     @Test
-    void testFilterBasedContingencyList() throws Exception {
+    void duplicateFilterBasedContingencyList() throws Exception {
 
         // create test
         String list = genFilterBasedContingencyList();
@@ -965,6 +964,29 @@ class ContingencyListControllerTest {
 
         mvc.perform(post("/" + VERSION + "/filters-contingency-lists?duplicateFrom=" + UUID.randomUUID()))
             .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void modifyFilterBasedContingencyList() throws Exception {
+        String contingencyList = genFilterBasedContingencyList();
+
+        String res = mvc.perform(post("/" + VERSION + "/filters-contingency-lists")
+                .content(contingencyList)
+                .contentType(APPLICATION_JSON))
+            .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
+
+        UUID contingencyListId = objectMapper.readValue(res, FilterBasedContingencyList.class).getId();
+
+        String newList = genModifiedFilterBasedContingencyList();
+        mvc.perform(put("/" + VERSION + "/filters-contingency-lists/" + contingencyListId)
+                .content(newList)
+                .contentType(APPLICATION_JSON)
+                .header(USER_ID_HEADER, USER_ID_HEADER))
+            .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
+
+        Message<byte[]> message = output.receive(TIMEOUT, elementUpdateDestination);
+        assertEquals(contingencyListId, message.getHeaders().get(NotificationService.HEADER_ELEMENT_UUID));
+        assertEquals(USER_ID_HEADER, message.getHeaders().get(NotificationService.HEADER_MODIFIED_BY));
     }
 
     private int getContingencyListsCount() throws Exception {
