@@ -964,6 +964,14 @@ class ContingencyListControllerTest {
 
         mvc.perform(post("/" + VERSION + "/filters-contingency-lists?duplicateFrom=" + UUID.randomUUID()))
             .andExpect(status().isNotFound());
+
+        // delete lists
+        mvc.perform(delete("/" + VERSION + "/contingency-lists/" + id))
+            .andExpect(status().isOk());
+
+        newUuid = newUuid.replace("\"", "");
+        mvc.perform(delete("/" + VERSION + "/contingency-lists/" + newUuid))
+            .andExpect(status().isOk());
     }
 
     @Test
@@ -987,6 +995,10 @@ class ContingencyListControllerTest {
         Message<byte[]> message = output.receive(TIMEOUT, elementUpdateDestination);
         assertEquals(contingencyListId, message.getHeaders().get(NotificationService.HEADER_ELEMENT_UUID));
         assertEquals(USER_ID_HEADER, message.getHeaders().get(NotificationService.HEADER_MODIFIED_BY));
+
+        // delete lists
+        mvc.perform(delete("/" + VERSION + "/contingency-lists/" + contingencyListId))
+            .andExpect(status().isOk());
     }
 
     private int getContingencyListsCount() throws Exception {
