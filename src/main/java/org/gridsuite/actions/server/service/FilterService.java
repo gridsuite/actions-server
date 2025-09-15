@@ -49,6 +49,6 @@ public class FilterService {
         var uriComponent = uriComponentsBuilder.buildAndExpand();
 
         ResponseEntity<IdentifiableAttributes[]> response = restTemplate.getForEntity(uriComponent.toUriString(), IdentifiableAttributes[].class);
-        return Arrays.stream(Objects.requireNonNull(response.getBody())).toList();
+        return response.getBody() != null ? Arrays.stream(response.getBody()).toList() : List.of();
     }
 }

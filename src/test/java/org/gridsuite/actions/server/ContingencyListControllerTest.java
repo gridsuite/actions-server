@@ -11,6 +11,9 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.github.tomakehurst.wiremock.WireMockServer;
+import com.github.tomakehurst.wiremock.client.MappingBuilder;
+import com.github.tomakehurst.wiremock.client.WireMock;
 import com.powsybl.contingency.*;
 import com.powsybl.contingency.contingency.list.IdentifierContingencyList;
 import com.powsybl.contingency.json.ContingencyJsonModule;
@@ -33,17 +36,20 @@ import org.gridsuite.actions.server.entities.FormContingencyListEntity;
 import org.gridsuite.actions.server.entities.NumericalFilterEntity;
 import org.gridsuite.actions.server.repositories.FormContingencyListRepository;
 import org.gridsuite.actions.server.repositories.IdBasedContingencyListRepository;
+import org.gridsuite.actions.server.service.FilterService;
 import org.gridsuite.actions.server.utils.EquipmentType;
 import org.gridsuite.actions.server.utils.MatcherJson;
 import org.gridsuite.actions.server.utils.NumericalFilterOperator;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.cloud.stream.binder.test.OutputDestination;
 import org.springframework.cloud.stream.binder.test.TestChannelBinderConfiguration;
 import org.springframework.messaging.Message;
@@ -53,6 +59,7 @@ import java.time.Instant;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
 import static com.powsybl.network.store.model.NetworkStoreApi.VERSION;
 import static org.apache.commons.lang3.StringUtils.join;
 import static org.gridsuite.actions.server.utils.NumericalFilterOperator.*;
@@ -103,6 +110,11 @@ class ContingencyListControllerTest {
 
     private ObjectMapper objectMapper;
 
+    private WireMockServer wireMockServer;
+
+    @SpyBean
+    private FilterService filterService;
+
     @AfterEach
     void tearDown() {
         formContingencyListRepository.deleteAll();
@@ -110,6 +122,7 @@ class ContingencyListControllerTest {
 
         List<String> destinations = List.of(elementUpdateDestination);
         assertQueuesEmptyThenClear(destinations, output);
+        wireMockServer.stop();
     }
 
     private static void assertQueuesEmptyThenClear(List<String> destinations, OutputDestination output) {
@@ -153,6 +166,12 @@ class ContingencyListControllerTest {
 
         objectMapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
         objectMapper.registerModule(new ContingencyJsonModule());
+
+        wireMockServer = new WireMockServer(wireMockConfig().dynamicPort());
+        wireMockServer.start();
+
+        // mock base url of filter server as one of wire mock server
+        Mockito.doAnswer(invocation -> wireMockServer.baseUrl()).when(filterService).getBaseUri();
     }
 
     @Test
@@ -968,6 +987,26 @@ class ContingencyListControllerTest {
             .andExpect(status().isOk())
             .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
             .andExpect(content().json(list));
+
+        // test count
+        List<UUID> filters = List.of(UUID.fromString("b45df471-ada2-4422-975b-d89b62192191"),
+            UUID.fromString("d411e6b5-c1dc-49b4-9c17-4ef9a514196a"),
+            UUID.fromString("2da834f8-6ab7-4781-b3ba-83f6f4a2f509"));
+
+        MappingBuilder requestPatternBuilder = WireMock.get(WireMock.urlPathEqualTo("/v1/filters/evaluate/identifiables"))
+                .withQueryParam("networkUuid", WireMock.equalTo(NETWORK_UUID.toString()));
+
+        for (UUID filter : filters) {
+            requestPatternBuilder.withQueryParam("ids", WireMock.equalTo(filter.toString()));
+        }
+
+        wireMockServer.stubFor(requestPatternBuilder.willReturn(WireMock.ok()));
+
+        String res = mvc.perform(get("/" + VERSION + "/contingency-lists/count?ids=" + id + "&networkUuid=" + NETWORK_UUID + "&variantId=" + VARIANT_ID_1)
+                .contentType(APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andReturn().getResponse().getContentAsString();
+        assertEquals(0, Integer.parseInt(res));
 
         // duplicate test
         String newUuid = mvc.perform(post("/" + VERSION + "/filters-contingency-lists?duplicateFrom=" + id))
