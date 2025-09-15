@@ -406,6 +406,11 @@ class ContingencyListControllerTest {
         FilterBasedContingencyList list = objectMapper.readValue(res, FilterBasedContingencyList.class);
         FilterBasedContingencyList original = objectMapper.readValue(filters, FilterBasedContingencyList.class);
         compareFilterBasedContingencyList(original, list);
+
+        // mandatory function but useless for this contingency list tests to increase coverage
+        assertEquals(null, list.toPowsyblContingencyList(network));
+        assertEquals(Map.of(), list.getNotFoundElements(network));
+
         return list.getId();
     }
 
