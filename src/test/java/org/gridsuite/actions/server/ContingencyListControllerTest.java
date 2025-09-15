@@ -957,6 +957,13 @@ class ContingencyListControllerTest {
         String list = genFilterBasedContingencyList();
         UUID id = addNewFilterBasedContingencyList(list);
 
+        // test get
+        mvc.perform(get("/" + VERSION + "/filters-contingency-lists/" + id)
+                .contentType(APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+            .andExpect(content().json(list));
+
         // duplicate test
         String newUuid = mvc.perform(post("/" + VERSION + "/filters-contingency-lists?duplicateFrom=" + id))
             .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
