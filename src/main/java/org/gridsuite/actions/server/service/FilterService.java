@@ -37,7 +37,7 @@ public class FilterService {
         this.restTemplate = restTemplate;
     }
 
-    public List<IdentifiableAttributes> evaluateFilters(UUID networkUuid, UUID variantUuid, List<UUID> filtersUuid) {
+    public List<IdentifiableAttributes> evaluateFilters(UUID networkUuid, String variantUuid, List<UUID> filtersUuid) {
         Objects.requireNonNull(networkUuid);
         Objects.requireNonNull(filtersUuid);
         String endPointUrl = getBaseUri() + DELIMITER + FILTER_API_VERSION + FILTER_END_POINT_EVALUATE_IDS;
