@@ -20,11 +20,13 @@ import com.powsybl.iidm.network.identifiers.NetworkElementIdentifierContingencyL
 import com.powsybl.network.store.client.NetworkStoreService;
 import com.powsybl.network.store.client.PreloadingStrategy;
 import com.powsybl.network.store.iidm.impl.NetworkFactoryImpl;
+import org.apache.commons.lang3.StringUtils;
 import org.gridsuite.actions.server.dto.*;
 import org.gridsuite.actions.server.entities.*;
 import org.gridsuite.actions.server.repositories.FilterBasedContingencyListRepository;
 import org.gridsuite.actions.server.repositories.FormContingencyListRepository;
 import org.gridsuite.actions.server.repositories.IdBasedContingencyListRepository;
+import org.gridsuite.actions.server.service.FilterService;
 import org.gridsuite.actions.server.utils.ContingencyListType;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.dao.EmptyResultDataAccessException;
@@ -56,16 +58,20 @@ public class ContingencyListService {
 
     private final NotificationService notificationService;
 
+    private final FilterService filterService;
+
     public ContingencyListService(FormContingencyListRepository formContingencyListRepository,
                                   IdBasedContingencyListRepository idBasedContingencyListRepository,
                                   FilterBasedContingencyListRepository filterBasedContingencyListRepository,
                                   NetworkStoreService networkStoreService,
-                                  NotificationService notificationService) {
+                                  NotificationService notificationService,
+                                  FilterService filterService) {
         this.formContingencyListRepository = formContingencyListRepository;
         this.idBasedContingencyListRepository = idBasedContingencyListRepository;
         this.filterBasedContingencyListRepository = filterBasedContingencyListRepository;
         this.networkStoreService = networkStoreService;
         this.notificationService = notificationService;
+        this.filterService = filterService;
     }
 
     private static FormContingencyList fromFormContingencyListEntity(FormContingencyListEntity entity) {
@@ -114,6 +120,10 @@ public class ContingencyListService {
         });
     }
 
+    public List<IdentifiableAttributes> evaluateFiltersNetwork(UUID networkUuid, UUID variantUuid, List<UUID> filtersUuid) {
+        return filterService.evaluateFilters(networkUuid, variantUuid, filtersUuid);
+    }
+
     @Transactional(readOnly = true)
     public Optional<PersistentContingencyList> getFormContingencyList(UUID id) {
         return doGetFormContingencyList(id);
@@ -144,18 +154,36 @@ public class ContingencyListService {
         return filterBasedContingencyListRepository.findById(id).map(ContingencyListService::fromFilterBasedContingencyListEntity);
     }
 
-    private List<Contingency> getPowsyblContingencies(PersistentContingencyList contingencyList, Network network) {
-        ContingencyList powsyblContingencyList = contingencyList.toPowsyblContingencyList(network);
+    private List<Contingency> getPowsyblContingencies(PersistentContingencyList contingencyList, Network network, UUID networkUuid, UUID variantUuid) {
+        ContingencyList powsyblContingencyList;
+        switch (contingencyList.getMetadata().getType()) {
+            case FORM, IDENTIFIERS:
+                powsyblContingencyList = contingencyList.toPowsyblContingencyList(network);
+                break;
+            case FILTERS: {
+                FilterBasedContingencyList filterBasedContingencyList = (FilterBasedContingencyList) contingencyList;
+                List<IdentifiableAttributes> identifiers = evaluateFiltersNetwork(networkUuid, variantUuid,
+                    filterBasedContingencyList.getFilters().stream().map(FilterMetaData::getId).toList());
+                powsyblContingencyList = ContingencyList.of(identifiers.stream()
+                        .map(id -> new Contingency(id.getId(), List.of(id.toContingencyElement()))).toArray(Contingency[]::new)
+                );
+                break;
+            }
+            default:
+                throw new IllegalStateException("Unexpected value: " + contingencyList.getMetadata().getType());
+        }
+
         return powsyblContingencyList == null ? Collections.emptyList() : powsyblContingencyList.getContingencies(network);
     }
 
     @Transactional(readOnly = true)
     public Integer getContingencyCount(List<UUID> ids, UUID networkUuid, String variantId) {
         Network network = getNetworkFromUuid(networkUuid, variantId);
+        UUID variantUuid = StringUtils.isEmpty(variantId) ? null : UUID.fromString(variantId);
         return ids.stream()
             .map(uuid -> {
                 Optional<PersistentContingencyList> contingencyList = getAnyContingencyList(uuid, network);
-                return contingencyList.map(l -> getContingencies(l, network).size()).orElse(0);
+                return contingencyList.map(l -> getContingencies(l, network, networkUuid, variantUuid).size()).orElse(0);
             })
             .reduce(0, Integer::sum);
     }
@@ -165,19 +193,20 @@ public class ContingencyListService {
         Network network = getNetworkFromUuid(networkUuid, variantId);
         List<Contingency> contingencies = new ArrayList<>();
         List<UUID> notFoundIds = new ArrayList<>();
+        UUID variantUuid = StringUtils.isEmpty(variantId) ? null : UUID.fromString(variantId);
 
         contingencyListIds.forEach(contingencyListId -> {
             Optional<PersistentContingencyList> contingencyList = getAnyContingencyList(contingencyListId, network);
             contingencyList.ifPresentOrElse(
-                    list -> contingencies.addAll(getContingencies(list, network)),
+                    list -> contingencies.addAll(getContingencies(list, network, networkUuid, variantUuid)),
                     () -> notFoundIds.add(contingencyListId)
             );
         });
         return new ContingencyListExportResult(contingencies, notFoundIds);
     }
 
-    private List<Contingency> getContingencies(PersistentContingencyList persistentContingencyList, Network network) {
-        return evaluateContingencyList(persistentContingencyList, network)
+    private List<Contingency> getContingencies(PersistentContingencyList persistentContingencyList, Network network, UUID networkUuid, UUID variantId) {
+        return evaluateContingencyList(persistentContingencyList, network, networkUuid, variantId)
                 .stream()
                 .map(ContingencyInfos::getContingency)
                 .filter(Objects::nonNull)
@@ -187,7 +216,8 @@ public class ContingencyListService {
     @Transactional(readOnly = true)
     public List<ContingencyInfos> exportContingencyInfosList(List<UUID> ids, UUID networkUuid, String variantId) {
         Network network = getNetworkFromUuid(networkUuid, variantId);
-        return ids.stream().map(id -> evaluateContingencyList(findContingencyList(id, network), network)).flatMap(Collection::stream).toList();
+        UUID variantUuid = StringUtils.isEmpty(variantId) ? null : UUID.fromString(variantId);
+        return ids.stream().map(id -> evaluateContingencyList(findContingencyList(id, network), network, networkUuid, variantUuid)).flatMap(Collection::stream).toList();
     }
 
     private PersistentContingencyList findContingencyList(UUID id, Network network) {
@@ -198,11 +228,11 @@ public class ContingencyListService {
 
     private Optional<PersistentContingencyList> getAnyContingencyList(UUID id, Network network) {
         return doGetFormContingencyList(id)
-                .or(() -> doGetIdBasedContingencyList(id, network));
+                .or(() -> doGetIdBasedContingencyList(id, network).or(() -> doGetFilterBasedContingencyList(id)));
     }
 
-    private List<ContingencyInfos> evaluateContingencyList(PersistentContingencyList persistentContingencyList, Network network) {
-        List<Contingency> contingencies = getPowsyblContingencies(persistentContingencyList, network);
+    private List<ContingencyInfos> evaluateContingencyList(PersistentContingencyList persistentContingencyList, Network network, UUID networkUuid, UUID variantId) {
+        List<Contingency> contingencies = getPowsyblContingencies(persistentContingencyList, network, networkUuid, variantId);
         Map<String, Set<String>> notFoundElements = persistentContingencyList.getNotFoundElements(network);
 
         // For a gridsuite contingency with all equipments not found the powsybl contingency is not created
