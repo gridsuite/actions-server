@@ -155,21 +155,15 @@ public class ContingencyListService {
 
     private List<Contingency> getPowsyblContingencies(PersistentContingencyList contingencyList, Network network, UUID networkUuid, String variantUuid) {
         ContingencyList powsyblContingencyList;
-        switch (contingencyList.getMetadata().getType()) {
-            case FORM, IDENTIFIERS:
-                powsyblContingencyList = contingencyList.toPowsyblContingencyList(network);
-                break;
-            case FILTERS: {
-                FilterBasedContingencyList filterBasedContingencyList = (FilterBasedContingencyList) contingencyList;
-                List<IdentifiableAttributes> identifiers = evaluateFiltersNetwork(networkUuid, variantUuid,
-                    filterBasedContingencyList.getFilters().stream().map(FilterMetaData::getId).toList());
-                powsyblContingencyList = ContingencyList.of(identifiers.stream()
-                        .map(id -> new Contingency(id.getId(), List.of(id.toContingencyElement()))).toArray(Contingency[]::new)
-                );
-                break;
-            }
-            default:
-                throw new IllegalStateException("Unexpected value: " + contingencyList.getMetadata().getType());
+        if (Objects.requireNonNull(contingencyList.getMetadata().getType()) == ContingencyListType.FILTERS) {
+            FilterBasedContingencyList filterBasedContingencyList = (FilterBasedContingencyList) contingencyList;
+            List<IdentifiableAttributes> identifiers = evaluateFiltersNetwork(networkUuid, variantUuid,
+                filterBasedContingencyList.getFilters().stream().map(FilterMetaData::getId).toList());
+            powsyblContingencyList = ContingencyList.of(identifiers.stream()
+                .map(id -> new Contingency(id.getId(), List.of(id.toContingencyElement()))).toArray(Contingency[]::new)
+            );
+        } else {
+            powsyblContingencyList = contingencyList.toPowsyblContingencyList(network);
         }
 
         return powsyblContingencyList == null ? Collections.emptyList() : powsyblContingencyList.getContingencies(network);
