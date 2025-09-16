@@ -7,7 +7,8 @@
 
 package org.gridsuite.actions.server.service;
 import lombok.Getter;
-import org.gridsuite.actions.server.dto.IdentifiableAttributes;
+import org.gridsuite.filter.identifierlistfilter.FilteredIdentifiables;
+import org.gridsuite.filter.identifierlistfilter.IdentifiableAttributes;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
@@ -15,7 +16,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
@@ -48,7 +48,7 @@ public class FilterService {
         uriComponentsBuilder.queryParam("ids", filtersUuid);
         var uriComponent = uriComponentsBuilder.buildAndExpand();
 
-        ResponseEntity<IdentifiableAttributes[]> response = restTemplate.getForEntity(uriComponent.toUriString(), IdentifiableAttributes[].class);
-        return response.getBody() != null ? Arrays.stream(response.getBody()).toList() : List.of();
+        ResponseEntity<FilteredIdentifiables> response = restTemplate.getForEntity(uriComponent.toUriString(), FilteredIdentifiables.class);
+        return response.getBody() != null ? response.getBody().getEquipmentIds() : List.of();
     }
 }
