@@ -27,7 +27,22 @@ import java.util.UUID;
 @Table(name = "filter_based_contingency_list")
 public class FilterBasedContingencyListEntity extends AbstractContingencyEntity {
 
-    @OneToMany(cascade = CascadeType.ALL)
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinTable(
+            name = "filter_based_contingency_filer_metadata",
+            joinColumns = @JoinColumn(
+                    name = "filter_based_contingency_id",
+                    foreignKey = @ForeignKey(name = "filter_based_contingency_id_fk")
+            ),
+            inverseJoinColumns = @JoinColumn(
+                    name = "filter_metadata_id",
+                    foreignKey = @ForeignKey(name = "filter_metadata_id_fk")
+            ),
+            uniqueConstraints = @UniqueConstraint(
+                    name = "filter_based_contingency_filter_metadata_uc",
+                    columnNames = {"filter_based_contingency_id", "filter_metadata_id"}
+            )
+    )
     private List<FilterMetaDataEntity> filtersListEntities;
 
     public FilterBasedContingencyListEntity(FilterBasedContingencyList contingencyList) {
