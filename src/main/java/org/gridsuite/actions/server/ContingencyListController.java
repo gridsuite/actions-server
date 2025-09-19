@@ -189,8 +189,9 @@ public class ContingencyListController {
     @Operation(summary = "Get filter based contingency list by id")
     @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "The filter based contingency list"),
         @ApiResponse(responseCode = "404", description = "The filter based contingency list does not exists")})
-    public ResponseEntity<PersistentContingencyList> getFilterBasedContingencyList(@PathVariable("id") UUID id) {
-        return service.getFilterBasedContingencyList(id).map(contingencyList -> ResponseEntity.ok()
+    public ResponseEntity<FilterBasedContingencyList> getFilterBasedContingencyList(@PathVariable("id") UUID id,
+                                                                                    @RequestHeader("userId") String userId) {
+        return service.getFilterBasedContingencyList(id, userId).map(contingencyList -> ResponseEntity.ok()
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(contingencyList))
             .orElse(ResponseEntity.notFound().build());

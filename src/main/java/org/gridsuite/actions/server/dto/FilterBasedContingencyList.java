@@ -14,6 +14,7 @@ import lombok.NoArgsConstructor;
 import org.gridsuite.actions.server.utils.ContingencyListType;
 
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -25,11 +26,12 @@ import java.util.UUID;
 public class FilterBasedContingencyList extends AbstractContingencyList {
 
     @Schema(description = "filters list")
-    private List<FilterMetaData> filters;
+    private List<FilterAttributes> filters;
 
-    public FilterBasedContingencyList(UUID uuid, Instant date, List<FilterMetaData> filterList) {
+    public FilterBasedContingencyList(UUID uuid, Instant date, List<FilterAttributes> filtersId) {
         super(new ContingencyListMetadataImpl(uuid, ContingencyListType.FILTERS, date));
-        this.filters = filterList;
+        this.filters = new ArrayList<>();
+        this.filters.addAll(filtersId);
     }
 
     @Override

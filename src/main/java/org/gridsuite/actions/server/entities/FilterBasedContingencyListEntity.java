@@ -6,9 +6,12 @@
  */
 package org.gridsuite.actions.server.entities;
 
-import jakarta.persistence.CascadeType;
+import jakarta.persistence.CollectionTable;
+import jakarta.persistence.Column;
+import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
-import jakarta.persistence.OneToMany;
+import jakarta.persistence.ForeignKey;
+import jakarta.persistence.JoinColumn;
 import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -27,23 +30,12 @@ import java.util.UUID;
 @Table(name = "filter_based_contingency_list")
 public class FilterBasedContingencyListEntity extends AbstractContingencyEntity {
 
-    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
-    @JoinTable(
-            name = "filter_based_contingency_filer_metadata",
-            joinColumns = @JoinColumn(
-                    name = "filter_based_contingency_id",
-                    foreignKey = @ForeignKey(name = "filter_based_contingency_id_fk")
-            ),
-            inverseJoinColumns = @JoinColumn(
-                    name = "filter_metadata_id",
-                    foreignKey = @ForeignKey(name = "filter_metadata_id_fk")
-            ),
-            uniqueConstraints = @UniqueConstraint(
-                    name = "filter_based_contingency_filter_metadata_uc",
-                    columnNames = {"filter_based_contingency_id", "filter_metadata_id"}
-            )
-    )
-    private List<FilterMetaDataEntity> filtersListEntities;
+    @Column(name = "filter_ids")
+    @ElementCollection(targetClass = UUID.class)
+    @CollectionTable(name = "filter_based_contingency_list_filter",
+        joinColumns = @JoinColumn(name = "filter_based_contingency_list_id"),
+        foreignKey = @ForeignKey(name = "filter_based_contingency_list_id_fk"))
+    private List<UUID> filtersIds;
 
     public FilterBasedContingencyListEntity(FilterBasedContingencyList contingencyList) {
         super();
@@ -55,11 +47,8 @@ public class FilterBasedContingencyListEntity extends AbstractContingencyEntity 
     }
 
     private void init(FilterBasedContingencyList contingencyList) {
-        filtersListEntities = new ArrayList<>();
-        contingencyList.getFilters().forEach(f ->
-            filtersListEntities.add(
-                new FilterMetaDataEntity(UUID.randomUUID(), f.getId(), f.getName(), f.getEquipmentType()))
-        );
+        filtersIds = new ArrayList<>();
+        contingencyList.getFilters().forEach(filterAttributes -> filtersIds.add(filterAttributes.getId()));
     }
 
     public FilterBasedContingencyListEntity update(FilterBasedContingencyList contingencyList) {
