@@ -6,21 +6,11 @@
  */
 
 package org.gridsuite.actions.server.dto;
-
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
 import org.gridsuite.filter.utils.EquipmentType;
 
 import java.util.UUID;
 
 // partial class from FilterAttributes (Filter-server)
 
-@Getter
-@NoArgsConstructor
-@AllArgsConstructor
-public class FilterAttributes {
-    UUID id;
-    EquipmentType equipmentType;
-    String name;
+public record FilterAttributes(UUID id, EquipmentType equipmentType, String name) {
 }

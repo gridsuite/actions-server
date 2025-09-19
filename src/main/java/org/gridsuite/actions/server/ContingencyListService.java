@@ -206,7 +206,7 @@ public class ContingencyListService {
         if (Objects.requireNonNull(contingencyList.getMetadata().getType()) == ContingencyListType.FILTERS) {
             FilterBasedContingencyList filterBasedContingencyList = (FilterBasedContingencyList) contingencyList;
             List<IdentifiableAttributes> identifiers = evaluateFiltersNetwork(networkUuid, variantUuid,
-                filterBasedContingencyList.getFilters().stream().map(FilterAttributes::getId).toList());
+                filterBasedContingencyList.getFilters().stream().map(FilterAttributes::id).toList());
             powsyblContingencyList = ContingencyList.of(identifiers.stream()
                 .map(id ->
                     new Contingency(id.getId(), List.of(toContingencyElement(id))))

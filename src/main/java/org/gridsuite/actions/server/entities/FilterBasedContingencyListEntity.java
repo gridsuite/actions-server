@@ -48,7 +48,7 @@ public class FilterBasedContingencyListEntity extends AbstractContingencyEntity 
 
     private void init(FilterBasedContingencyList contingencyList) {
         filtersIds = new ArrayList<>();
-        contingencyList.getFilters().forEach(filterAttributes -> filtersIds.add(filterAttributes.getId()));
+        contingencyList.getFilters().forEach(filterAttributes -> filtersIds.add(filterAttributes.id()));
     }
 
     public FilterBasedContingencyListEntity update(FilterBasedContingencyList contingencyList) {

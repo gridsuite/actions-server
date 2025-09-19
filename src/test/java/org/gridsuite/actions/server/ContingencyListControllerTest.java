@@ -52,7 +52,6 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.cloud.stream.binder.test.OutputDestination;
 import org.springframework.cloud.stream.binder.test.TestChannelBinderConfiguration;
-import org.springframework.http.HttpHeaders;
 import org.springframework.messaging.Message;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -682,7 +681,7 @@ class ContingencyListControllerTest {
         current.forEach(filter -> {
             // find element in expected with same uuid
             Optional<FilterAttributes> expectedFilter = expected.stream().filter(f ->
-                f.getId().equals(filter.getId())).findFirst();
+                f.id().equals(filter.id())).findFirst();
             assertTrue(expectedFilter.isPresent());
         });
     }
