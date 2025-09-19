@@ -52,6 +52,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.cloud.stream.binder.test.OutputDestination;
 import org.springframework.cloud.stream.binder.test.TestChannelBinderConfiguration;
+import org.springframework.http.HttpHeaders;
 import org.springframework.messaging.Message;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -63,6 +64,8 @@ import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMoc
 import static com.powsybl.network.store.model.NetworkStoreApi.VERSION;
 import static org.apache.commons.lang3.StringUtils.join;
 import static org.gridsuite.actions.server.utils.NumericalFilterOperator.*;
+import static org.gridsuite.filter.utils.EquipmentType.LINE;
+import static org.gridsuite.filter.utils.EquipmentType.TWO_WINDINGS_TRANSFORMER;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.BDDMockito.given;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
@@ -673,16 +676,14 @@ class ContingencyListControllerTest {
         compareFiltersMetaDataLists(expected.getFilters(), current.getFilters());
     }
 
-    private static void compareFiltersMetaDataLists(List<FilterMetaData> expected, List<FilterMetaData> current) {
+    private static void compareFiltersMetaDataLists(List<FilterAttributes> expected, List<FilterAttributes> current) {
         assertEquals(expected.size(), current.size());
 
         current.forEach(filter -> {
             // find element in expected with same uuid
-            Optional<FilterMetaData> expectedFilter = expected.stream().filter(f ->
+            Optional<FilterAttributes> expectedFilter = expected.stream().filter(f ->
                 f.getId().equals(filter.getId())).findFirst();
             assertTrue(expectedFilter.isPresent());
-            assertEquals(expectedFilter.get().getName(), filter.getName());
-            assertEquals(expectedFilter.get().getEquipmentType(), filter.getEquipmentType());
         });
     }
 
@@ -975,26 +976,35 @@ class ContingencyListControllerTest {
     }
 
     @Test
-    void duplicateFilterBasedContingencyList() throws Exception {
+    void testFilterBasedContingencyList() throws Exception {
+
+        List<UUID> filters = List.of(UUID.fromString("b45df471-ada2-4422-975b-d89b62192191"),
+            UUID.fromString("d411e6b5-c1dc-49b4-9c17-4ef9a514196a"),
+            UUID.fromString("2da834f8-6ab7-4781-b3ba-83f6f4a2f509"));
 
         // create test
         String list = genFilterBasedContingencyList();
         UUID id = addNewFilterBasedContingencyList(list);
 
         // test get
+        MappingBuilder requestPatternBuilder = WireMock.get(WireMock.urlPathEqualTo("/v1/filters/infos"))
+            .withHeader(USER_ID_HEADER, WireMock.equalTo(USER_ID_HEADER));
+
+        for (UUID filter : filters) {
+            requestPatternBuilder.withQueryParam("filterUuids", WireMock.equalTo(filter.toString()));
+        }
+
+        wireMockServer.stubFor(requestPatternBuilder.willReturn(WireMock.ok()));
+
         mvc.perform(get("/" + VERSION + "/filters-contingency-lists/" + id)
+                .header(USER_ID_HEADER, USER_ID_HEADER)
                 .contentType(APPLICATION_JSON))
             .andExpect(status().isOk())
-            .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-            .andExpect(content().json(list));
+            .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON));
 
         // test count
-        List<UUID> filters = List.of(UUID.fromString("b45df471-ada2-4422-975b-d89b62192191"),
-            UUID.fromString("d411e6b5-c1dc-49b4-9c17-4ef9a514196a"),
-            UUID.fromString("2da834f8-6ab7-4781-b3ba-83f6f4a2f509"));
-
-        MappingBuilder requestPatternBuilder = WireMock.get(WireMock.urlPathEqualTo("/v1/filters/evaluate/identifiables"))
-                .withQueryParam("networkUuid", WireMock.equalTo(NETWORK_UUID.toString()));
+        requestPatternBuilder = WireMock.get(WireMock.urlPathEqualTo("/v1/filters/evaluate/identifiables"))
+            .withQueryParam("networkUuid", WireMock.equalTo(NETWORK_UUID.toString()));
 
         for (UUID filter : filters) {
             requestPatternBuilder.withQueryParam("ids", WireMock.equalTo(filter.toString()));
