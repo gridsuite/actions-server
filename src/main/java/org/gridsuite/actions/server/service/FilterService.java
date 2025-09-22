@@ -56,7 +56,7 @@ public class FilterService {
         var uriComponent = uriComponentsBuilder.buildAndExpand();
 
         ResponseEntity<FilteredIdentifiables> response = restTemplate.getForEntity(uriComponent.toUriString(), FilteredIdentifiables.class);
-        return response.getBody() != null ? response.getBody().getEquipmentIds() : List.of();
+        return response.getBody() != null ? response.getBody().equipmentIds() : List.of();
     }
 
     public List<FilterAttributes> getFiltersAttributes(List<UUID> filtersUuid, String userId) {
