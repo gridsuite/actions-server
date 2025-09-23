@@ -35,8 +35,7 @@ class ContingencyListUtilsTest {
     })
     void testConversionFromIdentifiableAttributesToContingency(String id, IdentifiableType type, Class<ContingencyElement> expectedClass) {
         IdentifiableAttributes identifierAttributes = new IdentifiableAttributes(id, type, null);
-        assertEquals
-            (expectedClass, ContingencyListUtils.toContingencyElement(identifierAttributes).getClass());
+        assertEquals(expectedClass, ContingencyListUtils.toContingencyElement(identifierAttributes).getClass());
     }
 
     static Stream<Arguments> provideArgumentsForTests() {
