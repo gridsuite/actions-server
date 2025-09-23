@@ -7,15 +7,8 @@
 package org.gridsuite.actions.server;
 
 import com.powsybl.commons.PowsyblException;
-import com.powsybl.contingency.BatteryContingency;
 import com.powsybl.contingency.Contingency;
 import com.powsybl.contingency.ContingencyElement;
-import com.powsybl.contingency.GeneratorContingency;
-import com.powsybl.contingency.HvdcLineContingency;
-import com.powsybl.contingency.LineContingency;
-import com.powsybl.contingency.LoadContingency;
-import com.powsybl.contingency.StaticVarCompensatorContingency;
-import com.powsybl.contingency.TwoWindingsTransformerContingency;
 import com.powsybl.contingency.contingency.list.ContingencyList;
 import com.powsybl.contingency.contingency.list.IdentifierContingencyList;
 import com.powsybl.iidm.network.Connectable;
@@ -34,6 +27,7 @@ import org.gridsuite.actions.server.repositories.FormContingencyListRepository;
 import org.gridsuite.actions.server.repositories.IdBasedContingencyListRepository;
 import org.gridsuite.actions.server.service.FilterService;
 import org.gridsuite.actions.server.utils.ContingencyListType;
+import org.gridsuite.actions.server.utils.ContingencyListUtils;
 import org.gridsuite.filter.identifierlistfilter.IdentifiableAttributes;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.dao.EmptyResultDataAccessException;
@@ -174,33 +168,6 @@ public class ContingencyListService {
         return filterBasedContingencyListRepository.findById(id);
     }
 
-    private static ContingencyElement toContingencyElement(IdentifiableAttributes id) {
-        switch (id.getType()) {
-            case LINE -> {
-                return new LineContingency(id.getId());
-            }
-            case BATTERY -> {
-                return new BatteryContingency(id.getId());
-            }
-            case LOAD -> {
-                return new LoadContingency(id.getId());
-            }
-            case GENERATOR -> {
-                return new GeneratorContingency(id.getId());
-            }
-            case TWO_WINDINGS_TRANSFORMER -> {
-                return new TwoWindingsTransformerContingency(id.getId());
-            }
-            case HVDC_LINE -> {
-                return new HvdcLineContingency(id.getId());
-            }
-            case STATIC_VAR_COMPENSATOR -> {
-                return new StaticVarCompensatorContingency(id.getId());
-            }
-            default -> throw new IllegalStateException("Unexpected value: " + id.getType());
-        }
-    }
-
     private List<Contingency> getPowsyblContingencies(PersistentContingencyList contingencyList, Network network, UUID networkUuid, String variantUuid) {
         ContingencyList powsyblContingencyList;
         if (Objects.requireNonNull(contingencyList.getMetadata().getType()) == ContingencyListType.FILTERS) {
@@ -209,13 +176,12 @@ public class ContingencyListService {
                 filterBasedContingencyList.getFilters().stream().map(FilterAttributes::id).toList());
             powsyblContingencyList = ContingencyList.of(identifiers.stream()
                 .map(id ->
-                    new Contingency(id.getId(), List.of(toContingencyElement(id))))
+                    new Contingency(id.getId(), List.of(ContingencyListUtils.toContingencyElement(id))))
                 .toArray(Contingency[]::new)
             );
         } else {
             powsyblContingencyList = contingencyList.toPowsyblContingencyList(network);
         }
-
         return powsyblContingencyList == null ? Collections.emptyList() : powsyblContingencyList.getContingencies(network);
     }
 
