@@ -63,8 +63,6 @@ import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMoc
 import static com.powsybl.network.store.model.NetworkStoreApi.VERSION;
 import static org.apache.commons.lang3.StringUtils.join;
 import static org.gridsuite.actions.server.utils.NumericalFilterOperator.*;
-import static org.gridsuite.filter.utils.EquipmentType.LINE;
-import static org.gridsuite.filter.utils.EquipmentType.TWO_WINDINGS_TRANSFORMER;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.BDDMockito.given;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
