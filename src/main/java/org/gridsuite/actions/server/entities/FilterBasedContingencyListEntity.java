@@ -23,6 +23,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+/**
+ * @author Bassel El Cheikh <bassel.el-cheikh at rte-france.com>
+ */
+
 @NoArgsConstructor
 @Getter
 @Setter

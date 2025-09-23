@@ -12,6 +12,10 @@ import org.springframework.stereotype.Repository;
 
 import java.util.UUID;
 
+/**
+ * @author Bassel El Cheikh <bassel.el-cheikh at rte-france.com>
+ */
+
 @Repository
 public interface FilterBasedContingencyListRepository extends JpaRepository<FilterBasedContingencyListEntity, UUID> {
     Integer deleteFilterBasedContingencyListEntityById(UUID id);

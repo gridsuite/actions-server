@@ -20,6 +20,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
+/**
+ * @author Bassel El Cheikh <bassel.el-cheikh at rte-france.com>
+ */
+
 @Getter
 @NoArgsConstructor
 @Schema(description = "filter based contingency list")

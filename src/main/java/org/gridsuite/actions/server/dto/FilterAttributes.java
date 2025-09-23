@@ -10,6 +10,10 @@ import org.gridsuite.filter.utils.EquipmentType;
 
 import java.util.UUID;
 
+/**
+ * @author Bassel El Cheikh <bassel.el-cheikh at rte-france.com>
+ */
+
 // partial class from FilterAttributes (Filter-server)
 
 public record FilterAttributes(UUID id, EquipmentType equipmentType, String name) {
