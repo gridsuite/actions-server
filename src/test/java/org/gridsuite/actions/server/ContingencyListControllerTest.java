@@ -6,11 +6,15 @@
  */
 package org.gridsuite.actions.server;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.github.tomakehurst.wiremock.WireMockServer;
+import com.github.tomakehurst.wiremock.client.MappingBuilder;
+import com.github.tomakehurst.wiremock.client.WireMock;
 import com.powsybl.contingency.*;
 import com.powsybl.contingency.contingency.list.IdentifierContingencyList;
 import com.powsybl.contingency.json.ContingencyJsonModule;
@@ -33,17 +37,20 @@ import org.gridsuite.actions.server.entities.FormContingencyListEntity;
 import org.gridsuite.actions.server.entities.NumericalFilterEntity;
 import org.gridsuite.actions.server.repositories.FormContingencyListRepository;
 import org.gridsuite.actions.server.repositories.IdBasedContingencyListRepository;
+import org.gridsuite.actions.server.service.FilterService;
 import org.gridsuite.actions.server.utils.EquipmentType;
 import org.gridsuite.actions.server.utils.MatcherJson;
 import org.gridsuite.actions.server.utils.NumericalFilterOperator;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.cloud.stream.binder.test.OutputDestination;
 import org.springframework.cloud.stream.binder.test.TestChannelBinderConfiguration;
 import org.springframework.messaging.Message;
@@ -53,9 +60,12 @@ import java.time.Instant;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
 import static com.powsybl.network.store.model.NetworkStoreApi.VERSION;
 import static org.apache.commons.lang3.StringUtils.join;
 import static org.gridsuite.actions.server.utils.NumericalFilterOperator.*;
+import static org.gridsuite.filter.utils.EquipmentType.LINE;
+import static org.gridsuite.filter.utils.EquipmentType.TWO_WINDINGS_TRANSFORMER;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.BDDMockito.given;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
@@ -103,6 +113,11 @@ class ContingencyListControllerTest {
 
     private ObjectMapper objectMapper;
 
+    private WireMockServer wireMockServer;
+
+    @SpyBean
+    private FilterService filterService;
+
     @AfterEach
     void tearDown() {
         formContingencyListRepository.deleteAll();
@@ -110,6 +125,7 @@ class ContingencyListControllerTest {
 
         List<String> destinations = List.of(elementUpdateDestination);
         assertQueuesEmptyThenClear(destinations, output);
+        wireMockServer.stop();
     }
 
     private static void assertQueuesEmptyThenClear(List<String> destinations, OutputDestination output) {
@@ -153,6 +169,12 @@ class ContingencyListControllerTest {
 
         objectMapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
         objectMapper.registerModule(new ContingencyJsonModule());
+
+        wireMockServer = new WireMockServer(wireMockConfig().dynamicPort());
+        wireMockServer.start();
+
+        // mock base url of filter server as one of wire mock server
+        Mockito.doAnswer(invocation -> wireMockServer.baseUrl()).when(filterService).getBaseUri();
     }
 
     @Test
@@ -276,8 +298,7 @@ class ContingencyListControllerTest {
         return switch (type) {
             case LINE -> genFormContingencyListForLine(nominalVoltage, nominalVoltageOperator, countries);
             case HVDC_LINE -> genFormContingencyListForHVDC(nominalVoltage, nominalVoltageOperator, countries);
-            case TWO_WINDINGS_TRANSFORMER ->
-                    genFormContingencyListFor2WT(nominalVoltage, nominalVoltageOperator, countries);
+            case TWO_WINDINGS_TRANSFORMER -> genFormContingencyListFor2WT(nominalVoltage, nominalVoltageOperator, countries);
             default -> genFormContingencyListForOthers(type, nominalVoltage, nominalVoltageOperator, countries);
         };
     }
@@ -347,6 +368,25 @@ class ContingencyListControllerTest {
         return jsonData;
     }
 
+    private String genFilterBasedContingencyList(List<UUID> uuids) throws JsonProcessingException {
+
+        List<FilterAttributes> filtersAttributes = List.of(
+            new FilterAttributes(uuids.get(0), LINE, "Filter1"),
+            new FilterAttributes(uuids.get(1), LINE, "Filter2"),
+            new FilterAttributes(uuids.get(2), TWO_WINDINGS_TRANSFORMER, "Filter3")
+        );
+        return "{\"filters\":" + objectMapper.writeValueAsString(filtersAttributes) + "}";
+    }
+
+    private String genModifiedFilterBasedContingencyList(List<UUID> uuids) throws JsonProcessingException {
+
+        List<FilterAttributes> filtersAttributes = List.of(
+            new FilterAttributes(uuids.get(0), LINE, "Filter1"),
+            new FilterAttributes(uuids.get(2), TWO_WINDINGS_TRANSFORMER, "Filter3")
+        );
+        return "{\"filters\":" + objectMapper.writeValueAsString(filtersAttributes) + "}";
+    }
+
     @Test
     void testDateFormContingencyList() throws Exception {
         String userId = "userId";
@@ -381,6 +421,24 @@ class ContingencyListControllerTest {
         FormContingencyList list = objectMapper.readValue(res, FormContingencyList.class);
         FormContingencyList original = objectMapper.readValue(form, FormContingencyList.class);
         compareFormContingencyList(original, list);
+        return list.getId();
+    }
+
+    private UUID addNewFilterBasedContingencyList(String filters) throws Exception {
+
+        String res = mvc.perform(post("/" + VERSION + "/filters-contingency-lists")
+                .content(filters)
+                .contentType(APPLICATION_JSON))
+            .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
+
+        FilterBasedContingencyList list = objectMapper.readValue(res, FilterBasedContingencyList.class);
+        FilterBasedContingencyList original = objectMapper.readValue(filters, FilterBasedContingencyList.class);
+        compareFilterBasedContingencyList(original, list);
+
+        // mandatory function but useless for this contingency list tests to increase coverage
+        assertNull(list.toPowsyblContingencyList(network));
+        assertEquals(Map.of(), list.getNotFoundElements(network));
+
         return list.getId();
     }
 
@@ -618,6 +676,21 @@ class ContingencyListControllerTest {
         } else {
             assertEquals(expected.getNominalVoltage1().getValue1(), current.getNominalVoltage1().getValue1());
         }
+    }
+
+    private static void compareFilterBasedContingencyList(FilterBasedContingencyList expected, FilterBasedContingencyList current) {
+        compareFiltersMetaDataLists(expected.getFilters(), current.getFilters());
+    }
+
+    private static void compareFiltersMetaDataLists(List<FilterAttributes> expected, List<FilterAttributes> current) {
+        assertEquals(expected.size(), current.size());
+
+        current.forEach(filter -> {
+            // find element in expected with same uuid
+            Optional<FilterAttributes> expectedFilter = expected.stream().filter(f ->
+                f.id().equals(filter.id())).findFirst();
+            assertTrue(expectedFilter.isPresent());
+        });
     }
 
     private void testExportContingencies(String content, String expectedContent, UUID networkId) throws Exception {
@@ -906,6 +979,98 @@ class ContingencyListControllerTest {
     private static IdBasedContingencyList createIdBasedContingencyList(UUID listId, Instant modificationDate, String... identifiers) {
         List<NetworkElementIdentifier> networkElementIdentifiers = Arrays.stream(identifiers).map(id -> new NetworkElementIdentifierContingencyList(List.of(new IdBasedNetworkElementIdentifier(id)), id)).collect(Collectors.toList());
         return new IdBasedContingencyList(listId, modificationDate, new IdentifierContingencyList(listId != null ? listId.toString() : "defaultName", networkElementIdentifiers));
+    }
+
+    @Test
+    void testFilterBasedContingencyList() throws Exception {
+
+        List<UUID> filters = List.of(UUID.randomUUID(),
+            UUID.randomUUID(),
+            UUID.randomUUID());
+
+        // create test
+        String list = genFilterBasedContingencyList(filters);
+        UUID id = addNewFilterBasedContingencyList(list);
+
+        // test get
+        MappingBuilder requestPatternBuilder = WireMock.get(WireMock.urlPathEqualTo("/v1/filters/infos"))
+            .withHeader(USER_ID_HEADER, WireMock.equalTo(USER_ID_HEADER));
+
+        for (UUID filter : filters) {
+            requestPatternBuilder.withQueryParam("filterUuids", WireMock.equalTo(filter.toString()));
+        }
+
+        wireMockServer.stubFor(requestPatternBuilder.willReturn(WireMock.ok()));
+
+        mvc.perform(get("/" + VERSION + "/filters-contingency-lists/" + id)
+                .header(USER_ID_HEADER, USER_ID_HEADER)
+                .contentType(APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON));
+
+        // test count
+        requestPatternBuilder = WireMock.get(WireMock.urlPathEqualTo("/v1/filters/evaluate/identifiables"))
+            .withQueryParam("networkUuid", WireMock.equalTo(NETWORK_UUID.toString()));
+
+        for (UUID filter : filters) {
+            requestPatternBuilder.withQueryParam("ids", WireMock.equalTo(filter.toString()));
+        }
+
+        wireMockServer.stubFor(requestPatternBuilder.willReturn(WireMock.ok()));
+
+        String res = mvc.perform(get("/" + VERSION + "/contingency-lists/count?ids=" + id + "&networkUuid=" + NETWORK_UUID + "&variantId=" + VARIANT_ID_1)
+                .contentType(APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andReturn().getResponse().getContentAsString();
+        assertEquals(0, Integer.parseInt(res));
+
+        // duplicate test
+        String newUuid = mvc.perform(post("/" + VERSION + "/filters-contingency-lists?duplicateFrom=" + id))
+            .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
+        assertNotNull(newUuid);
+
+        mvc.perform(post("/" + VERSION + "/filters-contingency-lists?duplicateFrom=" + UUID.randomUUID()))
+            .andExpect(status().isNotFound());
+
+        // delete lists
+        mvc.perform(delete("/" + VERSION + "/contingency-lists/" + id))
+            .andExpect(status().isOk());
+
+        newUuid = newUuid.replace("\"", "");
+        mvc.perform(delete("/" + VERSION + "/contingency-lists/" + newUuid))
+            .andExpect(status().isOk());
+    }
+
+    @Test
+    void modifyFilterBasedContingencyList() throws Exception {
+
+        List<UUID> filters = List.of(UUID.randomUUID(),
+            UUID.randomUUID(),
+            UUID.randomUUID());
+
+        String contingencyList = genFilterBasedContingencyList(filters);
+
+        String res = mvc.perform(post("/" + VERSION + "/filters-contingency-lists")
+                .content(contingencyList)
+                .contentType(APPLICATION_JSON))
+            .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
+
+        UUID contingencyListId = objectMapper.readValue(res, FilterBasedContingencyList.class).getId();
+
+        String newList = genModifiedFilterBasedContingencyList(filters);
+        mvc.perform(put("/" + VERSION + "/filters-contingency-lists/" + contingencyListId)
+                .content(newList)
+                .contentType(APPLICATION_JSON)
+                .header(USER_ID_HEADER, USER_ID_HEADER))
+            .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
+
+        Message<byte[]> message = output.receive(TIMEOUT, elementUpdateDestination);
+        assertEquals(contingencyListId, message.getHeaders().get(NotificationService.HEADER_ELEMENT_UUID));
+        assertEquals(USER_ID_HEADER, message.getHeaders().get(NotificationService.HEADER_MODIFIED_BY));
+
+        // delete lists
+        mvc.perform(delete("/" + VERSION + "/contingency-lists/" + contingencyListId))
+            .andExpect(status().isOk());
     }
 
     private int getContingencyListsCount() throws Exception {

@@ -46,6 +46,8 @@
         <liquibase-hibernate-package>org.gridsuite.actions.server</liquibase-hibernate-package>
         <sonar.organization>gridsuite</sonar.organization>
         <sonar.projectKey>org.gridsuite:actions-server</sonar.projectKey>
+        <!-- TODO gridsuite-filter.version remove when upgrading gridsuite dependencies -->
+        <gridsuite-filter.version>1.9.0</gridsuite-filter.version>
     </properties>
 
     <build>
@@ -107,6 +109,11 @@
         </dependency>
 
         <!-- Compilation dependencies -->
+        <dependency>
+            <groupId>org.gridsuite</groupId>
+            <artifactId>gridsuite-filter</artifactId>
+            <version>${gridsuite-filter.version}</version>
+        </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
@@ -212,6 +219,11 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.wiremock</groupId>
+            <artifactId>wiremock-jetty12</artifactId>
             <scope>test</scope>
         </dependency>
     </dependencies>
