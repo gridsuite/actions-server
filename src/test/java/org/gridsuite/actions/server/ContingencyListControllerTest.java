@@ -6,6 +6,7 @@
  */
 package org.gridsuite.actions.server;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -63,6 +64,8 @@ import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMoc
 import static com.powsybl.network.store.model.NetworkStoreApi.VERSION;
 import static org.apache.commons.lang3.StringUtils.join;
 import static org.gridsuite.actions.server.utils.NumericalFilterOperator.*;
+import static org.gridsuite.filter.utils.EquipmentType.LINE;
+import static org.gridsuite.filter.utils.EquipmentType.TWO_WINDINGS_TRANSFORMER;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.BDDMockito.given;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
@@ -125,6 +128,8 @@ class ContingencyListControllerTest {
         wireMockServer.stop();
     }
 
+    private List<UUID> filters;
+
     private static void assertQueuesEmptyThenClear(List<String> destinations, OutputDestination output) {
         try {
             destinations.forEach(destination -> assertNull(output.receive(TIMEOUT, destination), "Should not be any messages in queue " + destination + " : "));
@@ -172,6 +177,10 @@ class ContingencyListControllerTest {
 
         // mock base url of filter server as one of wire mock server
         Mockito.doAnswer(invocation -> wireMockServer.baseUrl()).when(filterService).getBaseUri();
+
+        filters = List.of(UUID.randomUUID(),
+            UUID.randomUUID(),
+            UUID.randomUUID());
     }
 
     @Test
@@ -365,17 +374,23 @@ class ContingencyListControllerTest {
         return jsonData;
     }
 
-    private static String genFilterBasedContingencyList() {
-        String jsonData = "{\"filters\":[{\"equipmentType\":\"LINE\",\"id\":\"b45df471-ada2-4422-975b-d89b62192191\",\"name\":\"Filter1\"}";
-        jsonData += ",{\"equipmentType\":\"LINE\",\"id\":\"d411e6b5-c1dc-49b4-9c17-4ef9a514196a\",\"name\":\"Filter2\"}";
-        jsonData += ",{\"equipmentType\":\"TWO_WINDINGS_TRANSFORMER\",\"id\":\"2da834f8-6ab7-4781-b3ba-83f6f4a2f509\",\"name\":\"Filter3\"}]}";
-        return jsonData;
+    private String genFilterBasedContingencyList(List<UUID> uuids) throws JsonProcessingException {
+
+        List<FilterAttributes> filtersAttributes = List.of(
+            new FilterAttributes(uuids.get(0), LINE, "Filter1"),
+            new FilterAttributes(uuids.get(1), LINE, "Filter2"),
+            new FilterAttributes(uuids.get(2), TWO_WINDINGS_TRANSFORMER, "Filter3")
+        );
+        return "{\"filters\":" + objectMapper.writeValueAsString(filtersAttributes) + "}";
     }
 
-    private static String genModifiedFilterBasedContingencyList() {
-        String jsonData = "{\"filters\":[{\"equipmentType\":\"LINE\",\"id\":\"b45df471-ada2-4422-975b-d89b62192191\",\"name\":\"Filter1\"}";
-        jsonData += ",{\"equipmentType\":\"TWO_WINDINGS_TRANSFORMER\",\"id\":\"2da834f8-6ab7-4781-b3ba-83f6f4a2f509\",\"name\":\"Filter3\"}]}";
-        return jsonData;
+    private String genModifiedFilterBasedContingencyList(List<UUID> uuids) throws JsonProcessingException {
+
+        List<FilterAttributes> filtersAttributes = List.of(
+            new FilterAttributes(uuids.get(0), LINE, "Filter1"),
+            new FilterAttributes(uuids.get(2), TWO_WINDINGS_TRANSFORMER, "Filter3")
+        );
+        return "{\"filters\":" + objectMapper.writeValueAsString(filtersAttributes) + "}";
     }
 
     @Test
@@ -427,7 +442,7 @@ class ContingencyListControllerTest {
         compareFilterBasedContingencyList(original, list);
 
         // mandatory function but useless for this contingency list tests to increase coverage
-        assertEquals(null, list.toPowsyblContingencyList(network));
+        assertNull(list.toPowsyblContingencyList(network));
         assertEquals(Map.of(), list.getNotFoundElements(network));
 
         return list.getId();
@@ -975,12 +990,8 @@ class ContingencyListControllerTest {
     @Test
     void testFilterBasedContingencyList() throws Exception {
 
-        List<UUID> filters = List.of(UUID.fromString("b45df471-ada2-4422-975b-d89b62192191"),
-            UUID.fromString("d411e6b5-c1dc-49b4-9c17-4ef9a514196a"),
-            UUID.fromString("2da834f8-6ab7-4781-b3ba-83f6f4a2f509"));
-
         // create test
-        String list = genFilterBasedContingencyList();
+        String list = genFilterBasedContingencyList(filters);
         UUID id = addNewFilterBasedContingencyList(list);
 
         // test get
@@ -1034,7 +1045,8 @@ class ContingencyListControllerTest {
 
     @Test
     void modifyFilterBasedContingencyList() throws Exception {
-        String contingencyList = genFilterBasedContingencyList();
+
+        String contingencyList = genFilterBasedContingencyList(filters);
 
         String res = mvc.perform(post("/" + VERSION + "/filters-contingency-lists")
                 .content(contingencyList)
@@ -1043,7 +1055,7 @@ class ContingencyListControllerTest {
 
         UUID contingencyListId = objectMapper.readValue(res, FilterBasedContingencyList.class).getId();
 
-        String newList = genModifiedFilterBasedContingencyList();
+        String newList = genModifiedFilterBasedContingencyList(filters);
         mvc.perform(put("/" + VERSION + "/filters-contingency-lists/" + contingencyListId)
                 .content(newList)
                 .contentType(APPLICATION_JSON)
