@@ -128,8 +128,6 @@ class ContingencyListControllerTest {
         wireMockServer.stop();
     }
 
-    private List<UUID> filters;
-
     private static void assertQueuesEmptyThenClear(List<String> destinations, OutputDestination output) {
         try {
             destinations.forEach(destination -> assertNull(output.receive(TIMEOUT, destination), "Should not be any messages in queue " + destination + " : "));
@@ -177,10 +175,6 @@ class ContingencyListControllerTest {
 
         // mock base url of filter server as one of wire mock server
         Mockito.doAnswer(invocation -> wireMockServer.baseUrl()).when(filterService).getBaseUri();
-
-        filters = List.of(UUID.randomUUID(),
-            UUID.randomUUID(),
-            UUID.randomUUID());
     }
 
     @Test
@@ -990,6 +984,10 @@ class ContingencyListControllerTest {
     @Test
     void testFilterBasedContingencyList() throws Exception {
 
+        List<UUID> filters = List.of(UUID.randomUUID(),
+            UUID.randomUUID(),
+            UUID.randomUUID());
+
         // create test
         String list = genFilterBasedContingencyList(filters);
         UUID id = addNewFilterBasedContingencyList(list);
@@ -1045,6 +1043,10 @@ class ContingencyListControllerTest {
 
     @Test
     void modifyFilterBasedContingencyList() throws Exception {
+
+        List<UUID> filters = List.of(UUID.randomUUID(),
+            UUID.randomUUID(),
+            UUID.randomUUID());
 
         String contingencyList = genFilterBasedContingencyList(filters);
 
