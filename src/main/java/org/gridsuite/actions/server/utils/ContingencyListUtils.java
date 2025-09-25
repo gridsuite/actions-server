@@ -2,6 +2,7 @@ package org.gridsuite.actions.server.utils;
 
 import com.powsybl.contingency.BatteryContingency;
 import com.powsybl.contingency.ContingencyElement;
+import com.powsybl.contingency.DanglingLineContingency;
 import com.powsybl.contingency.GeneratorContingency;
 import com.powsybl.contingency.HvdcLineContingency;
 import com.powsybl.contingency.LineContingency;
@@ -42,6 +43,9 @@ public final class ContingencyListUtils {
             }
             case STATIC_VAR_COMPENSATOR -> {
                 return new StaticVarCompensatorContingency(id.getId());
+            }
+            case DANGLING_LINE -> {
+                return new DanglingLineContingency(id.getId());
             }
             default -> throw new IllegalStateException("Unexpected value: " + id.getType());
         }

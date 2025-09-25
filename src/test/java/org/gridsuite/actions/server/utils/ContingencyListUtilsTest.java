@@ -8,6 +8,7 @@ package org.gridsuite.actions.server.utils;
 
 import com.powsybl.contingency.BatteryContingency;
 import com.powsybl.contingency.ContingencyElement;
+import com.powsybl.contingency.DanglingLineContingency;
 import com.powsybl.contingency.GeneratorContingency;
 import com.powsybl.contingency.HvdcLineContingency;
 import com.powsybl.contingency.LineContingency;
@@ -46,7 +47,8 @@ class ContingencyListUtilsTest {
             Arguments.of("id", IdentifiableType.BATTERY, BatteryContingency.class),
             Arguments.of("id", IdentifiableType.HVDC_LINE, HvdcLineContingency.class),
             Arguments.of("id", IdentifiableType.LOAD, LoadContingency.class),
-            Arguments.of("id", IdentifiableType.STATIC_VAR_COMPENSATOR, StaticVarCompensatorContingency.class)
+            Arguments.of("id", IdentifiableType.STATIC_VAR_COMPENSATOR, StaticVarCompensatorContingency.class),
+            Arguments.of("id", IdentifiableType.STATIC_VAR_COMPENSATOR, DanglingLineContingency.class)
         );
     }
 
