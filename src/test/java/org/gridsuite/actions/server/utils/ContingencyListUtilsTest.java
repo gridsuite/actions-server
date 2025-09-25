@@ -48,7 +48,7 @@ class ContingencyListUtilsTest {
             Arguments.of("id", IdentifiableType.HVDC_LINE, HvdcLineContingency.class),
             Arguments.of("id", IdentifiableType.LOAD, LoadContingency.class),
             Arguments.of("id", IdentifiableType.STATIC_VAR_COMPENSATOR, StaticVarCompensatorContingency.class),
-            Arguments.of("id", IdentifiableType.STATIC_VAR_COMPENSATOR, DanglingLineContingency.class)
+            Arguments.of("id", IdentifiableType.DANGLING_LINE, DanglingLineContingency.class)
         );
     }
 
