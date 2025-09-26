@@ -17,6 +17,7 @@ import com.powsybl.contingency.StaticVarCompensatorContingency;
 import com.powsybl.contingency.ThreeWindingsTransformerContingency;
 import com.powsybl.contingency.TwoWindingsTransformerContingency;
 import com.powsybl.iidm.network.IdentifiableType;
+import com.powsybl.iidm.network.ShuntCompensator;
 import org.gridsuite.filter.identifierlistfilter.IdentifiableAttributes;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -47,9 +48,10 @@ class ContingencyListUtilsTest {
             Arguments.of("id", IdentifiableType.THREE_WINDINGS_TRANSFORMER, ThreeWindingsTransformerContingency.class),
             Arguments.of("id", IdentifiableType.GENERATOR, GeneratorContingency.class),
             Arguments.of("id", IdentifiableType.BATTERY, BatteryContingency.class),
-            Arguments.of("id", IdentifiableType.HVDC_LINE, HvdcLineContingency.class),
             Arguments.of("id", IdentifiableType.LOAD, LoadContingency.class),
+            Arguments.of("id", IdentifiableType.SHUNT_COMPENSATOR, ShuntCompensator.class),
             Arguments.of("id", IdentifiableType.STATIC_VAR_COMPENSATOR, StaticVarCompensatorContingency.class),
+            Arguments.of("id", IdentifiableType.HVDC_LINE, HvdcLineContingency.class),
             Arguments.of("id", IdentifiableType.DANGLING_LINE, DanglingLineContingency.class)
         );
     }
