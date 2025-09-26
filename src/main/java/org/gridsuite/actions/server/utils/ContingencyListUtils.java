@@ -8,6 +8,7 @@ import com.powsybl.contingency.HvdcLineContingency;
 import com.powsybl.contingency.LineContingency;
 import com.powsybl.contingency.LoadContingency;
 import com.powsybl.contingency.StaticVarCompensatorContingency;
+import com.powsybl.contingency.ThreeWindingsTransformerContingency;
 import com.powsybl.contingency.TwoWindingsTransformerContingency;
 import org.gridsuite.filter.identifierlistfilter.IdentifiableAttributes;
 
@@ -37,6 +38,9 @@ public final class ContingencyListUtils {
             }
             case TWO_WINDINGS_TRANSFORMER -> {
                 return new TwoWindingsTransformerContingency(id.getId());
+            }
+            case THREE_WINDINGS_TRANSFORMER -> {
+                return new ThreeWindingsTransformerContingency(id.getId());
             }
             case HVDC_LINE -> {
                 return new HvdcLineContingency(id.getId());
