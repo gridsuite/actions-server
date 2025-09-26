@@ -13,7 +13,9 @@ import com.powsybl.contingency.GeneratorContingency;
 import com.powsybl.contingency.HvdcLineContingency;
 import com.powsybl.contingency.LineContingency;
 import com.powsybl.contingency.LoadContingency;
+import com.powsybl.contingency.ShuntCompensatorContingency;
 import com.powsybl.contingency.StaticVarCompensatorContingency;
+import com.powsybl.contingency.ThreeWindingsTransformerContingency;
 import com.powsybl.contingency.TwoWindingsTransformerContingency;
 import com.powsybl.iidm.network.IdentifiableType;
 import org.gridsuite.filter.identifierlistfilter.IdentifiableAttributes;
@@ -43,11 +45,13 @@ class ContingencyListUtilsTest {
         return Stream.of(
             Arguments.of("id", IdentifiableType.LINE, LineContingency.class),
             Arguments.of("id", IdentifiableType.TWO_WINDINGS_TRANSFORMER, TwoWindingsTransformerContingency.class),
+            Arguments.of("id", IdentifiableType.THREE_WINDINGS_TRANSFORMER, ThreeWindingsTransformerContingency.class),
             Arguments.of("id", IdentifiableType.GENERATOR, GeneratorContingency.class),
             Arguments.of("id", IdentifiableType.BATTERY, BatteryContingency.class),
-            Arguments.of("id", IdentifiableType.HVDC_LINE, HvdcLineContingency.class),
             Arguments.of("id", IdentifiableType.LOAD, LoadContingency.class),
+            Arguments.of("id", IdentifiableType.SHUNT_COMPENSATOR, ShuntCompensatorContingency.class),
             Arguments.of("id", IdentifiableType.STATIC_VAR_COMPENSATOR, StaticVarCompensatorContingency.class),
+            Arguments.of("id", IdentifiableType.HVDC_LINE, HvdcLineContingency.class),
             Arguments.of("id", IdentifiableType.DANGLING_LINE, DanglingLineContingency.class)
         );
     }
