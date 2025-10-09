@@ -10,7 +10,6 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.gridsuite.actions.server.dto.EquipmentTypesByElement;
 import org.gridsuite.actions.server.dto.FilterBasedContingencyList;
 import org.springframework.util.CollectionUtils;
 
@@ -52,10 +51,8 @@ public class FilterBasedContingencyListEntity extends AbstractContingencyEntity 
     private void init(FilterBasedContingencyList contingencyList) {
         filtersIds = new ArrayList<>();
         contingencyList.getFilters().forEach(filterAttributes -> filtersIds.add(filterAttributes.id()));
-        selectedEquipmentTypesByFilter = contingencyList.getSelectedEquipmentTypesByFilter()
-            .stream()
-            .map(EquipmentTypesByElement::toEntity)
-            .toList();
+        selectedEquipmentTypesByFilter = new ArrayList<>();
+        contingencyList.getSelectedEquipmentTypesByFilter().forEach(equipmentTypesByElement -> selectedEquipmentTypesByFilter.add(equipmentTypesByElement.toEntity()));
     }
 
     public FilterBasedContingencyListEntity update(FilterBasedContingencyList contingencyList) {
