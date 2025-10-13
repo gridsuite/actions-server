@@ -22,24 +22,26 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table
+@Table(name = "equipment_types_by_element")
 public class EquipmentTypesByElementEntity {
 
     @Id
-    @Column
+    @Column(name = "element_id")
     @Schema(description = "ID of the element")
-    private UUID id;
+    private UUID elementId;
 
-    @Column
+    @Column(name = "equipment_type")
     @ElementCollection
     @Enumerated(EnumType.STRING)
-    @CollectionTable
+    @CollectionTable(name = "equipment_types_by_element_equipment_types",
+        joinColumns = @JoinColumn(name = "equipment_types_by_element_element_id"),
+        foreignKey = @ForeignKey(name = "equipment_types_by_element_equipment_types_fk"))
     @Fetch(FetchMode.JOIN)
     @Schema(description = "List of associated equipment types")
     Set<IdentifiableType> equipmentTypes;
 
     public EquipmentTypesByElement toDto() {
-        return new EquipmentTypesByElement(id, equipmentTypes);
+        return new EquipmentTypesByElement(elementId, equipmentTypes);
     }
 
 }
