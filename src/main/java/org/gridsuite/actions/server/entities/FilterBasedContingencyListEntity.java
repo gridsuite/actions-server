@@ -38,7 +38,7 @@ public class FilterBasedContingencyListEntity extends AbstractContingencyEntity 
     @OneToMany(cascade = CascadeType.ALL)
     @JoinColumn(name = "filter_based_contingency_list_id",
         foreignKey = @ForeignKey(name = "filter_based_contingency_list_selected_equipment_types_by_filter_fk"))
-    private List<EquipmentTypesByElementEntity> selectedEquipmentTypesByFilter;
+    private List<EquipmentTypesByFilterIdEntity> selectedEquipmentTypesByFilter;
 
     public FilterBasedContingencyListEntity(FilterBasedContingencyList contingencyList) {
         super();

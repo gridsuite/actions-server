@@ -8,18 +8,18 @@
 package org.gridsuite.actions.server.dto;
 
 import com.powsybl.iidm.network.IdentifiableType;
-import org.gridsuite.actions.server.entities.EquipmentTypesByElementEntity;
+import org.gridsuite.actions.server.entities.EquipmentTypesByFilterIdEntity;
 
 import java.util.Set;
 import java.util.UUID;
 
 /**
- * Store a list of equipment types for a given element ID
+ * Store a list of equipment types for a given filter ID
  *
  * @author Florent MILLOT <florent.millot@rte-france.com>
  */
-public record EquipmentTypesByElement(UUID elementId, Set<IdentifiableType> equipmentTypes) {
-    public EquipmentTypesByElementEntity toEntity() {
-        return new EquipmentTypesByElementEntity(elementId, equipmentTypes);
+public record EquipmentTypesByFilterId(UUID filterId, Set<IdentifiableType> equipmentTypes) {
+    public EquipmentTypesByFilterIdEntity toEntity() {
+        return new EquipmentTypesByFilterIdEntity(filterId, equipmentTypes);
     }
 }
