@@ -42,12 +42,10 @@
     </developers>
 
     <properties>
-        <gridsuite-dependencies.version>43.0.0</gridsuite-dependencies.version>
+        <gridsuite-dependencies.version>43.2.0</gridsuite-dependencies.version>
         <liquibase-hibernate-package>org.gridsuite.actions.server</liquibase-hibernate-package>
         <sonar.organization>gridsuite</sonar.organization>
         <sonar.projectKey>org.gridsuite:actions-server</sonar.projectKey>
-        <!-- TODO gridsuite-filter.version remove when upgrading gridsuite dependencies -->
-        <gridsuite-filter.version>1.9.0</gridsuite-filter.version>
     </properties>
 
     <build>
@@ -112,7 +110,6 @@
         <dependency>
             <groupId>org.gridsuite</groupId>
             <artifactId>gridsuite-filter</artifactId>
-            <version>${gridsuite-filter.version}</version>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
