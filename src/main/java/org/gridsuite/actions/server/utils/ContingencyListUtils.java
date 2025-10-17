@@ -1,16 +1,6 @@
 package org.gridsuite.actions.server.utils;
 
-import com.powsybl.contingency.BatteryContingency;
-import com.powsybl.contingency.ContingencyElement;
-import com.powsybl.contingency.DanglingLineContingency;
-import com.powsybl.contingency.GeneratorContingency;
-import com.powsybl.contingency.HvdcLineContingency;
-import com.powsybl.contingency.LineContingency;
-import com.powsybl.contingency.LoadContingency;
-import com.powsybl.contingency.ShuntCompensatorContingency;
-import com.powsybl.contingency.StaticVarCompensatorContingency;
-import com.powsybl.contingency.ThreeWindingsTransformerContingency;
-import com.powsybl.contingency.TwoWindingsTransformerContingency;
+import com.powsybl.contingency.*;
 import org.gridsuite.filter.identifierlistfilter.IdentifiableAttributes;
 
 /**
@@ -54,6 +44,9 @@ public final class ContingencyListUtils {
             }
             case DANGLING_LINE -> {
                 return new DanglingLineContingency(id.getId());
+            }
+            case BUSBAR_SECTION -> {
+                return new BusbarSectionContingency(id.getId());
             }
             default -> throw new IllegalStateException("Unexpected value: " + id.getType());
         }

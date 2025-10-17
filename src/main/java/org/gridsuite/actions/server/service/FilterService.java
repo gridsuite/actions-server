@@ -6,17 +6,16 @@
  */
 
 package org.gridsuite.actions.server.service;
+
 import lombok.Getter;
 import org.gridsuite.actions.server.dto.FilterAttributes;
+import org.gridsuite.actions.server.dto.FilterBasedContingencyList;
 import org.gridsuite.filter.identifierlistfilter.FilteredIdentifiables;
 import org.gridsuite.filter.identifierlistfilter.IdentifiableAttributes;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -44,18 +43,21 @@ public class FilterService {
         this.restTemplate = restTemplate;
     }
 
-    public List<IdentifiableAttributes> evaluateFilters(UUID networkUuid, String variantUuid, List<UUID> filtersUuid) {
+    public List<IdentifiableAttributes> evaluateFilters(UUID networkUuid, String variantUuid, FilterBasedContingencyList filterBasedContingencyList) {
         Objects.requireNonNull(networkUuid);
-        Objects.requireNonNull(filtersUuid);
+        Objects.requireNonNull(filterBasedContingencyList);
         String endPointUrl = getBaseUri() + DELIMITER + FILTER_API_VERSION + FILTER_END_POINT_EVALUATE_IDS;
 
         UriComponentsBuilder uriComponentsBuilder = UriComponentsBuilder.fromHttpUrl(endPointUrl);
         uriComponentsBuilder.queryParam("networkUuid", networkUuid);
         uriComponentsBuilder.queryParam("variantUuid", variantUuid);
-        uriComponentsBuilder.queryParam("ids", filtersUuid);
         var uriComponent = uriComponentsBuilder.buildAndExpand();
 
-        ResponseEntity<FilteredIdentifiables> response = restTemplate.getForEntity(uriComponent.toUriString(), FilteredIdentifiables.class);
+        var headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        HttpEntity<FilterBasedContingencyList> request = new HttpEntity<>(filterBasedContingencyList, headers);
+
+        ResponseEntity<FilteredIdentifiables> response = restTemplate.postForEntity(uriComponent.toUriString(), request, FilteredIdentifiables.class);
         return response.getBody() != null ? response.getBody().equipmentIds() : List.of();
     }
 

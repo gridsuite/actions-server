@@ -6,17 +6,7 @@
  */
 package org.gridsuite.actions.server.utils;
 
-import com.powsybl.contingency.BatteryContingency;
-import com.powsybl.contingency.ContingencyElement;
-import com.powsybl.contingency.DanglingLineContingency;
-import com.powsybl.contingency.GeneratorContingency;
-import com.powsybl.contingency.HvdcLineContingency;
-import com.powsybl.contingency.LineContingency;
-import com.powsybl.contingency.LoadContingency;
-import com.powsybl.contingency.ShuntCompensatorContingency;
-import com.powsybl.contingency.StaticVarCompensatorContingency;
-import com.powsybl.contingency.ThreeWindingsTransformerContingency;
-import com.powsybl.contingency.TwoWindingsTransformerContingency;
+import com.powsybl.contingency.*;
 import com.powsybl.iidm.network.IdentifiableType;
 import org.gridsuite.filter.identifierlistfilter.IdentifiableAttributes;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -52,7 +42,8 @@ class ContingencyListUtilsTest {
             Arguments.of("id", IdentifiableType.SHUNT_COMPENSATOR, ShuntCompensatorContingency.class),
             Arguments.of("id", IdentifiableType.STATIC_VAR_COMPENSATOR, StaticVarCompensatorContingency.class),
             Arguments.of("id", IdentifiableType.HVDC_LINE, HvdcLineContingency.class),
-            Arguments.of("id", IdentifiableType.DANGLING_LINE, DanglingLineContingency.class)
+            Arguments.of("id", IdentifiableType.DANGLING_LINE, DanglingLineContingency.class),
+            Arguments.of("id", IdentifiableType.BUSBAR_SECTION, BusbarSectionContingency.class)
         );
     }
 

@@ -6,13 +6,7 @@
  */
 package org.gridsuite.actions.server.entities;
 
-import jakarta.persistence.CollectionTable;
-import jakarta.persistence.Column;
-import jakarta.persistence.ElementCollection;
-import jakarta.persistence.Entity;
-import jakarta.persistence.ForeignKey;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -41,6 +35,11 @@ public class FilterBasedContingencyListEntity extends AbstractContingencyEntity 
         foreignKey = @ForeignKey(name = "filter_based_contingency_list_id_fk"))
     private List<UUID> filtersIds;
 
+    @OneToMany(cascade = CascadeType.ALL)
+    @JoinColumn(name = "filter_based_contingency_list_id",
+        foreignKey = @ForeignKey(name = "filter_based_contingency_list_selected_equipment_types_by_filter_fk"))
+    private List<EquipmentTypesByFilterIdEntity> selectedEquipmentTypesByFilter;
+
     public FilterBasedContingencyListEntity(FilterBasedContingencyList contingencyList) {
         super();
         if (CollectionUtils.isEmpty(contingencyList.getFilters())) {
@@ -53,6 +52,8 @@ public class FilterBasedContingencyListEntity extends AbstractContingencyEntity 
     private void init(FilterBasedContingencyList contingencyList) {
         filtersIds = new ArrayList<>();
         contingencyList.getFilters().forEach(filterAttributes -> filtersIds.add(filterAttributes.id()));
+        selectedEquipmentTypesByFilter = new ArrayList<>();
+        contingencyList.getSelectedEquipmentTypesByFilter().forEach(equipmentTypesByElement -> selectedEquipmentTypesByFilter.add(equipmentTypesByElement.toEntity()));
     }
 
     public FilterBasedContingencyListEntity update(FilterBasedContingencyList contingencyList) {
