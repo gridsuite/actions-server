@@ -33,6 +33,10 @@ import java.util.UUID;
 public class EquipmentTypesByFilterIdEntity {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    @Column(name = "id")
+    private UUID id;
+
     @Column(name = "filter_id")
     @Schema(description = "ID of the filter")
     private UUID filterId;

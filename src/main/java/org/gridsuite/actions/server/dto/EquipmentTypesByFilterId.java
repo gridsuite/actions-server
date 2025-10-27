@@ -20,6 +20,6 @@ import java.util.UUID;
  */
 public record EquipmentTypesByFilterId(UUID filterId, Set<IdentifiableType> equipmentTypes) {
     public EquipmentTypesByFilterIdEntity toEntity() {
-        return new EquipmentTypesByFilterIdEntity(filterId, equipmentTypes);
+        return new EquipmentTypesByFilterIdEntity(null, filterId, Set.copyOf(equipmentTypes));
     }
 }
