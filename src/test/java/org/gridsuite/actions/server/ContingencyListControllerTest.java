@@ -18,6 +18,7 @@ import com.github.tomakehurst.wiremock.client.WireMock;
 import com.powsybl.contingency.*;
 import com.powsybl.contingency.contingency.list.IdentifierContingencyList;
 import com.powsybl.contingency.json.ContingencyJsonModule;
+import com.powsybl.iidm.network.IdentifiableType;
 import com.powsybl.iidm.network.Network;
 import com.powsybl.iidm.network.Terminal;
 import com.powsybl.iidm.network.VariantManagerConstants;
@@ -64,8 +65,7 @@ import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMoc
 import static com.powsybl.network.store.model.NetworkStoreApi.VERSION;
 import static org.apache.commons.lang3.StringUtils.join;
 import static org.gridsuite.actions.server.utils.NumericalFilterOperator.*;
-import static org.gridsuite.filter.utils.EquipmentType.LINE;
-import static org.gridsuite.filter.utils.EquipmentType.TWO_WINDINGS_TRANSFORMER;
+import static org.gridsuite.filter.utils.EquipmentType.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.BDDMockito.given;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
@@ -372,10 +372,14 @@ class ContingencyListControllerTest {
 
         List<FilterAttributes> filtersAttributes = List.of(
             new FilterAttributes(uuids.get(0), LINE, "Filter1"),
-            new FilterAttributes(uuids.get(1), LINE, "Filter2"),
+            new FilterAttributes(uuids.get(1), SUBSTATION, "Filter2"),
             new FilterAttributes(uuids.get(2), TWO_WINDINGS_TRANSFORMER, "Filter3")
         );
-        return "{\"filters\":" + objectMapper.writeValueAsString(filtersAttributes) + "}";
+        List<EquipmentTypesByFilterId> equipmentTypesByFilter = List.of(
+            new EquipmentTypesByFilterId(uuids.get(1), Set.of(IdentifiableType.GENERATOR))
+        );
+        return "{\"filters\":" + objectMapper.writeValueAsString(filtersAttributes) +
+            ", \"selectedEquipmentTypesByFilter\":" + objectMapper.writeValueAsString(equipmentTypesByFilter) + "}";
     }
 
     private String genModifiedFilterBasedContingencyList(List<UUID> uuids) throws JsonProcessingException {
@@ -384,7 +388,7 @@ class ContingencyListControllerTest {
             new FilterAttributes(uuids.get(0), LINE, "Filter1"),
             new FilterAttributes(uuids.get(2), TWO_WINDINGS_TRANSFORMER, "Filter3")
         );
-        return "{\"filters\":" + objectMapper.writeValueAsString(filtersAttributes) + "}";
+        return "{\"filters\":" + objectMapper.writeValueAsString(filtersAttributes) + ", \"selectedEquipmentTypesByFilter\":[]}";
     }
 
     @Test
@@ -1009,12 +1013,12 @@ class ContingencyListControllerTest {
             .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON));
 
         // test count
-        requestPatternBuilder = WireMock.get(WireMock.urlPathEqualTo("/v1/filters/evaluate/identifiables"))
-            .withQueryParam("networkUuid", WireMock.equalTo(NETWORK_UUID.toString()));
-
-        for (UUID filter : filters) {
-            requestPatternBuilder.withQueryParam("ids", WireMock.equalTo(filter.toString()));
-        }
+        requestPatternBuilder = WireMock.post(WireMock.urlPathEqualTo("/v1/filters/evaluate/identifiables"))
+            .withQueryParam("networkUuid", WireMock.equalTo(NETWORK_UUID.toString()))
+            .withRequestBody(WireMock.containing(filters.get(0).toString())
+                .and(WireMock.containing(filters.get(1).toString()))
+                .and(WireMock.containing(filters.get(2).toString()))
+                .and(WireMock.containing(IdentifiableType.GENERATOR.name())));
 
         wireMockServer.stubFor(requestPatternBuilder.willReturn(WireMock.ok()));
 
