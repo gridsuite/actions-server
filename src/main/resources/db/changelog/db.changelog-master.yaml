@@ -51,7 +51,3 @@ databaseChangeLog:
   - include:
       file: changesets/changelog_20251014T135234Z.xml
       relativeToChangelogFile: true
-
-  #- include: // TODO : activer seulement une fois que le nettoyage d'elements dans directory server sera fonctionnel
-      #    file: changesets/changelog_20251029T141743Z.xml
-      #relativeToChangelogFile: true
