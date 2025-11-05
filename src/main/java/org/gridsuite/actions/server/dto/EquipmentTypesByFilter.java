@@ -8,7 +8,7 @@
 package org.gridsuite.actions.server.dto;
 
 import com.powsybl.iidm.network.IdentifiableType;
-import org.gridsuite.actions.server.entities.EquipmentTypesByFilterIdEntity;
+import org.gridsuite.actions.server.entities.EquipmentTypesByFilterEntity;
 
 import java.util.Set;
 import java.util.UUID;
@@ -18,8 +18,8 @@ import java.util.UUID;
  *
  * @author Florent MILLOT <florent.millot@rte-france.com>
  */
-public record EquipmentTypesByFilterId(UUID filterId, Set<IdentifiableType> equipmentTypes) {
-    public EquipmentTypesByFilterIdEntity toEntity() {
-        return new EquipmentTypesByFilterIdEntity(null, filterId, Set.copyOf(equipmentTypes));
+public record EquipmentTypesByFilter(UUID filterId, Set<IdentifiableType> equipmentTypes) {
+    public EquipmentTypesByFilterEntity toEntity() {
+        return new EquipmentTypesByFilterEntity(null, filterId, Set.copyOf(equipmentTypes));
     }
 }
