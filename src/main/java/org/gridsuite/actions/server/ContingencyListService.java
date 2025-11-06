@@ -152,9 +152,9 @@ public class ContingencyListService {
             return Optional.empty();
         } else {
             List<UUID> filterIds = entity.get().getFiltersIds();
-            List<EquipmentTypesByFilterId> selectedEquipmentTypesByFilter = entity.get().getSelectedEquipmentTypesByFilter()
+            List<EquipmentTypesByFilter> selectedEquipmentTypesByFilter = entity.get().getSelectedEquipmentTypesByFilter()
                 .stream()
-                .map(EquipmentTypesByFilterIdEntity::toDto)
+                .map(EquipmentTypesByFilterEntity::toDto)
                 .toList();
             //get information from filterServer
             List<FilterAttributes> attributes = filterService.getFiltersAttributes(filterIds, userId);
@@ -396,7 +396,7 @@ public class ContingencyListService {
     private static FilterBasedContingencyList fromFilterBasedContingencyListEntity(FilterBasedContingencyListEntity entity) {
         return new FilterBasedContingencyList(entity.getId(), entity.getModificationDate(),
             entity.getFiltersIds().stream().map(uuid -> new FilterAttributes(uuid, null, null)).toList(),
-            entity.getSelectedEquipmentTypesByFilter().stream().map(EquipmentTypesByFilterIdEntity::toDto).toList());
+            entity.getSelectedEquipmentTypesByFilter().stream().map(EquipmentTypesByFilterEntity::toDto).toList());
     }
 
     public IdBasedContingencyList createIdBasedContingencyList(UUID id, IdBasedContingencyList idBasedContingencyList) {

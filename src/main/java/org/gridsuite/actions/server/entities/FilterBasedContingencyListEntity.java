@@ -35,10 +35,10 @@ public class FilterBasedContingencyListEntity extends AbstractContingencyEntity 
         foreignKey = @ForeignKey(name = "filter_based_contingency_list_id_fk"))
     private List<UUID> filtersIds;
 
-    @OneToMany(cascade = CascadeType.ALL)
-    @JoinColumn(name = "filter_based_contingency_list_id",
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true)
+    @JoinColumn(name = "filter_based_contingency_list_id", referencedColumnName = "id",
         foreignKey = @ForeignKey(name = "filter_based_contingency_list_selected_equipment_types_by_filter_fk"))
-    private List<EquipmentTypesByFilterIdEntity> selectedEquipmentTypesByFilter;
+    private List<EquipmentTypesByFilterEntity> selectedEquipmentTypesByFilter;
 
     public FilterBasedContingencyListEntity(FilterBasedContingencyList contingencyList) {
         super();
@@ -57,7 +57,10 @@ public class FilterBasedContingencyListEntity extends AbstractContingencyEntity 
     }
 
     public FilterBasedContingencyListEntity update(FilterBasedContingencyList contingencyList) {
-        init(contingencyList);
+        filtersIds.clear();
+        contingencyList.getFilters().forEach(filterAttributes -> filtersIds.add(filterAttributes.id()));
+        selectedEquipmentTypesByFilter.clear();
+        contingencyList.getSelectedEquipmentTypesByFilter().forEach(equipmentTypesByElement -> selectedEquipmentTypesByFilter.add(equipmentTypesByElement.toEntity()));
         return this;
     }
 }
