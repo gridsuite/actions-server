@@ -172,8 +172,8 @@ class ContingencyListControllerTest {
             new FilterAttributes(uuids.get(1), SUBSTATION, "Filter2"),
             new FilterAttributes(uuids.get(2), TWO_WINDINGS_TRANSFORMER, "Filter3")
         );
-        List<EquipmentTypesByFilterId> equipmentTypesByFilter = List.of(
-            new EquipmentTypesByFilterId(uuids.get(1), Set.of(IdentifiableType.GENERATOR))
+        List<EquipmentTypesByFilter> equipmentTypesByFilter = List.of(
+            new EquipmentTypesByFilter(uuids.get(1), Set.of(IdentifiableType.GENERATOR))
         );
         return "{\"filters\":" + objectMapper.writeValueAsString(filtersAttributes) +
             ", \"selectedEquipmentTypesByFilter\":" + objectMapper.writeValueAsString(equipmentTypesByFilter) + "}";
