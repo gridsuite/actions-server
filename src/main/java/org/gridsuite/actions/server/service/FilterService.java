@@ -19,7 +19,6 @@ import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
-import org.springframework.web.util.DefaultUriBuilderFactory;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.ArrayList;
@@ -42,7 +41,7 @@ public class FilterService {
     public FilterService(@Value("${gridsuite.services.filter-server.base-uri:http://filter-server/}") String baseUri,
                          RestTemplateBuilder restTemplateBuilder) {
         this.baseUri = baseUri;
-        this.restTemplate = restTemplateBuilder.uriTemplateHandler(new DefaultUriBuilderFactory(baseUri)).build();
+        this.restTemplate = restTemplateBuilder.build();
     }
 
     public List<IdentifiableAttributes> evaluateFilters(UUID networkUuid, String variantUuid, FilterBasedContingencyList filterBasedContingencyList) {
