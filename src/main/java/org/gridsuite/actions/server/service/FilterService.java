@@ -14,6 +14,7 @@ import org.gridsuite.filter.identifierlistfilter.FilteredIdentifiables;
 import org.gridsuite.filter.identifierlistfilter.IdentifiableAttributes;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
@@ -38,9 +39,9 @@ public class FilterService {
 
     @Autowired
     public FilterService(@Value("${gridsuite.services.filter-server.base-uri:http://filter-server/}") String baseUri,
-                         RestTemplate restTemplate) {
+                         RestTemplateBuilder restTemplateBuilder) {
         this.baseUri = baseUri;
-        this.restTemplate = restTemplate;
+        this.restTemplate = restTemplateBuilder.build();
     }
 
     public List<IdentifiableAttributes> evaluateFilters(UUID networkUuid, String variantUuid, FilterBasedContingencyList filterBasedContingencyList) {
