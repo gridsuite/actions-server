@@ -627,7 +627,7 @@ class ContingencyListControllerTest {
 
         // count them (incl a wrong uuid) - Initial variant
         ContingencyIdsByGroup contingencyIdsByGroup = ContingencyIdsByGroup.builder().ids(Map.of(CONTINGENCY_1, List.of(id, UUID.randomUUID()), CONTINGENCY_2, List.of(UUID.randomUUID()))).build();
-        Map<String, Long> res = objectMapper.readValue(mvc.perform(post("/" + VERSION + "/contingency-lists/count/by-group?ids=" + UUID.randomUUID() + "&ids=" + id + "&networkUuid=" + NETWORK_UUID + "&variantId=" + VariantManagerConstants.INITIAL_VARIANT_ID)
+        Map<String, Long> res = objectMapper.readValue(mvc.perform(post("/" + VERSION + "/contingency-lists/count-by-group?networkUuid=" + NETWORK_UUID + "&variantId=" + VariantManagerConstants.INITIAL_VARIANT_ID)
                         .contentType(APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(contingencyIdsByGroup)))
                         .andExpect(status().isOk())
@@ -638,7 +638,7 @@ class ContingencyListControllerTest {
         assertEquals(0, res.get(CONTINGENCY_2));
 
         // count them (incl a wrong uuid) - first variant (without generator)
-        res = objectMapper.readValue(mvc.perform(post("/" + VERSION + "/contingency-lists/count/by-group?ids=" + UUID.randomUUID() + "&ids=" + id + "&networkUuid=" + NETWORK_UUID + "&variantId=" + VARIANT_ID_1)
+        res = objectMapper.readValue(mvc.perform(post("/" + VERSION + "/contingency-lists/count-by-group?networkUuid=" + NETWORK_UUID + "&variantId=" + VARIANT_ID_1)
                                 .contentType(APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(contingencyIdsByGroup)))
                         .andExpect(status().isOk())

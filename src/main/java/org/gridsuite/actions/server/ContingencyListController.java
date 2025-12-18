@@ -46,7 +46,7 @@ public class ContingencyListController {
         return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(service.getContingencyListsMetadata());
     }
 
-    @PostMapping(value = "/contingency-lists/count/by-group", produces = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = "/contingency-lists/count-by-group", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Evaluate all contingency lists in each group and return the count by group")
     @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "The total contingency count by group")})
     public ResponseEntity<Map<String, Integer>> getContingencyCountByGroup(@RequestParam(value = "networkUuid", required = false) UUID networkUuid,
