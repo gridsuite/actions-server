@@ -149,15 +149,28 @@ public class ContingencyListService {
         return powsyblContingencyList == null ? Collections.emptyList() : powsyblContingencyList.getContingencies(network);
     }
 
-    @Transactional(readOnly = true)
-    public Integer getContingencyCount(List<UUID> ids, UUID networkUuid, String variantId) {
-        Network network = getNetworkFromUuid(networkUuid, variantId);
+    private Integer getContingencyCount(Network network, List<UUID> ids, UUID networkUuid, String variantId) {
         return ids.stream()
             .map(uuid -> {
                 Optional<PersistentContingencyList> contingencyList = getAnyContingencyList(uuid, network);
                 return contingencyList.map(l -> getContingencies(l, network, networkUuid, variantId).size()).orElse(0);
             })
             .reduce(0, Integer::sum);
+    }
+
+    @Transactional(readOnly = true)
+    public Map<String, Integer> getContingencyCountByGroup(ContingencyIdsByGroup contingencyIdsByGroup, UUID networkUuid, String variantId) {
+        Network network = getNetworkFromUuid(networkUuid, variantId);
+        return contingencyIdsByGroup.getIds().entrySet().stream().collect(Collectors.toMap(
+                Map.Entry::getKey,
+                e -> getContingencyCount(network, e.getValue(), networkUuid, variantId))
+        );
+    }
+
+    @Transactional(readOnly = true)
+    public Integer getContingencyCount(List<UUID> ids, UUID networkUuid, String variantId) {
+        Network network = getNetworkFromUuid(networkUuid, variantId);
+        return getContingencyCount(network, ids, networkUuid, variantId);
     }
 
     @Transactional(readOnly = true)

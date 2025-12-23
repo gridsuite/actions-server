@@ -36,6 +36,8 @@ import org.gridsuite.actions.server.dto.*;
 import org.gridsuite.actions.server.repositories.IdBasedContingencyListRepository;
 import org.gridsuite.actions.server.service.FilterService;
 import org.gridsuite.actions.server.utils.MatcherJson;
+import org.gridsuite.filter.identifierlistfilter.FilteredIdentifiables;
+import org.gridsuite.filter.identifierlistfilter.IdentifiableAttributes;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -83,6 +85,8 @@ class ContingencyListControllerTest {
     private static final String VARIANT_ID_1 = "variant_1";
     private static final String VARIANT_ID_2 = "variant_2";
     private static final String USER_ID_HEADER = "userId";
+    public static final String CONTINGENCY_1 = "contingency-1";
+    public static final String CONTINGENCY_2 = "contingency-2";
 
     private final String elementUpdateDestination = "element.update";
 
@@ -567,5 +571,81 @@ class ContingencyListControllerTest {
                         .contentType(APPLICATION_JSON)
                         .header(USER_ID_HEADER, USER_ID_HEADER))
                 .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void testCountContingencyList() throws Exception {
+        // insert 1 contingency list with 3 filters
+        UUID id = setupCountContingencyTest();
+
+        // count them (incl a wrong uuid) - Initial variant
+        String res = mvc.perform(get("/" + VERSION + "/contingency-lists/count?ids=" + UUID.randomUUID() + "&ids=" + id + "&networkUuid=" + NETWORK_UUID + "&variantId=" + VariantManagerConstants.INITIAL_VARIANT_ID)
+                        .contentType(APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString();
+        assertEquals(2, Integer.parseInt(res));
+
+        // count them (incl a wrong uuid) - first variant (without generator)
+        res = mvc.perform(get("/" + VERSION + "/contingency-lists/count?ids=" + UUID.randomUUID() + "&ids=" + id + "&networkUuid=" + NETWORK_UUID + "&variantId=" + VARIANT_ID_1)
+                        .contentType(APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString();
+        assertEquals(1, Integer.parseInt(res));
+    }
+
+    private UUID setupCountContingencyTest() throws Exception {
+        List<UUID> filters = List.of(UUID.randomUUID(),
+                UUID.randomUUID(),
+                UUID.randomUUID());
+
+        String list = genFilterBasedContingencyList(filters);
+        UUID id = addNewFilterBasedContingencyList(list);
+
+        MappingBuilder requestPatternBuilder = WireMock.post(WireMock.urlPathEqualTo("/v1/filters/evaluate/identifiables"))
+                .withQueryParam("networkUuid", WireMock.equalTo(NETWORK_UUID.toString()))
+                .withRequestBody(WireMock.containing(filters.get(0).toString())
+                        .and(WireMock.containing(filters.get(1).toString()))
+                        .and(WireMock.containing(filters.get(2).toString()))
+                        .and(WireMock.containing(IdentifiableType.GENERATOR.name())));
+
+        List<IdentifiableAttributes> identifiablesList = List.of(
+                new IdentifiableAttributes("GEN", IdentifiableType.GENERATOR, 0d),
+                new IdentifiableAttributes("GEN2", IdentifiableType.GENERATOR, 0d));
+
+        FilteredIdentifiables filteredIdentifiables = new FilteredIdentifiables(identifiablesList, List.of());
+        wireMockServer.stubFor(requestPatternBuilder.willReturn(
+                WireMock.ok()
+                        .withHeader("Content-Type", "application/json")
+                        .withBody(objectMapper.writeValueAsString(filteredIdentifiables))));
+        return id;
+    }
+
+    @Test
+    void testCountContingencyListByGroup() throws Exception {
+        // insert 1 contingency list with 3 filters
+        UUID id = setupCountContingencyTest();
+
+        // count them (incl a wrong uuid) - Initial variant
+        ContingencyIdsByGroup contingencyIdsByGroup = ContingencyIdsByGroup.builder().ids(Map.of(CONTINGENCY_1, List.of(id, UUID.randomUUID()), CONTINGENCY_2, List.of(UUID.randomUUID()))).build();
+        Map<String, Long> res = objectMapper.readValue(mvc.perform(post("/" + VERSION + "/contingency-lists/count-by-group?networkUuid=" + NETWORK_UUID + "&variantId=" + VariantManagerConstants.INITIAL_VARIANT_ID)
+                        .contentType(APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(contingencyIdsByGroup)))
+                        .andExpect(status().isOk())
+                        .andReturn().getResponse().getContentAsString(),
+                new TypeReference<>() {
+                });
+        assertEquals(2, res.get(CONTINGENCY_1));
+        assertEquals(0, res.get(CONTINGENCY_2));
+
+        // count them (incl a wrong uuid) - first variant (without generator)
+        res = objectMapper.readValue(mvc.perform(post("/" + VERSION + "/contingency-lists/count-by-group?networkUuid=" + NETWORK_UUID + "&variantId=" + VARIANT_ID_1)
+                                .contentType(APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(contingencyIdsByGroup)))
+                        .andExpect(status().isOk())
+                        .andReturn().getResponse().getContentAsString(),
+                new TypeReference<>() {
+                });
+        assertEquals(1, res.get(CONTINGENCY_1));
+        assertEquals(0, res.get(CONTINGENCY_2));
     }
 }

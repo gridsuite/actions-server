@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.*;
 
 import jakarta.persistence.EntityNotFoundException;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 /**
@@ -43,6 +44,15 @@ public class ContingencyListController {
     @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "All contingency lists metadata")})
     public ResponseEntity<List<ContingencyListMetadata>> getContingencyListsMetadata() {
         return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(service.getContingencyListsMetadata());
+    }
+
+    @PostMapping(value = "/contingency-lists/count-by-group", produces = MediaType.APPLICATION_JSON_VALUE)
+    @Operation(summary = "Evaluate all contingency lists in each group and return the count by group")
+    @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "The total contingency count by group")})
+    public ResponseEntity<Map<String, Integer>> getContingencyCountByGroup(@RequestParam(value = "networkUuid", required = false) UUID networkUuid,
+                                                                           @RequestParam(value = "variantId", required = false) String variantId,
+                                                                           @RequestBody ContingencyIdsByGroup contingencyIdsByGroup) {
+        return ResponseEntity.ok().body(service.getContingencyCountByGroup(contingencyIdsByGroup, networkUuid, variantId));
     }
 
     @GetMapping(value = "/contingency-lists/count", produces = MediaType.APPLICATION_JSON_VALUE)
