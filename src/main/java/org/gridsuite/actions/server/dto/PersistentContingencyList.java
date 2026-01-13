@@ -6,7 +6,7 @@
  */
 package org.gridsuite.actions.server.dto;
 
-import com.powsybl.contingency.contingency.list.ContingencyList;
+import com.powsybl.contingency.list.ContingencyList;
 import com.powsybl.iidm.network.Network;
 
 import java.util.Map;
