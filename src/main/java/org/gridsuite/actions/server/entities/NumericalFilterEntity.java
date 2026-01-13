@@ -10,8 +10,8 @@ package org.gridsuite.actions.server.entities;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.gridsuite.actions.server.dto.NumericalFilter;
-import org.gridsuite.actions.server.utils.NumericalFilterOperator;
+import org.gridsuite.actions.dto.NumericalFilter;
+import org.gridsuite.actions.utils.NumericalFilterOperator;
 
 import jakarta.persistence.*;
 import java.util.UUID;
