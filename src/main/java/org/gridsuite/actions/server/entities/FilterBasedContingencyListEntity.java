@@ -10,7 +10,7 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.gridsuite.actions.server.dto.FilterBasedContingencyList;
+import org.gridsuite.actions.dto.FilterBasedContingencyList;
 import org.springframework.util.CollectionUtils;
 
 import java.util.ArrayList;
@@ -53,14 +53,14 @@ public class FilterBasedContingencyListEntity extends AbstractContingencyEntity 
         filtersIds = new ArrayList<>();
         contingencyList.getFilters().forEach(filterAttributes -> filtersIds.add(filterAttributes.id()));
         selectedEquipmentTypesByFilter = new ArrayList<>();
-        contingencyList.getSelectedEquipmentTypesByFilter().forEach(equipmentTypesByElement -> selectedEquipmentTypesByFilter.add(equipmentTypesByElement.toEntity()));
+        contingencyList.getSelectedEquipmentTypesByFilter().forEach(equipmentTypesByElement -> selectedEquipmentTypesByFilter.add(EquipmentTypesByFilterEntity.fromDto(equipmentTypesByElement)));
     }
 
     public FilterBasedContingencyListEntity update(FilterBasedContingencyList contingencyList) {
         filtersIds.clear();
         contingencyList.getFilters().forEach(filterAttributes -> filtersIds.add(filterAttributes.id()));
         selectedEquipmentTypesByFilter.clear();
-        contingencyList.getSelectedEquipmentTypesByFilter().forEach(equipmentTypesByElement -> selectedEquipmentTypesByFilter.add(equipmentTypesByElement.toEntity()));
+        contingencyList.getSelectedEquipmentTypesByFilter().forEach(equipmentTypesByElement -> selectedEquipmentTypesByFilter.add(EquipmentTypesByFilterEntity.fromDto(equipmentTypesByElement)));
         return this;
     }
 }

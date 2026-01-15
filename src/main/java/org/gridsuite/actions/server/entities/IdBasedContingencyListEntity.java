@@ -12,7 +12,7 @@ import com.powsybl.iidm.network.identifiers.NetworkElementIdentifier;
 import com.powsybl.iidm.network.identifiers.NetworkElementIdentifierContingencyList;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.gridsuite.actions.server.dto.IdBasedContingencyList;
+import org.gridsuite.actions.dto.IdBasedContingencyList;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
 
