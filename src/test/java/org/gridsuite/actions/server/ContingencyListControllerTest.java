@@ -16,7 +16,7 @@ import com.github.tomakehurst.wiremock.WireMockServer;
 import com.github.tomakehurst.wiremock.client.MappingBuilder;
 import com.github.tomakehurst.wiremock.client.WireMock;
 import com.powsybl.contingency.*;
-import com.powsybl.contingency.contingency.list.IdentifierContingencyList;
+import com.powsybl.contingency.list.IdentifierContingencyList;
 import com.powsybl.contingency.json.ContingencyJsonModule;
 import com.powsybl.iidm.network.IdentifiableType;
 import com.powsybl.iidm.network.Network;

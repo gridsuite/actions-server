@@ -6,7 +6,7 @@
  */
 package org.gridsuite.actions.server.entities;
 
-import com.powsybl.contingency.contingency.list.IdentifierContingencyList;
+import com.powsybl.contingency.list.IdentifierContingencyList;
 import com.powsybl.iidm.network.identifiers.IdBasedNetworkElementIdentifier;
 import com.powsybl.iidm.network.identifiers.NetworkElementIdentifier;
 import com.powsybl.iidm.network.identifiers.NetworkElementIdentifierContingencyList;
