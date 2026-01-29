@@ -13,7 +13,7 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.gridsuite.actions.server.dto.EquipmentTypesByFilter;
+import org.gridsuite.actions.dto.EquipmentTypesByFilter;
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
 
@@ -55,4 +55,7 @@ public class EquipmentTypesByFilterEntity {
         return new EquipmentTypesByFilter(filterId, equipmentTypes);
     }
 
+    public static EquipmentTypesByFilterEntity fromDto(EquipmentTypesByFilter equipmentTypesByFilter) {
+        return new EquipmentTypesByFilterEntity(null, equipmentTypesByFilter.filterId(), Set.copyOf(equipmentTypesByFilter.equipmentTypes()));
+    }
 }

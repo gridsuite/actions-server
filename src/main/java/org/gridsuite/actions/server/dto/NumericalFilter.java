@@ -8,7 +8,9 @@ package org.gridsuite.actions.server.dto;
 
 import com.powsybl.iidm.criteria.SingleNominalVoltageCriterion;
 import com.powsybl.iidm.criteria.VoltageInterval;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 import org.gridsuite.actions.server.utils.NumericalFilterOperator;
 
 /**
