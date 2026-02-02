@@ -1,7 +1,7 @@
 package org.gridsuite.actions.server.configs;
 
 import org.gridsuite.actions.ContingencyListEvaluator;
-import org.gridsuite.actions.FilterEvaluatorI;
+import org.gridsuite.actions.FilterProviderI;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -9,8 +9,8 @@ import org.springframework.context.annotation.Configuration;
 public class ActionsConfig {
     @Bean
     public ContingencyListEvaluator contingencyListEvaluator(
-        FilterEvaluatorI filterEvaluator
+        FilterProviderI filterProvider
     ) {
-        return new ContingencyListEvaluator(filterEvaluator);
+        return new ContingencyListEvaluator(filterProvider);
     }
 }

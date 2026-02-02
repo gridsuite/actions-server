@@ -133,11 +133,11 @@ public class ContingencyListService {
         return filterBasedContingencyListRepository.findById(id);
     }
 
-    private Integer getContingencyCount(Network network, List<UUID> ids, UUID networkUuid, String variantId) {
+    private Integer getContingencyCount(Network network, List<UUID> ids) {
         return ids.stream()
             .map(uuid -> {
                 Optional<PersistentContingencyList> contingencyList = getAnyContingencyList(uuid, network);
-                return contingencyList.map(l -> getContingencies(l, network, networkUuid, variantId).size()).orElse(0);
+                return contingencyList.map(l -> getContingencies(l, network).size()).orElse(0);
             })
             .reduce(0, Integer::sum);
     }
@@ -147,14 +147,14 @@ public class ContingencyListService {
         Network network = getNetworkFromUuid(networkUuid, variantId);
         return contingencyIdsByGroup.getIds().entrySet().stream().collect(Collectors.toMap(
                 Map.Entry::getKey,
-                e -> getContingencyCount(network, e.getValue(), networkUuid, variantId))
+                e -> getContingencyCount(network, e.getValue()))
         );
     }
 
     @Transactional(readOnly = true)
     public Integer getContingencyCount(List<UUID> ids, UUID networkUuid, String variantId) {
         Network network = getNetworkFromUuid(networkUuid, variantId);
-        return getContingencyCount(network, ids, networkUuid, variantId);
+        return getContingencyCount(network, ids);
     }
 
     @Transactional(readOnly = true)
@@ -166,14 +166,14 @@ public class ContingencyListService {
         contingencyListIds.forEach(contingencyListId -> {
             Optional<PersistentContingencyList> contingencyList = getAnyContingencyList(contingencyListId, network);
             contingencyList.ifPresentOrElse(
-                    list -> contingencies.addAll(getContingencies(list, network, networkUuid, variantId)),
+                    list -> contingencies.addAll(getContingencies(list, network)),
                     () -> notFoundIds.add(contingencyListId)
             );
         });
         return new ContingencyListExportResult(contingencies, notFoundIds);
     }
 
-    private List<Contingency> getContingencies(PersistentContingencyList persistentContingencyList, Network network, UUID networkUuid, String variantId) {
+    private List<Contingency> getContingencies(PersistentContingencyList persistentContingencyList, Network network) {
         return contingencyListEvaluator.evaluateContingencyList(persistentContingencyList, network)
                 .stream()
                 .map(ContingencyInfos::getContingency)
