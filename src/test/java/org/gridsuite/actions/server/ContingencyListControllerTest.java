@@ -32,12 +32,11 @@ import com.powsybl.iidm.network.test.SvcTestCaseFactory;
 import com.powsybl.network.store.client.NetworkStoreService;
 import com.powsybl.network.store.client.PreloadingStrategy;
 import com.powsybl.network.store.iidm.impl.NetworkFactoryImpl;
+import org.gridsuite.actions.ContingencyListEvaluator;
 import org.gridsuite.actions.dto.*;
 import org.gridsuite.actions.server.repositories.IdBasedContingencyListRepository;
 import org.gridsuite.actions.server.service.FilterService;
 import org.gridsuite.actions.server.utils.MatcherJson;
-import org.gridsuite.filter.identifierlistfilter.FilteredIdentifiables;
-import org.gridsuite.filter.identifierlistfilter.IdentifiableAttributes;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -61,7 +60,10 @@ import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMoc
 import static com.powsybl.network.store.model.NetworkStoreApi.VERSION;
 import static org.gridsuite.filter.utils.EquipmentType.*;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.*;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -110,6 +112,8 @@ class ContingencyListControllerTest {
 
     @MockitoSpyBean
     private FilterService filterService;
+    @MockitoSpyBean
+    private ContingencyListEvaluator contingencyListEvaluator;
 
     @AfterEach
     void tearDown() {
@@ -192,7 +196,7 @@ class ContingencyListControllerTest {
         return "{\"filters\":" + objectMapper.writeValueAsString(filtersAttributes) + ", \"selectedEquipmentTypesByFilter\":[]}";
     }
 
-    private UUID addNewFilterBasedContingencyList(String filters) throws Exception {
+    private FilterBasedContingencyList addNewFilterBasedContingencyList(String filters) throws Exception {
 
         String res = mvc.perform(post("/" + VERSION + "/filters-contingency-lists")
                 .content(filters)
@@ -207,7 +211,7 @@ class ContingencyListControllerTest {
         assertNull(list.toPowsyblContingencyList(network));
         assertEquals(Map.of(), list.getNotFoundElements(network));
 
-        return list.getId();
+        return list;
     }
 
     private static void compareFilterBasedContingencyList(FilterBasedContingencyList expected, FilterBasedContingencyList current) {
@@ -313,7 +317,7 @@ class ContingencyListControllerTest {
 
         // create test
         String list = genFilterBasedContingencyList(filters);
-        UUID id = addNewFilterBasedContingencyList(list);
+        FilterBasedContingencyList filterBasedContingencyList = addNewFilterBasedContingencyList(list);
 
         // test get
         MappingBuilder requestPatternBuilder = WireMock.get(WireMock.urlPathEqualTo("/v1/filters/infos"))
@@ -325,30 +329,22 @@ class ContingencyListControllerTest {
 
         wireMockServer.stubFor(requestPatternBuilder.willReturn(WireMock.ok()));
 
-        mvc.perform(get("/" + VERSION + "/filters-contingency-lists/" + id)
+        mvc.perform(get("/" + VERSION + "/filters-contingency-lists/" + filterBasedContingencyList.getId())
                 .header(USER_ID_HEADER, USER_ID_HEADER)
                 .contentType(APPLICATION_JSON))
             .andExpect(status().isOk())
             .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON));
 
-        // test count
-        requestPatternBuilder = WireMock.post(WireMock.urlPathEqualTo("/v1/filters/evaluate/identifiables"))
-            .withQueryParam("networkUuid", WireMock.equalTo(NETWORK_UUID.toString()))
-            .withRequestBody(WireMock.containing(filters.get(0).toString())
-                .and(WireMock.containing(filters.get(1).toString()))
-                .and(WireMock.containing(filters.get(2).toString()))
-                .and(WireMock.containing(IdentifiableType.GENERATOR.name())));
+        doReturn(List.of()).when(contingencyListEvaluator).evaluateContingencyList(any(), any());
 
-        wireMockServer.stubFor(requestPatternBuilder.willReturn(WireMock.ok()));
-
-        String res = mvc.perform(get("/" + VERSION + "/contingency-lists/count?ids=" + id + "&networkUuid=" + NETWORK_UUID + "&variantId=" + VARIANT_ID_1)
+        String res = mvc.perform(get("/" + VERSION + "/contingency-lists/count?ids=" + filterBasedContingencyList.getId() + "&networkUuid=" + NETWORK_UUID + "&variantId=" + VARIANT_ID_1)
                 .contentType(APPLICATION_JSON))
             .andExpect(status().isOk())
             .andReturn().getResponse().getContentAsString();
         assertEquals(0, Integer.parseInt(res));
 
         // duplicate test
-        String newUuid = mvc.perform(post("/" + VERSION + "/filters-contingency-lists?duplicateFrom=" + id))
+        String newUuid = mvc.perform(post("/" + VERSION + "/filters-contingency-lists?duplicateFrom=" + filterBasedContingencyList.getId()))
             .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
         assertNotNull(newUuid);
 
@@ -356,7 +352,7 @@ class ContingencyListControllerTest {
             .andExpect(status().isNotFound());
 
         // delete lists
-        mvc.perform(delete("/" + VERSION + "/contingency-lists/" + id))
+        mvc.perform(delete("/" + VERSION + "/contingency-lists/" + filterBasedContingencyList.getId()))
             .andExpect(status().isOk());
 
         newUuid = newUuid.replace("\"", "");
@@ -575,22 +571,14 @@ class ContingencyListControllerTest {
 
     @Test
     void testCountContingencyList() throws Exception {
-        // insert 1 contingency list with 3 filters
-        UUID id = setupCountContingencyTest();
+        UUID filterBasedContingencyListId = setupCountContingencyTest();
 
-        // count them (incl a wrong uuid) - Initial variant
-        String res = mvc.perform(get("/" + VERSION + "/contingency-lists/count?ids=" + UUID.randomUUID() + "&ids=" + id + "&networkUuid=" + NETWORK_UUID + "&variantId=" + VariantManagerConstants.INITIAL_VARIANT_ID)
-                        .contentType(APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andReturn().getResponse().getContentAsString();
+        // count them (incl a wrong uuid)
+        String res = mvc.perform(get("/" + VERSION + "/contingency-lists/count?ids=" + filterBasedContingencyListId + "&ids=" + UUID.randomUUID() + "&networkUuid=" + NETWORK_UUID + "&variantId=" + VariantManagerConstants.INITIAL_VARIANT_ID)
+                .contentType(APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andReturn().getResponse().getContentAsString();
         assertEquals(2, Integer.parseInt(res));
-
-        // count them (incl a wrong uuid) - first variant (without generator)
-        res = mvc.perform(get("/" + VERSION + "/contingency-lists/count?ids=" + UUID.randomUUID() + "&ids=" + id + "&networkUuid=" + NETWORK_UUID + "&variantId=" + VARIANT_ID_1)
-                        .contentType(APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andReturn().getResponse().getContentAsString();
-        assertEquals(1, Integer.parseInt(res));
     }
 
     private UUID setupCountContingencyTest() throws Exception {
@@ -599,34 +587,29 @@ class ContingencyListControllerTest {
                 UUID.randomUUID());
 
         String list = genFilterBasedContingencyList(filters);
-        UUID id = addNewFilterBasedContingencyList(list);
+        FilterBasedContingencyList filterBasedContingencyList = addNewFilterBasedContingencyList(list);
 
-        MappingBuilder requestPatternBuilder = WireMock.post(WireMock.urlPathEqualTo("/v1/filters/evaluate/identifiables"))
-                .withQueryParam("networkUuid", WireMock.equalTo(NETWORK_UUID.toString()))
-                .withRequestBody(WireMock.containing(filters.get(0).toString())
-                        .and(WireMock.containing(filters.get(1).toString()))
-                        .and(WireMock.containing(filters.get(2).toString()))
-                        .and(WireMock.containing(IdentifiableType.GENERATOR.name())));
+        // mock filter evaluation which is tested in filter lib
+        ContingencyInfos contingencyInfosMock = mock(ContingencyInfos.class);
+        Contingency contingencyMock = mock(Contingency.class);
+        when(contingencyInfosMock.getContingency()).thenReturn(contingencyMock);
 
-        List<IdentifiableAttributes> identifiablesList = List.of(
-                new IdentifiableAttributes("GEN", IdentifiableType.GENERATOR, 0d),
-                new IdentifiableAttributes("GEN2", IdentifiableType.GENERATOR, 0d));
+        ContingencyInfos contingencyInfosMock2 = mock(ContingencyInfos.class);
+        Contingency contingencyMock2 = mock(Contingency.class);
+        when(contingencyInfosMock2.getContingency()).thenReturn(contingencyMock2);
 
-        FilteredIdentifiables filteredIdentifiables = new FilteredIdentifiables(identifiablesList, List.of());
-        wireMockServer.stubFor(requestPatternBuilder.willReturn(
-                WireMock.ok()
-                        .withHeader("Content-Type", "application/json")
-                        .withBody(objectMapper.writeValueAsString(filteredIdentifiables))));
-        return id;
+        doReturn(List.of(contingencyInfosMock, contingencyInfosMock2)).when(contingencyListEvaluator).evaluateContingencyList(any(), any());
+
+        return filterBasedContingencyList.getId();
     }
 
     @Test
     void testCountContingencyListByGroup() throws Exception {
         // insert 1 contingency list with 3 filters
-        UUID id = setupCountContingencyTest();
+        UUID filterBasedContingencyListId = setupCountContingencyTest();
 
-        // count them (incl a wrong uuid) - Initial variant
-        ContingencyIdsByGroup contingencyIdsByGroup = ContingencyIdsByGroup.builder().ids(Map.of(CONTINGENCY_1, List.of(id, UUID.randomUUID()), CONTINGENCY_2, List.of(UUID.randomUUID()))).build();
+        // count them (incl a wrong uuid)
+        ContingencyIdsByGroup contingencyIdsByGroup = ContingencyIdsByGroup.builder().ids(Map.of(CONTINGENCY_1, List.of(filterBasedContingencyListId, UUID.randomUUID()), CONTINGENCY_2, List.of(UUID.randomUUID()))).build();
         Map<String, Long> res = objectMapper.readValue(mvc.perform(post("/" + VERSION + "/contingency-lists/count-by-group?networkUuid=" + NETWORK_UUID + "&variantId=" + VariantManagerConstants.INITIAL_VARIANT_ID)
                         .contentType(APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(contingencyIdsByGroup)))
@@ -635,17 +618,6 @@ class ContingencyListControllerTest {
                 new TypeReference<>() {
                 });
         assertEquals(2, res.get(CONTINGENCY_1));
-        assertEquals(0, res.get(CONTINGENCY_2));
-
-        // count them (incl a wrong uuid) - first variant (without generator)
-        res = objectMapper.readValue(mvc.perform(post("/" + VERSION + "/contingency-lists/count-by-group?networkUuid=" + NETWORK_UUID + "&variantId=" + VARIANT_ID_1)
-                                .contentType(APPLICATION_JSON)
-                                .content(objectMapper.writeValueAsString(contingencyIdsByGroup)))
-                        .andExpect(status().isOk())
-                        .andReturn().getResponse().getContentAsString(),
-                new TypeReference<>() {
-                });
-        assertEquals(1, res.get(CONTINGENCY_1));
         assertEquals(0, res.get(CONTINGENCY_2));
     }
 }
