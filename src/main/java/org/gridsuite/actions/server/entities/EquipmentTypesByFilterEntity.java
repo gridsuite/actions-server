@@ -13,7 +13,7 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.gridsuite.actions.dto.EquipmentTypesByFilter;
+import org.gridsuite.actions.api.dto.EquipmentTypesByFilter;
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
 

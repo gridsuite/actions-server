@@ -16,14 +16,21 @@ import com.powsybl.iidm.network.identifiers.NetworkElementIdentifierContingencyL
 import com.powsybl.network.store.client.NetworkStoreService;
 import com.powsybl.network.store.client.PreloadingStrategy;
 import com.powsybl.network.store.iidm.impl.NetworkFactoryImpl;
-import org.gridsuite.actions.ContingencyListEvaluator;
-import org.gridsuite.actions.dto.*;
-import org.gridsuite.actions.server.entities.*;
+import org.gridsuite.actions.api.ContingencyListEvaluator;
+import org.gridsuite.actions.api.dto.*;
+import org.gridsuite.actions.api.dto.contingency.FilterBasedContingencyList;
+import org.gridsuite.actions.api.dto.contingency.IdBasedContingencyList;
+import org.gridsuite.actions.api.dto.contingency.PersistentContingencyList;
+import org.gridsuite.actions.api.dto.evaluation.ContingencyIdsByGroup;
+import org.gridsuite.actions.api.dto.evaluation.ContingencyInfos;
+import org.gridsuite.actions.api.dto.evaluation.ContingencyListExportResult;
+import org.gridsuite.actions.server.entities.AbstractContingencyEntity;
+import org.gridsuite.actions.server.entities.EquipmentTypesByFilterEntity;
+import org.gridsuite.actions.server.entities.FilterBasedContingencyListEntity;
+import org.gridsuite.actions.server.entities.IdBasedContingencyListEntity;
 import org.gridsuite.actions.server.repositories.FilterBasedContingencyListRepository;
 import org.gridsuite.actions.server.repositories.IdBasedContingencyListRepository;
 import org.gridsuite.actions.server.service.FilterService;
-import org.gridsuite.actions.utils.ContingencyListType;
-import org.gridsuite.filter.identifierlistfilter.IdentifiableAttributes;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.HttpStatus;
@@ -90,10 +97,6 @@ public class ContingencyListService {
             filterBasedContingencyListRepository.findAllById(ids).stream().map(filterBasedContingencyListEntity ->
                 fromContingencyListEntity(filterBasedContingencyListEntity, ContingencyListType.FILTERS))
         ).flatMap(Function.identity()).collect(Collectors.toList());
-    }
-
-    public List<IdentifiableAttributes> evaluateFiltersNetwork(UUID networkUuid, String variantUuid, FilterBasedContingencyList filterBasedContingencyList) {
-        return filterService.evaluateFilters(networkUuid, variantUuid, filterBasedContingencyList);
     }
 
     @Transactional(readOnly = true)
