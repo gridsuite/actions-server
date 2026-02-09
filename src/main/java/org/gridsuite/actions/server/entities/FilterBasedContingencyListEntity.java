@@ -10,7 +10,7 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.gridsuite.actions.dto.FilterBasedContingencyList;
+import org.gridsuite.actions.dto.contingency.FilterBasedContingencyList;
 import org.springframework.util.CollectionUtils;
 
 import java.util.ArrayList;

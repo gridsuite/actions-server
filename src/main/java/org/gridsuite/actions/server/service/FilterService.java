@@ -9,7 +9,7 @@ package org.gridsuite.actions.server.service;
 
 import lombok.Getter;
 import org.gridsuite.actions.dto.FilterAttributes;
-import org.gridsuite.actions.dto.FilterBasedContingencyList;
+import org.gridsuite.actions.dto.contingency.FilterBasedContingencyList;
 import org.gridsuite.filter.AbstractFilter;
 import org.gridsuite.filter.identifierlistfilter.FilteredIdentifiables;
 import org.gridsuite.filter.identifierlistfilter.IdentifiableAttributes;
