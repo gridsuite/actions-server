@@ -29,7 +29,6 @@ import org.gridsuite.actions.server.repositories.FilterBasedContingencyListRepos
 import org.gridsuite.actions.server.repositories.IdBasedContingencyListRepository;
 import org.gridsuite.actions.server.service.FilterService;
 import org.gridsuite.actions.utils.ContingencyListType;
-import org.gridsuite.filter.identifierlistfilter.IdentifiableAttributes;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.HttpStatus;
@@ -96,10 +95,6 @@ public class ContingencyListService {
             filterBasedContingencyListRepository.findAllById(ids).stream().map(filterBasedContingencyListEntity ->
                 fromContingencyListEntity(filterBasedContingencyListEntity, ContingencyListType.FILTERS))
         ).flatMap(Function.identity()).collect(Collectors.toList());
-    }
-
-    public List<IdentifiableAttributes> evaluateFiltersNetwork(UUID networkUuid, String variantUuid, FilterBasedContingencyList filterBasedContingencyList) {
-        return filterService.evaluateFilters(networkUuid, variantUuid, filterBasedContingencyList);
     }
 
     @Transactional(readOnly = true)

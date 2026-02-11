@@ -65,7 +65,6 @@ import static com.powsybl.network.store.model.NetworkStoreApi.VERSION;
 import static org.gridsuite.filter.utils.EquipmentType.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.*;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
