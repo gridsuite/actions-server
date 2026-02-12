@@ -18,3 +18,5 @@ gridsuite:
   services:
     filter-server:
       base-uri: http://localhost:5027
+    directory-server:
+      base-uri: http://localhost:5026

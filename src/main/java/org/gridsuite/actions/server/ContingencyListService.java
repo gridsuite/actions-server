@@ -24,6 +24,7 @@ import org.gridsuite.actions.server.dto.*;
 import org.gridsuite.actions.server.entities.*;
 import org.gridsuite.actions.server.repositories.FilterBasedContingencyListRepository;
 import org.gridsuite.actions.server.repositories.IdBasedContingencyListRepository;
+import org.gridsuite.actions.server.service.DirectoryService;
 import org.gridsuite.actions.server.service.FilterService;
 import org.gridsuite.actions.server.utils.ContingencyListType;
 import org.gridsuite.actions.server.utils.ContingencyListUtils;
@@ -58,16 +59,20 @@ public class ContingencyListService {
 
     private final FilterService filterService;
 
+    private final DirectoryService directoryService;
+
     public ContingencyListService(IdBasedContingencyListRepository idBasedContingencyListRepository,
                                   FilterBasedContingencyListRepository filterBasedContingencyListRepository,
                                   NetworkStoreService networkStoreService,
                                   NotificationService notificationService,
-                                  FilterService filterService) {
+                                  FilterService filterService,
+                                  DirectoryService directoryService) {
         this.idBasedContingencyListRepository = idBasedContingencyListRepository;
         this.filterBasedContingencyListRepository = filterBasedContingencyListRepository;
         this.networkStoreService = networkStoreService;
         this.notificationService = notificationService;
         this.filterService = filterService;
+        this.directoryService = directoryService;
     }
 
     ContingencyListMetadata fromContingencyListEntity(AbstractContingencyEntity entity, ContingencyListType type) {
@@ -200,7 +205,19 @@ public class ContingencyListService {
     @Transactional(readOnly = true)
     public List<ContingencyInfos> exportContingencyInfosList(List<UUID> ids, UUID networkUuid, String variantId) {
         Network network = getNetworkFromUuid(networkUuid, variantId);
-        return ids.stream().map(id -> evaluateContingencyList(findContingencyList(id, network), network, networkUuid, variantId)).flatMap(Collection::stream).toList();
+        return ids.stream().map(id -> {
+            try {
+                return evaluateContingencyList(findContingencyList(id, network), network, networkUuid, variantId);
+            } catch (PowsyblException powsyblEx) {
+                String contingencyListName;
+                try {
+                    contingencyListName = directoryService.getElementName(id);
+                } catch (Exception e) {
+                    contingencyListName = id.toString();
+                }
+                throw new PowsyblException("Error in contingency list: '" + contingencyListName + "': " + powsyblEx.getMessage());
+            }
+        }).flatMap(Collection::stream).toList();
     }
 
     private PersistentContingencyList findContingencyList(UUID id, Network network) {
