@@ -6,7 +6,6 @@
  */
 package org.gridsuite.actions.server.service;
 
-import lombok.Getter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.client.RestTemplateBuilder;
@@ -31,7 +30,6 @@ public class DirectoryService {
     static final String DIRECTORY_API_VERSION = "v1";
     private static final String DELIMITER = "/";
 
-    @Getter
     private final String baseUri;
     private final RestTemplate restTemplate;
 
@@ -54,7 +52,7 @@ public class DirectoryService {
         try {
             ResponseEntity<Map<String, Object>> response =
                     restTemplate.exchange(
-                            getBaseUri() + path,
+                            baseUri + path,
                             HttpMethod.GET,
                             null,
                             new ParameterizedTypeReference<>() { }
