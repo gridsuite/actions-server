@@ -8,9 +8,9 @@
 package org.gridsuite.actions.server.service;
 
 import lombok.Getter;
+import org.gridsuite.actions.api.FilterProvider;
 import org.gridsuite.actions.api.dto.FilterAttributes;
 import org.gridsuite.filter.AbstractFilter;
-import org.gridsuite.filter.FilterLoader;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.client.RestTemplateBuilder;
@@ -29,7 +29,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
-public class FilterService implements FilterLoader {
+public class FilterService implements FilterProvider {
     public static final String FILTER_END_POINT_INFOS_IDS = "/filters/infos";
     public static final String FILTER_END_POINT_METADATA = "/filters/metadata";
     public static final String DELIMITER = "/";
