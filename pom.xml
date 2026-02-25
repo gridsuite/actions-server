@@ -109,6 +109,10 @@
         <!-- Compilation dependencies -->
         <dependency>
             <groupId>org.gridsuite</groupId>
+            <artifactId>gridsuite-actions</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.gridsuite</groupId>
             <artifactId>gridsuite-filter</artifactId>
         </dependency>
         <dependency>
