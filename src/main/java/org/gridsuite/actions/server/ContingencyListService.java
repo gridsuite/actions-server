@@ -24,6 +24,7 @@ import org.gridsuite.actions.dto.contingency.PersistentContingencyList;
 import org.gridsuite.actions.dto.evaluation.ContingencyIdsByGroup;
 import org.gridsuite.actions.dto.evaluation.ContingencyInfos;
 import org.gridsuite.actions.dto.evaluation.ContingencyListExportResult;
+import org.gridsuite.actions.server.dto.ContingencyCount;
 import org.gridsuite.actions.server.entities.*;
 import org.gridsuite.actions.server.repositories.FilterBasedContingencyListRepository;
 import org.gridsuite.actions.server.repositories.IdBasedContingencyListRepository;
@@ -134,13 +135,18 @@ public class ContingencyListService {
         return filterBasedContingencyListRepository.findById(id);
     }
 
-    private Integer getContingencyCount(Network network, List<UUID> ids) {
-        return ids.stream()
-            .map(uuid -> {
-                Optional<PersistentContingencyList> contingencyList = getAnyContingencyList(uuid, network);
-                return contingencyList.map(l -> getContingencies(l, network).size()).orElse(0);
-            })
-            .reduce(0, Integer::sum);
+    private ContingencyCount getContingencyCount(Network network, List<UUID> ids) {
+        int nbContingencies = 0;
+        int nbNotFoundElements = 0;
+        for (UUID uuid : ids) {
+            Optional<PersistentContingencyList> contingencyList = getAnyContingencyList(uuid, network);
+            if (contingencyList.isPresent()) {
+                PersistentContingencyList l = contingencyList.get();
+                nbContingencies += getContingencies(l, network).size();
+                nbNotFoundElements += l.getNotFoundElements(network).size();
+            }
+        }
+        return new ContingencyCount(nbContingencies, nbNotFoundElements);
     }
 
     @Transactional(readOnly = true)
@@ -148,12 +154,12 @@ public class ContingencyListService {
         Network network = getNetworkFromUuid(networkUuid, variantId);
         return contingencyIdsByGroup.getIds().entrySet().stream().collect(Collectors.toMap(
                 Map.Entry::getKey,
-                e -> getContingencyCount(network, e.getValue()))
+                e -> getContingencyCount(network, e.getValue()).contingencies())
         );
     }
 
     @Transactional(readOnly = true)
-    public Integer getContingencyCount(List<UUID> ids, UUID networkUuid, String variantId) {
+    public ContingencyCount getContingencyCount(List<UUID> ids, UUID networkUuid, String variantId) {
         Network network = getNetworkFromUuid(networkUuid, variantId);
         return getContingencyCount(network, ids);
     }
@@ -177,7 +183,7 @@ public class ContingencyListService {
     private List<Contingency> getContingencies(PersistentContingencyList persistentContingencyList, Network network) {
         return contingencyListEvaluator.evaluateContingencyList(persistentContingencyList, network)
                 .stream()
-                .map(ContingencyInfos::getContingency)
+                .map(ContingencyInfos::getContingency) // notFoundElement and notConnectedElements
                 .filter(Objects::nonNull)
                 .toList();
     }
