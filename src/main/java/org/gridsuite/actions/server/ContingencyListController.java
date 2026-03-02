@@ -204,4 +204,11 @@ public class ContingencyListController {
     public ResponseEntity<List<ContingencyListMetadata>> getContingencyListsMetadata(@RequestParam("ids") List<UUID> ids) {
         return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(service.getContingencyListsMetadata(ids));
     }
+
+    @PostMapping(value = "/contingency-lists", produces = MediaType.APPLICATION_JSON_VALUE)
+    @Operation(summary = "Get persistent contingency lists by UUIDs")
+    @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "The list of persistent contingency lists")})
+    public ResponseEntity<List<PersistentContingencyList>> getPersistentContingencyLists(@RequestBody List<UUID> ids) {
+        return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(service.getPersistentContingencyLists(ids));
+    }
 }

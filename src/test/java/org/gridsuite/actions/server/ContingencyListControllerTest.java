@@ -623,4 +623,69 @@ class ContingencyListControllerTest {
         assertEquals(2, res.get(CONTINGENCY_1));
         assertEquals(0, res.get(CONTINGENCY_2));
     }
+
+    @Test
+    void testGetPersistentContingencyLists() throws Exception {
+        // Create an id based contingency list
+        Instant modificationDate = Instant.now();
+        IdBasedContingencyList idBasedContingencyList = createIdBasedContingencyList(null, modificationDate, "NHV1_NHV2_1", "NHV1_NHV2_2");
+
+        String res = mvc.perform(post("/" + VERSION + "/identifier-contingency-lists")
+                        .content(objectMapper.writeValueAsString(idBasedContingencyList))
+                        .contentType(APPLICATION_JSON))
+                .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
+
+        UUID idBasedContingencyListId = objectMapper.readValue(res, IdBasedContingencyList.class).getId();
+
+        // Create a filter based contingency list
+        List<UUID> filters = List.of(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID());
+        String filterList = genFilterBasedContingencyList(filters);
+        FilterBasedContingencyList filterBasedContingencyList = addNewFilterBasedContingencyList(filterList);
+        UUID filterBasedContingencyListId = filterBasedContingencyList.getId();
+
+        // Get the contingency lists
+        List<UUID> requestIds = List.of(idBasedContingencyListId, filterBasedContingencyListId, UUID.randomUUID());
+
+        String responseJson = mvc.perform(post("/" + VERSION + "/contingency-lists")
+                        .content(objectMapper.writeValueAsString(requestIds))
+                        .contentType(APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+                .andReturn().getResponse().getContentAsString();
+
+        List<Map<String, Object>> resultList = objectMapper.readValue(responseJson, new TypeReference<>() {
+        });
+
+        // Verify that we got exactly 2 results (excluding the non-existent UUID)
+        assertEquals(2, resultList.size());
+
+        // Verify that the returned ids contains the contingency lists added
+        Set<String> returnedIds = resultList.stream()
+                .map(item -> item.get("id").toString())
+                .collect(Collectors.toSet());
+
+        assertTrue(returnedIds.contains(idBasedContingencyListId.toString()));
+        assertTrue(returnedIds.contains(filterBasedContingencyListId.toString()));
+
+        // Test with empty list
+        mvc.perform(post("/" + VERSION + "/contingency-lists")
+                        .content(objectMapper.writeValueAsString(List.of()))
+                        .contentType(APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+                .andExpect(content().json("[]"));
+
+        // Test with only non-existent UUIDs
+        List<UUID> nonExistentIds = List.of(UUID.randomUUID(), UUID.randomUUID());
+        mvc.perform(post("/" + VERSION + "/contingency-lists")
+                        .content(objectMapper.writeValueAsString(nonExistentIds))
+                        .contentType(APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+                .andExpect(content().json("[]"));
+
+        // Clean up
+        mvc.perform(delete("/" + VERSION + "/contingency-lists/" + idBasedContingencyListId)).andExpect(status().isOk());
+        mvc.perform(delete("/" + VERSION + "/contingency-lists/" + filterBasedContingencyListId)).andExpect(status().isOk());
+    }
 }
