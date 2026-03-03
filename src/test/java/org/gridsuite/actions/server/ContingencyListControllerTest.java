@@ -186,7 +186,7 @@ class ContingencyListControllerTest {
         List<EquipmentTypesByFilter> equipmentTypesByFilter = List.of(
             new EquipmentTypesByFilter(uuids.get(1), Set.of(IdentifiableType.GENERATOR))
         );
-        return "{\"filters\":" + objectMapper.writeValueAsString(filtersAttributes) +
+        return "{\"type\":" + "\"FILTERS\"" + ", \"filters\":" + objectMapper.writeValueAsString(filtersAttributes) +
             ", \"selectedEquipmentTypesByFilter\":" + objectMapper.writeValueAsString(equipmentTypesByFilter) + "}";
     }
 
@@ -196,7 +196,7 @@ class ContingencyListControllerTest {
             new FilterAttributes(uuids.get(0), LINE, "Filter1"),
             new FilterAttributes(uuids.get(2), TWO_WINDINGS_TRANSFORMER, "Filter3")
         );
-        return "{\"filters\":" + objectMapper.writeValueAsString(filtersAttributes) + ", \"selectedEquipmentTypesByFilter\":[]}";
+        return "{\"type\":" + "\"FILTERS\"" + ", \"filters\":" + objectMapper.writeValueAsString(filtersAttributes) + ", \"selectedEquipmentTypesByFilter\":[]}";
     }
 
     private FilterBasedContingencyList addNewFilterBasedContingencyList(String filters) throws Exception {
