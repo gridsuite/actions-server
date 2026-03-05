@@ -183,7 +183,7 @@ public class ContingencyListService {
     private List<Contingency> getContingencies(PersistentContingencyList persistentContingencyList, Network network) {
         return contingencyListEvaluator.evaluateContingencyList(persistentContingencyList, network)
                 .stream()
-                .map(ContingencyInfos::getContingency) // notFoundElement and notConnectedElements
+                .map(ContingencyInfos::getContingency)
                 .filter(Objects::nonNull)
                 .toList();
     }
