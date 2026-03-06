@@ -38,6 +38,7 @@ import org.gridsuite.actions.dto.contingency.FilterBasedContingencyList;
 import org.gridsuite.actions.dto.contingency.IdBasedContingencyList;
 import org.gridsuite.actions.dto.evaluation.ContingencyIdsByGroup;
 import org.gridsuite.actions.dto.evaluation.ContingencyInfos;
+import org.gridsuite.actions.server.dto.ContingencyCount;
 import org.gridsuite.actions.server.repositories.IdBasedContingencyListRepository;
 import org.gridsuite.actions.server.service.FilterService;
 import org.gridsuite.actions.server.utils.MatcherJson;
@@ -344,7 +345,10 @@ class ContingencyListControllerTest {
                 .contentType(APPLICATION_JSON))
             .andExpect(status().isOk())
             .andReturn().getResponse().getContentAsString();
-        assertEquals(0, Integer.parseInt(res));
+
+        ContingencyCount count = objectMapper.readValue(res, ContingencyCount.class);
+        assertEquals(0, count.contingencies());
+        assertEquals(0, count.notFoundElements());
 
         // duplicate test
         String newUuid = mvc.perform(post("/" + VERSION + "/filters-contingency-lists?duplicateFrom=" + filterBasedContingencyList.getId()))
@@ -530,7 +534,10 @@ class ContingencyListControllerTest {
                         .contentType(APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andReturn().getResponse().getContentAsString();
-        assertEquals(0, Integer.parseInt(res));
+
+        ContingencyCount count = objectMapper.readValue(res, ContingencyCount.class);
+        assertEquals(0, count.contingencies());
+        assertEquals(0, count.notFoundElements());
     }
 
     @Test
@@ -581,7 +588,10 @@ class ContingencyListControllerTest {
                 .contentType(APPLICATION_JSON))
             .andExpect(status().isOk())
             .andReturn().getResponse().getContentAsString();
-        assertEquals(2, Integer.parseInt(res));
+
+        ContingencyCount count = objectMapper.readValue(res, ContingencyCount.class);
+        assertEquals(2, count.contingencies());
+        assertEquals(0, count.notFoundElements());
     }
 
     private UUID setupCountContingencyTest() throws Exception {
