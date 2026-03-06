@@ -310,4 +310,26 @@ public class ContingencyListService {
         return new ResponseStatusException(HttpStatus.NOT_FOUND, String.format("%s %s not found", resourceType, resourceId));
     }
 
+    @Transactional(readOnly = true)
+    public List<PersistentContingencyList> getPersistentContingencyLists(List<UUID> ids) {
+        Objects.requireNonNull(ids);
+
+        List<PersistentContingencyList> result = new ArrayList<>();
+
+        // Get all id based contingency lists
+        List<PersistentContingencyList> idBasedLists = idBasedContingencyListRepository.findAllById(ids)
+                .stream()
+                .map(entity -> fromIdBasedContingencyListEntity(entity, null))
+                .collect(Collectors.toList());
+        result.addAll(idBasedLists);
+
+        // Get all filter based contingency lists
+        List<PersistentContingencyList> filterBasedLists = filterBasedContingencyListRepository.findAllById(ids)
+                .stream()
+                .map(ContingencyListService::fromFilterBasedContingencyListEntity)
+                .collect(Collectors.toList());
+        result.addAll(filterBasedLists);
+
+        return result;
+    }
 }
