@@ -18,6 +18,7 @@ import org.gridsuite.actions.dto.contingency.PersistentContingencyList;
 import org.gridsuite.actions.dto.evaluation.ContingencyIdsByGroup;
 import org.gridsuite.actions.dto.evaluation.ContingencyInfos;
 import org.gridsuite.actions.dto.evaluation.ContingencyListExportResult;
+import org.gridsuite.actions.server.dto.ContingencyCount;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.MediaType;
@@ -64,9 +65,9 @@ public class ContingencyListController {
     @GetMapping(value = "/contingency-lists/count", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Evaluate all contingency lists passed and return the global count")
     @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "The total contingency count")})
-    public ResponseEntity<Integer> getContingencyCount(@Parameter(description = "Contingency list ids") @RequestParam(name = "ids") List<UUID> ids,
-                                                       @RequestParam(value = "networkUuid", required = false) UUID networkUuid,
-                                                       @RequestParam(value = "variantId", required = false) String variantId) {
+    public ResponseEntity<ContingencyCount> getContingencyCount(@Parameter(description = "Contingency list ids") @RequestParam(name = "ids") List<UUID> ids,
+                                                                @RequestParam(value = "networkUuid", required = false) UUID networkUuid,
+                                                                @RequestParam(value = "variantId", required = false) String variantId) {
         return ResponseEntity.ok().body(service.getContingencyCount(ids, networkUuid, variantId));
     }
 
