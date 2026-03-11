@@ -12,6 +12,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.gridsuite.actions.dto.*;
+import org.gridsuite.actions.dto.contingency.AbstractContingencyList;
 import org.gridsuite.actions.dto.contingency.FilterBasedContingencyList;
 import org.gridsuite.actions.dto.contingency.IdBasedContingencyList;
 import org.gridsuite.actions.dto.contingency.PersistentContingencyList;
@@ -209,7 +210,7 @@ public class ContingencyListController {
     @PostMapping(value = "/contingency-lists", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Get persistent contingency lists by UUIDs")
     @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "The list of persistent contingency lists")})
-    public ResponseEntity<List<PersistentContingencyList>> getPersistentContingencyLists(@RequestBody List<UUID> ids) {
+    public ResponseEntity<List<AbstractContingencyList>> getPersistentContingencyLists(@RequestBody List<UUID> ids) {
         return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(service.getPersistentContingencyLists(ids));
     }
 }
