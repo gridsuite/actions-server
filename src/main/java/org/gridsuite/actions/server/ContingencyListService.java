@@ -18,6 +18,7 @@ import com.powsybl.network.store.client.PreloadingStrategy;
 import com.powsybl.network.store.iidm.impl.NetworkFactoryImpl;
 import org.gridsuite.actions.ContingencyListEvaluator;
 import org.gridsuite.actions.dto.*;
+import org.gridsuite.actions.dto.contingency.AbstractContingencyList;
 import org.gridsuite.actions.dto.contingency.FilterBasedContingencyList;
 import org.gridsuite.actions.dto.contingency.IdBasedContingencyList;
 import org.gridsuite.actions.dto.contingency.PersistentContingencyList;
@@ -310,4 +311,26 @@ public class ContingencyListService {
         return new ResponseStatusException(HttpStatus.NOT_FOUND, String.format("%s %s not found", resourceType, resourceId));
     }
 
+    @Transactional(readOnly = true)
+    public List<AbstractContingencyList> getPersistentContingencyLists(List<UUID> ids) {
+        Objects.requireNonNull(ids);
+
+        List<AbstractContingencyList> result = new ArrayList<>();
+
+        // Get all id based contingency lists
+        List<AbstractContingencyList> idBasedLists = idBasedContingencyListRepository.findAllById(ids)
+                .stream()
+                .map(entity -> fromIdBasedContingencyListEntity(entity, null))
+                .collect(Collectors.toList());
+        result.addAll(idBasedLists);
+
+        // Get all filter based contingency lists
+        List<AbstractContingencyList> filterBasedLists = filterBasedContingencyListRepository.findAllById(ids)
+                .stream()
+                .map(ContingencyListService::fromFilterBasedContingencyListEntity)
+                .collect(Collectors.toList());
+        result.addAll(filterBasedLists);
+
+        return result;
+    }
 }
