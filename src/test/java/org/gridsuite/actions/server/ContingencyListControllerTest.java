@@ -188,7 +188,8 @@ class ContingencyListControllerTest {
             new EquipmentTypesByFilter(uuids.get(1), Set.of(IdentifiableType.GENERATOR))
         );
         return "{\"filters\":" + objectMapper.writeValueAsString(filtersAttributes) +
-            ", \"selectedEquipmentTypesByFilter\":" + objectMapper.writeValueAsString(equipmentTypesByFilter) + "}";
+            ", \"selectedEquipmentTypesByFilter\":" + objectMapper.writeValueAsString(equipmentTypesByFilter) +
+            ", \"type\": \"FILTERS\"" + "}";
     }
 
     private String genModifiedFilterBasedContingencyList(List<UUID> uuids) throws JsonProcessingException {
@@ -197,7 +198,8 @@ class ContingencyListControllerTest {
             new FilterAttributes(uuids.get(0), LINE, "Filter1"),
             new FilterAttributes(uuids.get(2), TWO_WINDINGS_TRANSFORMER, "Filter3")
         );
-        return "{\"filters\":" + objectMapper.writeValueAsString(filtersAttributes) + ", \"selectedEquipmentTypesByFilter\":[]}";
+        return "{\"filters\":" + objectMapper.writeValueAsString(filtersAttributes) + ", \"selectedEquipmentTypesByFilter\":[]" +
+               ", \"type\": \"FILTERS\"" + "}";
     }
 
     private FilterBasedContingencyList addNewFilterBasedContingencyList(String filters) throws Exception {
