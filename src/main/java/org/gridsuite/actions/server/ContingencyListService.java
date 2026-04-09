@@ -18,12 +18,14 @@ import com.powsybl.network.store.client.PreloadingStrategy;
 import com.powsybl.network.store.iidm.impl.NetworkFactoryImpl;
 import org.gridsuite.actions.ContingencyListEvaluator;
 import org.gridsuite.actions.dto.*;
+import org.gridsuite.actions.dto.contingency.AbstractContingencyList;
 import org.gridsuite.actions.dto.contingency.FilterBasedContingencyList;
 import org.gridsuite.actions.dto.contingency.IdBasedContingencyList;
 import org.gridsuite.actions.dto.contingency.PersistentContingencyList;
 import org.gridsuite.actions.dto.evaluation.ContingencyIdsByGroup;
 import org.gridsuite.actions.dto.evaluation.ContingencyInfos;
 import org.gridsuite.actions.dto.evaluation.ContingencyListExportResult;
+import org.gridsuite.actions.server.dto.CountWithMissingUuids;
 import org.gridsuite.actions.server.dto.ContingencyCount;
 import org.gridsuite.actions.server.entities.*;
 import org.gridsuite.actions.server.repositories.FilterBasedContingencyListRepository;
@@ -150,12 +152,27 @@ public class ContingencyListService {
     }
 
     @Transactional(readOnly = true)
-    public Map<String, Integer> getContingencyCountByGroup(ContingencyIdsByGroup contingencyIdsByGroup, UUID networkUuid, String variantId) {
+    public Map<String, CountWithMissingUuids> getContingencyCountByGroup(ContingencyIdsByGroup contingencyIdsByGroup, UUID networkUuid, String variantId) {
         Network network = getNetworkFromUuid(networkUuid, variantId);
         return contingencyIdsByGroup.getIds().entrySet().stream().collect(Collectors.toMap(
                 Map.Entry::getKey,
-                e -> getContingencyCount(network, e.getValue()).contingencies())
+                e -> getContingencyCountByGroup(network, e.getValue()))
         );
+    }
+
+    private CountWithMissingUuids getContingencyCountByGroup(Network network, List<UUID> ids) {
+        long nbContingencies = 0;
+        List<UUID> missingContingencyListIds = new ArrayList<>();
+
+        for (UUID uuid : ids) {
+            Optional<PersistentContingencyList> contingencyList = getAnyContingencyList(uuid, network);
+            if (contingencyList.isPresent()) {
+                nbContingencies += getContingencies(contingencyList.get(), network).size();
+            } else {
+                missingContingencyListIds.add(uuid);
+            }
+        }
+        return new CountWithMissingUuids(nbContingencies, missingContingencyListIds);
     }
 
     @Transactional(readOnly = true)
@@ -310,4 +327,26 @@ public class ContingencyListService {
         return new ResponseStatusException(HttpStatus.NOT_FOUND, String.format("%s %s not found", resourceType, resourceId));
     }
 
+    @Transactional(readOnly = true)
+    public List<AbstractContingencyList> getPersistentContingencyLists(List<UUID> ids) {
+        Objects.requireNonNull(ids);
+
+        List<AbstractContingencyList> result = new ArrayList<>();
+
+        // Get all id based contingency lists
+        List<AbstractContingencyList> idBasedLists = idBasedContingencyListRepository.findAllById(ids)
+                .stream()
+                .map(entity -> fromIdBasedContingencyListEntity(entity, null))
+                .collect(Collectors.toList());
+        result.addAll(idBasedLists);
+
+        // Get all filter based contingency lists
+        List<AbstractContingencyList> filterBasedLists = filterBasedContingencyListRepository.findAllById(ids)
+                .stream()
+                .map(ContingencyListService::fromFilterBasedContingencyListEntity)
+                .collect(Collectors.toList());
+        result.addAll(filterBasedLists);
+
+        return result;
+    }
 }

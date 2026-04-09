@@ -12,12 +12,14 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.gridsuite.actions.dto.*;
+import org.gridsuite.actions.dto.contingency.AbstractContingencyList;
 import org.gridsuite.actions.dto.contingency.FilterBasedContingencyList;
 import org.gridsuite.actions.dto.contingency.IdBasedContingencyList;
 import org.gridsuite.actions.dto.contingency.PersistentContingencyList;
 import org.gridsuite.actions.dto.evaluation.ContingencyIdsByGroup;
 import org.gridsuite.actions.dto.evaluation.ContingencyInfos;
 import org.gridsuite.actions.dto.evaluation.ContingencyListExportResult;
+import org.gridsuite.actions.server.dto.CountWithMissingUuids;
 import org.gridsuite.actions.server.dto.ContingencyCount;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.dao.EmptyResultDataAccessException;
@@ -54,11 +56,11 @@ public class ContingencyListController {
     }
 
     @PostMapping(value = "/contingency-lists/count-by-group", produces = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(summary = "Evaluate all contingency lists in each group and return the count by group")
-    @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "The total contingency count by group")})
-    public ResponseEntity<Map<String, Integer>> getContingencyCountByGroup(@RequestParam(value = "networkUuid", required = false) UUID networkUuid,
-                                                                           @RequestParam(value = "variantId", required = false) String variantId,
-                                                                           @RequestBody ContingencyIdsByGroup contingencyIdsByGroup) {
+    @Operation(summary = "Evaluate all contingency lists in each group and return the count by group with information about missing contingencies lists")
+    @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "The total contingency count by group and list of missing contingencies lists UUIDs")})
+    public ResponseEntity<Map<String, CountWithMissingUuids>> getContingencyCountByGroup(@RequestParam(value = "networkUuid", required = false) UUID networkUuid,
+                                                                                         @RequestParam(value = "variantId", required = false) String variantId,
+                                                                                         @RequestBody ContingencyIdsByGroup contingencyIdsByGroup) {
         return ResponseEntity.ok().body(service.getContingencyCountByGroup(contingencyIdsByGroup, networkUuid, variantId));
     }
 
@@ -204,5 +206,12 @@ public class ContingencyListController {
         @ApiResponse(responseCode = "404", description = "The contingency list does not exists")})
     public ResponseEntity<List<ContingencyListMetadata>> getContingencyListsMetadata(@RequestParam("ids") List<UUID> ids) {
         return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(service.getContingencyListsMetadata(ids));
+    }
+
+    @PostMapping(value = "/contingency-lists", produces = MediaType.APPLICATION_JSON_VALUE)
+    @Operation(summary = "Get persistent contingency lists by UUIDs")
+    @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "The list of persistent contingency lists")})
+    public ResponseEntity<List<AbstractContingencyList>> getPersistentContingencyLists(@RequestBody List<UUID> ids) {
+        return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(service.getPersistentContingencyLists(ids));
     }
 }
