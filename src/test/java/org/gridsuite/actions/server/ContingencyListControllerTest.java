@@ -40,6 +40,7 @@ import org.gridsuite.actions.dto.evaluation.ContingencyIdsByGroup;
 import org.gridsuite.actions.dto.evaluation.ContingencyInfos;
 import org.gridsuite.actions.server.dto.CountWithMissingUuids;
 import org.gridsuite.actions.server.dto.ContingencyCount;
+import org.gridsuite.actions.server.repositories.FilterBasedContingencyListRepository;
 import org.gridsuite.actions.server.repositories.IdBasedContingencyListRepository;
 import org.gridsuite.actions.server.service.FilterService;
 import org.gridsuite.actions.server.utils.MatcherJson;
@@ -103,6 +104,9 @@ class ContingencyListControllerTest {
     private IdBasedContingencyListRepository idBasedContingencyListRepository;
 
     @Autowired
+    private FilterBasedContingencyListRepository filterBasedContingencyListRepository;
+
+    @Autowired
     private MockMvc mvc;
 
     @MockitoBean
@@ -120,9 +124,13 @@ class ContingencyListControllerTest {
     @MockitoSpyBean
     private ContingencyListEvaluator contingencyListEvaluator;
 
+    @Autowired
+    private ContingencyListService contingencyListService;
+
     @AfterEach
     void tearDown() {
         idBasedContingencyListRepository.deleteAll();
+        filterBasedContingencyListRepository.deleteAll();
 
         List<String> destinations = List.of(elementUpdateDestination);
         assertQueuesEmptyThenClear(destinations, output);
@@ -400,16 +408,8 @@ class ContingencyListControllerTest {
             .andExpect(status().isOk());
     }
 
-    private int getContingencyListsCount() throws Exception {
-        String res = mvc.perform(get("/" + VERSION + "/supervision/contingency-lists")
-                        .contentType(APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-                .andReturn().getResponse().getContentAsString();
-
-        List<IdBasedContingencyList> contingencyListAttributes = objectMapper.readValue(res, new TypeReference<>() {
-        });
-        return contingencyListAttributes.size();
+    private int getContingencyListsCount() {
+        return contingencyListService.getContingencyListsMetadata().size();
     }
 
     private static void matchContingencyListMetadata(ContingencyListMetadata metadata1, ContingencyListMetadata metadata2) {
