@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2020, RTE (http://www.rte-france.com)
+ * Copyright (c) 2026, RTE (http://www.rte-france.com)
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -46,13 +46,6 @@ public class ContingencyListController {
 
     public ContingencyListController(ContingencyListService service) {
         this.service = service;
-    }
-
-    @GetMapping(value = "/contingency-lists", produces = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(summary = "Get all contingency lists metadata")
-    @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "All contingency lists metadata")})
-    public ResponseEntity<List<ContingencyListMetadata>> getContingencyListsMetadata() {
-        return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(service.getContingencyListsMetadata());
     }
 
     @PostMapping(value = "/contingency-lists/count-by-group", produces = MediaType.APPLICATION_JSON_VALUE)
