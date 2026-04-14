@@ -333,8 +333,7 @@ class ContingencyListControllerTest {
         FilterBasedContingencyList filterBasedContingencyList = addNewFilterBasedContingencyList(list);
 
         // test get
-        MappingBuilder requestPatternBuilder = WireMock.get(WireMock.urlPathEqualTo("/v1/filters/infos"))
-            .withHeader(USER_ID_HEADER, WireMock.equalTo(USER_ID_HEADER));
+        MappingBuilder requestPatternBuilder = WireMock.get(WireMock.urlPathEqualTo("/v1/filters/infos"));
 
         for (UUID filter : filters) {
             requestPatternBuilder.withQueryParam("filterUuids", WireMock.equalTo(filter.toString()));
@@ -343,7 +342,6 @@ class ContingencyListControllerTest {
         wireMockServer.stubFor(requestPatternBuilder.willReturn(WireMock.ok()));
 
         mvc.perform(get("/" + VERSION + "/filters-contingency-lists/" + filterBasedContingencyList.getId())
-                .header(USER_ID_HEADER, USER_ID_HEADER)
                 .contentType(APPLICATION_JSON))
             .andExpect(status().isOk())
             .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON));

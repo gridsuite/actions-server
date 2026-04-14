@@ -111,7 +111,7 @@ public class ContingencyListService {
     }
 
     @Transactional
-    public Optional<FilterBasedContingencyList> getFilterBasedContingencyList(UUID id, String userId) {
+    public Optional<FilterBasedContingencyList> getFilterBasedContingencyList(UUID id) {
         Optional<FilterBasedContingencyListEntity> entity = doGetFilterBasedContingencyListEntity(id);
         if (entity.isEmpty()) {
             return Optional.empty();
@@ -122,7 +122,7 @@ public class ContingencyListService {
                 .map(EquipmentTypesByFilterEntity::toDto)
                 .toList();
             //get information from filterServer
-            List<FilterAttributes> attributes = filterService.getFiltersAttributes(filterIds, userId);
+            List<FilterAttributes> attributes = filterService.getFiltersAttributes(filterIds);
             return Optional.of(new FilterBasedContingencyList(entity.get().getId(), entity.get().getModificationDate(), attributes, selectedEquipmentTypesByFilter));
         }
     }

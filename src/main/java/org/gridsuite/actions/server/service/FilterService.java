@@ -42,7 +42,7 @@ public class FilterService {
         this.restTemplate = restTemplateBuilder.build();
     }
 
-    public List<FilterAttributes> getFiltersAttributes(List<UUID> filtersUuid, String userId) {
+    public List<FilterAttributes> getFiltersAttributes(List<UUID> filtersUuid) {
         if (filtersUuid.isEmpty()) {
             return new ArrayList<>();
         }
@@ -52,7 +52,6 @@ public class FilterService {
         var uriComponent = uriComponentsBuilder.buildAndExpand();
 
         HttpHeaders headers = new HttpHeaders();
-        headers.set("userId", userId);
 
         HttpEntity<String> entity = new HttpEntity<>(headers);
         ResponseEntity<List<FilterAttributes>> response = restTemplate.exchange(uriComponent.toUriString(),
