@@ -307,7 +307,7 @@ public class ContingencyListService {
 
     private static FilterBasedContingencyList fromFilterBasedContingencyListEntity(FilterBasedContingencyListEntity entity) {
         return new FilterBasedContingencyList(entity.getId(), entity.getModificationDate(),
-            entity.getFiltersIds().stream().map(uuid -> new FilterAttributes(uuid, null, null)).toList(),
+            entity.getFiltersIds().stream().map(uuid -> new FilterAttributes(uuid, null)).toList(),
             entity.getSelectedEquipmentTypesByFilter().stream().map(EquipmentTypesByFilterEntity::toDto).toList());
     }
 

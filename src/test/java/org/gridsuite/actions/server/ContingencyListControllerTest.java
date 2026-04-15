@@ -189,9 +189,9 @@ class ContingencyListControllerTest {
     private String genFilterBasedContingencyList(List<UUID> uuids) throws JsonProcessingException {
 
         List<FilterAttributes> filtersAttributes = List.of(
-            new FilterAttributes(uuids.get(0), LINE, "Filter1"),
-            new FilterAttributes(uuids.get(1), SUBSTATION, "Filter2"),
-            new FilterAttributes(uuids.get(2), TWO_WINDINGS_TRANSFORMER, "Filter3")
+            new FilterAttributes(uuids.get(0), LINE),
+            new FilterAttributes(uuids.get(1), SUBSTATION),
+            new FilterAttributes(uuids.get(2), TWO_WINDINGS_TRANSFORMER)
         );
         List<EquipmentTypesByFilter> equipmentTypesByFilter = List.of(
             new EquipmentTypesByFilter(uuids.get(1), Set.of(IdentifiableType.GENERATOR))
@@ -203,8 +203,8 @@ class ContingencyListControllerTest {
     private String genModifiedFilterBasedContingencyList(List<UUID> uuids) throws JsonProcessingException {
 
         List<FilterAttributes> filtersAttributes = List.of(
-            new FilterAttributes(uuids.get(0), LINE, "Filter1"),
-            new FilterAttributes(uuids.get(2), TWO_WINDINGS_TRANSFORMER, "Filter3")
+            new FilterAttributes(uuids.get(0), LINE),
+            new FilterAttributes(uuids.get(2), TWO_WINDINGS_TRANSFORMER)
         );
         return "{\"type\":" + "\"FILTERS\"" + ", \"filters\":" + objectMapper.writeValueAsString(filtersAttributes) + ", \"selectedEquipmentTypesByFilter\":[]}";
     }
