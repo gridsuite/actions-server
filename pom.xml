@@ -110,7 +110,6 @@
         <dependency>
             <groupId>org.gridsuite</groupId>
             <artifactId>gridsuite-actions</artifactId>
-            <version>${gridsuite-actions.version}</version>
         </dependency>
         <dependency>
             <groupId>org.gridsuite</groupId>
