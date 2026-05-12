@@ -46,6 +46,8 @@
         <liquibase-hibernate-package>org.gridsuite.actions.server</liquibase-hibernate-package>
         <sonar.organization>gridsuite</sonar.organization>
         <sonar.projectKey>org.gridsuite:actions-server</sonar.projectKey>
+        <!-- FIXME to remove at next upgrade of gridsuite-dependencies -->
+        <gridsuite-actions.version>0.7.0</gridsuite-actions.version>
     </properties>
 
     <build>
@@ -84,7 +86,13 @@
 
     <dependencyManagement>
         <dependencies>
-
+            <!-- overrides of imports -->
+            <!-- FIXME to remove at next upgrade of gridsuite-dependencies -->
+            <dependency>
+                <groupId>org.gridsuite</groupId>
+                <artifactId>gridsuite-actions</artifactId>
+                <version>${gridsuite-actions.version}</version>
+            </dependency>
             <!-- imports -->
             <dependency>
                 <groupId>org.gridsuite</groupId>
