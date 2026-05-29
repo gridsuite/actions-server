@@ -16,8 +16,8 @@ import com.github.tomakehurst.wiremock.WireMockServer;
 import com.github.tomakehurst.wiremock.client.MappingBuilder;
 import com.github.tomakehurst.wiremock.client.WireMock;
 import com.powsybl.contingency.*;
-import com.powsybl.contingency.list.IdentifierContingencyList;
 import com.powsybl.contingency.json.ContingencyJsonModule;
+import com.powsybl.contingency.list.IdentifierContingencyList;
 import com.powsybl.iidm.network.IdentifiableType;
 import com.powsybl.iidm.network.Network;
 import com.powsybl.iidm.network.Terminal;
@@ -38,8 +38,8 @@ import org.gridsuite.actions.dto.contingency.FilterBasedContingencyList;
 import org.gridsuite.actions.dto.contingency.IdBasedContingencyList;
 import org.gridsuite.actions.dto.evaluation.ContingencyIdsByGroup;
 import org.gridsuite.actions.dto.evaluation.ContingencyInfos;
-import org.gridsuite.actions.server.dto.CountWithMissingUuids;
 import org.gridsuite.actions.server.dto.ContingencyCount;
+import org.gridsuite.actions.server.dto.CountWithMissingUuids;
 import org.gridsuite.actions.server.repositories.FilterBasedContingencyListRepository;
 import org.gridsuite.actions.server.repositories.IdBasedContingencyListRepository;
 import org.gridsuite.actions.server.service.FilterService;
@@ -58,11 +58,9 @@ import org.springframework.messaging.Message;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import org.springframework.test.web.servlet.MockMvc;
-
 import java.time.Instant;
 import java.util.*;
 import java.util.stream.Collectors;
-
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
 import static com.powsybl.network.store.model.NetworkStoreApi.VERSION;
 import static org.gridsuite.filter.utils.EquipmentType.*;
@@ -137,6 +135,7 @@ class ContingencyListControllerTest {
         wireMockServer.stop();
     }
 
+    @SuppressWarnings("checkstyle:IllegalCatch")
     private static void assertQueuesEmptyThenClear(List<String> destinations, OutputDestination output) {
         try {
             destinations.forEach(destination -> assertNull(output.receive(TIMEOUT, destination), "Should not be any messages in queue " + destination + " : "));
@@ -258,7 +257,9 @@ class ContingencyListControllerTest {
                         .contentType(APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-                .andExpect(content().json("[{\"id\":\"NHV1_NHV2_1\",\"contingency\":{\"id\":\"NHV1_NHV2_1\",\"elements\":[{\"id\":\"NHV1_NHV2_1\",\"type\":\"LINE\"}]},\"notFoundElements\":null},{\"id\":\"Test\",\"contingency\":null,\"notFoundElements\":[\"Test\"]}]"));
+                .andExpect(content().json(
+                        "[{\"id\":\"NHV1_NHV2_1\",\"contingency\":{\"id\":\"NHV1_NHV2_1\",\"elements\":[{\"id\":\"NHV1_NHV2_1\",\"type\":\"LINE\"}]},\"notFoundElements\":null},{\"id\":\"Test\","
+                                + "\"contingency\":null,\"notFoundElements\":[\"Test\"]}]"));
         // delete data
         mvc.perform(delete("/" + VERSION + "/contingency-lists/" + contingencyListId))
                 .andExpect(status().isOk());
@@ -266,7 +267,8 @@ class ContingencyListControllerTest {
 
     @Test
     void testExportContingenciesNotConnectedAndNotFoundElements() throws Exception {
-        NetworkElementIdentifierContingencyList networkElementIdentifierContingencyList = new NetworkElementIdentifierContingencyList(List.of(new IdBasedNetworkElementIdentifier("NHV1_NHV2_1"), new IdBasedNetworkElementIdentifier("NHV1_NHV2_2"), new IdBasedNetworkElementIdentifier("TEST1")), "default");
+        NetworkElementIdentifierContingencyList networkElementIdentifierContingencyList = new NetworkElementIdentifierContingencyList(List.of(new IdBasedNetworkElementIdentifier("NHV1_NHV2_1"), new
+                IdBasedNetworkElementIdentifier("NHV1_NHV2_2"), new IdBasedNetworkElementIdentifier("TEST1")), "default");
         IdBasedContingencyList idBasedContingencyList = new IdBasedContingencyList(null, Instant.now(), new IdentifierContingencyList("defaultName", List.of(networkElementIdentifierContingencyList)));
 
         String res = mvc.perform(post("/" + VERSION + "/identifier-contingency-lists")
@@ -319,7 +321,8 @@ class ContingencyListControllerTest {
     }
 
     private static IdBasedContingencyList createIdBasedContingencyList(UUID listId, Instant modificationDate, String... identifiers) {
-        List<NetworkElementIdentifier> networkElementIdentifiers = Arrays.stream(identifiers).map(id -> new NetworkElementIdentifierContingencyList(List.of(new IdBasedNetworkElementIdentifier(id)), id)).collect(Collectors.toList());
+        List<NetworkElementIdentifier> networkElementIdentifiers = Arrays.stream(identifiers).map(id -> new NetworkElementIdentifierContingencyList(List.of(new IdBasedNetworkElementIdentifier(id)),
+                id)).collect(Collectors.toList());
         return new IdBasedContingencyList(listId, modificationDate, new IdentifierContingencyList(listId != null ? listId.toString() : "defaultName", networkElementIdentifiers));
     }
 
@@ -585,7 +588,8 @@ class ContingencyListControllerTest {
         UUID filterBasedContingencyListId = setupCountContingencyTest();
 
         // count them (incl a wrong uuid)
-        String res = mvc.perform(get("/" + VERSION + "/contingency-lists/count?ids=" + filterBasedContingencyListId + "&ids=" + UUID.randomUUID() + "&networkUuid=" + NETWORK_UUID + "&variantId=" + VariantManagerConstants.INITIAL_VARIANT_ID)
+        String res = mvc.perform(get("/" + VERSION + "/contingency-lists/count?ids=" + filterBasedContingencyListId + "&ids=" + UUID.randomUUID() + "&networkUuid=" + NETWORK_UUID + "&variantId=" +
+                VariantManagerConstants.INITIAL_VARIANT_ID)
                 .contentType(APPLICATION_JSON))
             .andExpect(status().isOk())
             .andReturn().getResponse().getContentAsString();

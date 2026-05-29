@@ -11,6 +11,7 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.persistence.EntityNotFoundException;
 import org.gridsuite.actions.dto.*;
 import org.gridsuite.actions.dto.contingency.AbstractContingencyList;
 import org.gridsuite.actions.dto.contingency.FilterBasedContingencyList;
@@ -19,15 +20,13 @@ import org.gridsuite.actions.dto.contingency.PersistentContingencyList;
 import org.gridsuite.actions.dto.evaluation.ContingencyIdsByGroup;
 import org.gridsuite.actions.dto.evaluation.ContingencyInfos;
 import org.gridsuite.actions.dto.evaluation.ContingencyListExportResult;
-import org.gridsuite.actions.server.dto.CountWithMissingUuids;
 import org.gridsuite.actions.server.dto.ContingencyCount;
+import org.gridsuite.actions.server.dto.CountWithMissingUuids;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import jakarta.persistence.EntityNotFoundException;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -109,8 +108,8 @@ public class ContingencyListController {
 
     @PostMapping(value = "/identifier-contingency-lists")
     @Operation(summary = "Create a identifier contingency list from another existing one")
-        @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "The identifier contingency list have been duplicated successfully"),
-                               @ApiResponse(responseCode = "404", description = "Source script contingency list not found")})
+    @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "The identifier contingency list have been duplicated successfully"),
+        @ApiResponse(responseCode = "404", description = "Source script contingency list not found")})
     public ResponseEntity<UUID> duplicateIdentifierContingencyList(@RequestParam("duplicateFrom") UUID identifierContingencyListsId) {
         return service.duplicateIdentifierContingencyList(identifierContingencyListsId).map(contingencyList -> ResponseEntity.ok()
                         .contentType(MediaType.APPLICATION_JSON)
