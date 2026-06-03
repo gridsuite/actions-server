@@ -95,8 +95,10 @@ class SupervisionControllerTest {
     }
 
     private void createIdBasedContingencyList(UUID listId, Instant modificationDate, String... identifiers) {
-        List<NetworkElementIdentifier> networkElementIdentifiers = Arrays.stream(identifiers).map(id -> new NetworkElementIdentifierContingencyList(List.of(new IdBasedNetworkElementIdentifier(id)), id)).collect(Collectors.toList());
-        IdBasedContingencyList idBasedContingencyList = new IdBasedContingencyList(listId, modificationDate, new IdentifierContingencyList(listId != null ? listId.toString() : "defaultName", networkElementIdentifiers));
+        List<NetworkElementIdentifier> networkElementIdentifiers = Arrays.stream(identifiers).map(id -> new NetworkElementIdentifierContingencyList(List.of(new IdBasedNetworkElementIdentifier(id)),
+                id)).collect(Collectors.toList());
+        IdBasedContingencyList idBasedContingencyList = new IdBasedContingencyList(listId, modificationDate, new IdentifierContingencyList(listId != null ? listId.toString() : "defaultName",
+                networkElementIdentifiers));
 
         contingencyListService.createIdBasedContingencyList(null, idBasedContingencyList);
     }
