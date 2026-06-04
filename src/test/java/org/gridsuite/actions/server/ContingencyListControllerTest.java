@@ -136,8 +136,11 @@ class ContingencyListControllerTest {
     }
 
     private static void assertQueuesEmptyThenClear(List<String> destinations, OutputDestination output) {
-        destinations.forEach(destination -> assertNull(output.receive(TIMEOUT, destination), "Should not be any messages in queue " + destination + " : "));
-        output.clear(); // purge in order to not fail the other tests
+        try {
+            destinations.forEach(destination -> assertNull(output.receive(TIMEOUT, destination), "Should not be any messages in queue " + destination + " : "));
+        } finally {
+            output.clear(); // purge in order to not fail the other tests
+        }
     }
 
     @BeforeEach
