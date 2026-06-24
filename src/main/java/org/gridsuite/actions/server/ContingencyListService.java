@@ -26,6 +26,7 @@ import org.gridsuite.actions.dto.evaluation.ContingencyIdsByGroup;
 import org.gridsuite.actions.dto.evaluation.ContingencyInfos;
 import org.gridsuite.actions.dto.evaluation.ContingencyListExportResult;
 import org.gridsuite.actions.server.dto.ContingencyCount;
+import org.gridsuite.actions.server.dto.ContingencyCountByContingencyList;
 import org.gridsuite.actions.server.dto.CountWithMissingUuids;
 import org.gridsuite.actions.server.entities.*;
 import org.gridsuite.actions.server.repositories.FilterBasedContingencyListRepository;
@@ -137,17 +138,13 @@ public class ContingencyListService {
     }
 
     private ContingencyCount getContingencyCount(Network network, List<UUID> ids) {
-        int nbContingencies = 0;
-        int nbNotFoundElements = 0;
+        Map<UUID, ContingencyCountByContingencyList> contingenciesCountByContingencyList = new HashMap<>();
         for (UUID uuid : ids) {
             Optional<PersistentContingencyList> contingencyList = getAnyContingencyList(uuid, network);
-            if (contingencyList.isPresent()) {
-                PersistentContingencyList l = contingencyList.get();
-                nbContingencies += getContingencies(l, network).size();
-                nbNotFoundElements += l.getNotFoundElements(network).size();
-            }
+            contingencyList.ifPresent(l -> contingenciesCountByContingencyList.put(uuid,
+                    new ContingencyCountByContingencyList(getContingencies(l, network).size(), l.getNotFoundElements(network))));
         }
-        return new ContingencyCount(nbContingencies, nbNotFoundElements);
+        return new ContingencyCount(contingenciesCountByContingencyList);
     }
 
     @Transactional(readOnly = true)
