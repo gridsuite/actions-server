@@ -140,9 +140,13 @@ public class ContingencyListService {
     private ContingencyCount getContingencyCount(Network network, List<UUID> ids) {
         Map<UUID, ContingencyCountByContingencyList> contingenciesCountByContingencyList = new HashMap<>();
         for (UUID uuid : ids) {
-            Optional<PersistentContingencyList> contingencyList = getAnyContingencyList(uuid, network);
-            contingencyList.ifPresent(l -> contingenciesCountByContingencyList.put(uuid,
-                    new ContingencyCountByContingencyList(getContingencies(l, network).size(), l.getNotFoundElements(network))));
+            try {
+                Optional<PersistentContingencyList> contingencyList = getAnyContingencyList(uuid, network);
+                contingencyList.ifPresent(l -> contingenciesCountByContingencyList.put(uuid,
+                        new ContingencyCountByContingencyList(getContingencies(l, network).size(), l.getNotFoundElements(network), null)));
+            } catch (PowsyblException e) {
+                contingenciesCountByContingencyList.put(uuid, new ContingencyCountByContingencyList(0, null, e.getMessage()));
+            }
         }
         return new ContingencyCount(contingenciesCountByContingencyList);
     }
