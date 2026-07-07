@@ -640,6 +640,30 @@ class ContingencyListControllerTest {
     }
 
     @Test
+    void testCountContingencyListWithError() throws Exception {
+        // Add id based contingency list with a voltage level id : invalid contingency
+        IdBasedContingencyList idBasedContingencyList = createIdBasedContingencyList(null, Instant.now(), "VLGEN", "Test");
+        String res = mvc.perform(post("/" + VERSION + "/identifier-contingency-lists")
+                        .content(objectMapper.writeValueAsString(idBasedContingencyList))
+                        .contentType(APPLICATION_JSON))
+                .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
+        UUID idBasedContingencyListId = objectMapper.readValue(res, IdBasedContingencyList.class).getId();
+
+        // count the contingencies
+        res = mvc.perform(get("/" + VERSION + "/contingency-lists/count?ids=" + idBasedContingencyListId + "&networkUuid=" + NETWORK_UUID + "&variantId=" +
+                        VariantManagerConstants.INITIAL_VARIANT_ID)
+                        .contentType(APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString();
+
+        ContingencyCount count = objectMapper.readValue(res, ContingencyCount.class);
+        assertEquals(1, count.countByContingencyList().size());
+
+        assertEquals(0, count.countByContingencyList().get(idBasedContingencyListId).nbContingencies());
+        assertEquals("VLGEN cannot be a ContingencyElement", count.countByContingencyList().get(idBasedContingencyListId).invalidContingencyErrorMessage());
+    }
+
+    @Test
     void testCountContingencyListByGroup() throws Exception {
         // insert 1 contingency list with 3 filters
         UUID filterBasedContingencyListId = setupCountContingencyTest();
