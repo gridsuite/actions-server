@@ -360,11 +360,11 @@ class ContingencyListControllerTest {
         assertEquals(0, count.notFoundElements());
 
         // duplicate test
-        String newUuid = mvc.perform(post("/" + VERSION + "/filters-contingency-lists?duplicateFrom=" + filterBasedContingencyList.getId()))
+        String newUuid = mvc.perform(post("/" + VERSION + "/filters-contingency-lists/" + filterBasedContingencyList.getId() + "/duplicate"))
             .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
         assertNotNull(newUuid);
 
-        mvc.perform(post("/" + VERSION + "/filters-contingency-lists?duplicateFrom=" + UUID.randomUUID()))
+        mvc.perform(post("/" + VERSION + "/filters-contingency-lists/" + UUID.randomUUID() + "/duplicate"))
             .andExpect(status().isNotFound());
 
         // delete lists
@@ -489,12 +489,12 @@ class ContingencyListControllerTest {
 
         UUID id = objectMapper.readValue(res, IdBasedContingencyList.class).getId();
 
-        String newUuid = mvc.perform(post("/" + VERSION + "/identifier-contingency-lists?duplicateFrom=" + id))
+        String newUuid = mvc.perform(post("/" + VERSION + "/identifier-contingency-lists/" + id + "/duplicate"))
                 .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
 
         assertNotNull(newUuid);
 
-        mvc.perform(post("/" + VERSION + "/identifier-contingency-lists?duplicateFrom=" + UUID.randomUUID()))
+        mvc.perform(post("/" + VERSION + "/identifier-contingency-lists/" + UUID.randomUUID() + "/duplicate"))
                 .andExpect(status().isNotFound());
     }
 
