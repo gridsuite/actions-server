@@ -356,8 +356,9 @@ class ContingencyListControllerTest {
             .andReturn().getResponse().getContentAsString();
 
         ContingencyCount count = objectMapper.readValue(res, ContingencyCount.class);
-        assertEquals(0, count.contingencies());
-        assertEquals(0, count.notFoundElements());
+        assertEquals(1, count.countByContingencyList().size());
+        assertEquals(0, count.countByContingencyList().get(filterBasedContingencyList.getId()).nbContingencies());
+        assertEquals(0, count.countByContingencyList().get(filterBasedContingencyList.getId()).notFoundElements().size());
 
         // duplicate test
         String newUuid = mvc.perform(post("/" + VERSION + "/filters-contingency-lists?duplicateFrom=" + filterBasedContingencyList.getId()))
@@ -537,8 +538,7 @@ class ContingencyListControllerTest {
                 .andReturn().getResponse().getContentAsString();
 
         ContingencyCount count = objectMapper.readValue(res, ContingencyCount.class);
-        assertEquals(0, count.contingencies());
-        assertEquals(0, count.notFoundElements());
+        assertEquals(0, count.countByContingencyList().size());
     }
 
     @Test
@@ -582,18 +582,39 @@ class ContingencyListControllerTest {
 
     @Test
     void testCountContingencyList() throws Exception {
+        // Add filter based contingency list
         UUID filterBasedContingencyListId = setupCountContingencyTest();
 
+        // Add id based contingency list
+        IdBasedContingencyList idBasedContingencyList = createIdBasedContingencyList(null, Instant.now(), "NHV1_NHV2_1", "Test");
+        String res = mvc.perform(post("/" + VERSION + "/identifier-contingency-lists")
+                        .content(objectMapper.writeValueAsString(idBasedContingencyList))
+                        .contentType(APPLICATION_JSON))
+                .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
+        UUID idBasedContingencyListId = objectMapper.readValue(res, IdBasedContingencyList.class).getId();
+
         // count them (incl a wrong uuid)
-        String res = mvc.perform(get("/" + VERSION + "/contingency-lists/count?ids=" + filterBasedContingencyListId + "&ids=" + UUID.randomUUID() + "&networkUuid=" + NETWORK_UUID + "&variantId=" +
+        res = mvc.perform(get("/" + VERSION + "/contingency-lists/count?ids=" + filterBasedContingencyListId +
+                        "&ids=" + idBasedContingencyListId + "&ids=" + UUID.randomUUID() + "&networkUuid=" + NETWORK_UUID + "&variantId=" +
                 VariantManagerConstants.INITIAL_VARIANT_ID)
                 .contentType(APPLICATION_JSON))
             .andExpect(status().isOk())
             .andReturn().getResponse().getContentAsString();
 
         ContingencyCount count = objectMapper.readValue(res, ContingencyCount.class);
-        assertEquals(2, count.contingencies());
-        assertEquals(0, count.notFoundElements());
+        assertEquals(2, count.countByContingencyList().size());
+
+        assertEquals(2, count.countByContingencyList().get(filterBasedContingencyListId).nbContingencies());
+        assertEquals(0, count.countByContingencyList().get(filterBasedContingencyListId).notFoundElements().size());
+
+        assertEquals(2, count.countByContingencyList().get(idBasedContingencyListId).nbContingencies());
+        assertEquals(1, count.countByContingencyList().get(idBasedContingencyListId).notFoundElements().size());
+        // "Test" contingency name found in not found elements
+        assertNotNull(count.countByContingencyList().get(idBasedContingencyListId).notFoundElements().get("Test"));
+        assertEquals(1, count.countByContingencyList().get(idBasedContingencyListId).notFoundElements().get("Test").size());
+        // "Test" equipement name not found in network
+        assertTrue(count.countByContingencyList().get(idBasedContingencyListId).notFoundElements().get("Test").stream().findFirst().isPresent());
+        assertEquals("Test", count.countByContingencyList().get(idBasedContingencyListId).notFoundElements().get("Test").stream().findFirst().get());
     }
 
     private UUID setupCountContingencyTest() throws Exception {
@@ -616,6 +637,30 @@ class ContingencyListControllerTest {
         doReturn(List.of(contingencyInfosMock, contingencyInfosMock2)).when(contingencyListEvaluator).evaluateContingencyList(any(), any());
 
         return filterBasedContingencyList.getId();
+    }
+
+    @Test
+    void testCountContingencyListWithError() throws Exception {
+        // Add id based contingency list with a voltage level id : invalid contingency
+        IdBasedContingencyList idBasedContingencyList = createIdBasedContingencyList(null, Instant.now(), "VLGEN", "Test");
+        String res = mvc.perform(post("/" + VERSION + "/identifier-contingency-lists")
+                        .content(objectMapper.writeValueAsString(idBasedContingencyList))
+                        .contentType(APPLICATION_JSON))
+                .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
+        UUID idBasedContingencyListId = objectMapper.readValue(res, IdBasedContingencyList.class).getId();
+
+        // count the contingencies
+        res = mvc.perform(get("/" + VERSION + "/contingency-lists/count?ids=" + idBasedContingencyListId + "&networkUuid=" + NETWORK_UUID + "&variantId=" +
+                        VariantManagerConstants.INITIAL_VARIANT_ID)
+                        .contentType(APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString();
+
+        ContingencyCount count = objectMapper.readValue(res, ContingencyCount.class);
+        assertEquals(1, count.countByContingencyList().size());
+
+        assertEquals(0, count.countByContingencyList().get(idBasedContingencyListId).nbContingencies());
+        assertEquals("VLGEN cannot be a ContingencyElement", count.countByContingencyList().get(idBasedContingencyListId).invalidContingencyErrorMessage());
     }
 
     @Test
