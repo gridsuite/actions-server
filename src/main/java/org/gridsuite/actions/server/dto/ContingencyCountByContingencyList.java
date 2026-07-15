@@ -7,11 +7,13 @@
 package org.gridsuite.actions.server.dto;
 
 import java.util.Map;
-import java.util.UUID;
+import java.util.Set;
 
 /**
- * @author Caroline Jeandat {@literal <caroline.jeandat at rte-france.com>}
+ * @author Franck Lecuyer {@literal <franck.lecuyer at rte-france.com>}
  */
-public record ContingencyCount(
-        Map<UUID, ContingencyCountByContingencyList> countByContingencyList
+public record ContingencyCountByContingencyList(
+        int nbContingencies,
+        Map<String, Set<String>> notFoundElements,
+        String invalidContingencyErrorMessage
 ) { }
