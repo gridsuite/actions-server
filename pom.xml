@@ -48,6 +48,7 @@
         <sonar.projectKey>org.gridsuite:actions-server</sonar.projectKey>
         <!-- FIXME to remove at next upgrade of gridsuite-dependencies -->
         <gridsuite-actions.version>0.7.0</gridsuite-actions.version>
+        <gridsuite-filter.version>1.27.0</gridsuite-filter.version>
     </properties>
 
     <build>
@@ -122,6 +123,7 @@
         <dependency>
             <groupId>org.gridsuite</groupId>
             <artifactId>gridsuite-filter</artifactId>
+            <version>${gridsuite-filter.version}</version>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
