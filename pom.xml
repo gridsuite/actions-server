@@ -94,6 +94,11 @@
                 <artifactId>gridsuite-actions</artifactId>
                 <version>${gridsuite-actions.version}</version>
             </dependency>
+            <dependency>
+                <groupId>org.gridsuite</groupId>
+                <artifactId>gridsuite-filter</artifactId>
+                <version>${gridsuite-filter.version}</version>
+            </dependency>
             <!-- imports -->
             <dependency>
                 <groupId>org.gridsuite</groupId>
@@ -123,7 +128,6 @@
         <dependency>
             <groupId>org.gridsuite</groupId>
             <artifactId>gridsuite-filter</artifactId>
-            <version>${gridsuite-filter.version}</version>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
