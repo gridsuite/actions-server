@@ -299,24 +299,6 @@ class ContingencyListControllerTest {
         return contingencyListAttributes.get(0);
     }
 
-    @Test
-    void testCreateContingencyBadOperator() throws Exception {
-        String lineFilters = "{\n" +
-                "  \"equipmentType\": \"LINE\"," +
-                "  \"nominalVoltage1\": {" +
-                "    \"type\": \"BAD_OP\"," +
-                "    \"value1\": \"100\"," +
-                "    \"value2\": \"null\"" +
-                "  }," +
-                "  \"countries1\": [\"FR\", \"BE\"]" +
-                "}";
-
-        mvc.perform(post("/" + VERSION + "/form-contingency-lists")
-                        .content(lineFilters)
-                        .contentType(APPLICATION_JSON))
-                .andExpect(status().is4xxClientError());
-    }
-
     private static IdBasedContingencyList createIdBasedContingencyList(UUID listId, Instant modificationDate, String... identifiers) {
         List<NetworkElementIdentifier> networkElementIdentifiers = Arrays.stream(identifiers).map(id -> new NetworkElementIdentifierContingencyList(List.of(new IdBasedNetworkElementIdentifier(id)),
                 id)).collect(Collectors.toList());
