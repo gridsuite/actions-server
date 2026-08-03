@@ -106,11 +106,11 @@ public class ContingencyListController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    @PostMapping(value = "/identifier-contingency-lists")
+    @PostMapping(value = "/identifier-contingency-lists/{id}/duplicate")
     @Operation(summary = "Create a identifier contingency list from another existing one")
     @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "The identifier contingency list have been duplicated successfully"),
         @ApiResponse(responseCode = "404", description = "Source script contingency list not found")})
-    public ResponseEntity<UUID> duplicateIdentifierContingencyList(@RequestParam("duplicateFrom") UUID identifierContingencyListsId) {
+    public ResponseEntity<UUID> duplicateIdentifierContingencyList(@PathVariable("id") UUID identifierContingencyListsId) {
         return service.duplicateIdentifierContingencyList(identifierContingencyListsId).map(contingencyList -> ResponseEntity.ok()
                         .contentType(MediaType.APPLICATION_JSON)
                         .body(contingencyList))
@@ -157,11 +157,11 @@ public class ContingencyListController {
         }
     }
 
-    @PostMapping(value = "/filters-contingency-lists", params = "duplicateFrom")
+    @PostMapping(value = "/filters-contingency-lists/{id}/duplicate")
     @Operation(summary = "Create a filter based contingency list from existing one")
     @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "The filter based contingency list have been duplicated successfully"),
         @ApiResponse(responseCode = "404", description = "Source filter based contingency list not found")})
-    public ResponseEntity<UUID> duplicateFilterBasedContingencyList(@RequestParam("duplicateFrom") UUID contingencyListsId) {
+    public ResponseEntity<UUID> duplicateFilterBasedContingencyList(@PathVariable("id") UUID contingencyListsId) {
         return service.duplicateFilterBasedContingencyList(contingencyListsId).map(contingencyList -> ResponseEntity.ok()
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(contingencyList))
