@@ -12,11 +12,10 @@ import org.gridsuite.actions.dto.FilterAttributes;
 import org.gridsuite.filter.AbstractFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
+import org.springframework.web.client.RestClient;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.ArrayList;
@@ -33,13 +32,13 @@ public class FilterService {
 
     @Getter
     private final String baseUri;
-    private final RestTemplate restTemplate;
+    private final RestClient restClient;
 
     @Autowired
     public FilterService(@Value("${gridsuite.services.filter-server.base-uri:http://filter-server/}") String baseUri,
-                         RestTemplateBuilder restTemplateBuilder) {
+                         RestClient.Builder restClientBuilder) {
         this.baseUri = baseUri;
-        this.restTemplate = restTemplateBuilder.build();
+        this.restClient = restClientBuilder.build();
     }
 
     public List<FilterAttributes> getFiltersAttributes(List<UUID> filtersUuid) {
@@ -53,9 +52,11 @@ public class FilterService {
 
         HttpHeaders headers = new HttpHeaders();
 
-        HttpEntity<String> entity = new HttpEntity<>(headers);
-        ResponseEntity<List<FilterAttributes>> response = restTemplate.exchange(uriComponent.toUriString(),
-            HttpMethod.GET, entity, new ParameterizedTypeReference<>() { });
+        ResponseEntity<List<FilterAttributes>> response = restClient.get()
+            .uri(uriComponent.toUriString())
+            .headers(httpHeaders -> httpHeaders.addAll(headers))
+            .retrieve()
+            .toEntity(new ParameterizedTypeReference<>() { });
         return response.getBody() != null ? response.getBody() : new ArrayList<>();
     }
 
@@ -64,7 +65,10 @@ public class FilterService {
         String path = UriComponentsBuilder.fromPath(DELIMITER + FILTER_API_VERSION + FILTER_END_POINT_METADATA + ids)
             .buildAndExpand()
             .toUriString();
-        ResponseEntity<List<AbstractFilter>> response = restTemplate.exchange(getBaseUri() + path, HttpMethod.GET, null, new ParameterizedTypeReference<>() { });
+        ResponseEntity<List<AbstractFilter>> response = restClient.get()
+            .uri(getBaseUri() + path)
+            .retrieve()
+            .toEntity(new ParameterizedTypeReference<>() { });
         return response.getBody() != null ? response.getBody() : new ArrayList<>();
     }
 }
