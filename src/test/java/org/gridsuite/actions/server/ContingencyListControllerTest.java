@@ -680,6 +680,31 @@ class ContingencyListControllerTest {
     }
 
     @Test
+    void testGetReferencedFilterUuids() throws Exception {
+        List<UUID> filters = List.of(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID());
+        UUID filterBasedContingencyListId = addNewFilterBasedContingencyList(genFilterBasedContingencyList(filters)).getId();
+        IdBasedContingencyList idBasedContingencyList = createIdBasedContingencyList(null, Instant.now(), "NHV1_NHV2_1");
+        String res = mvc.perform(post("/" + VERSION + "/identifier-contingency-lists")
+                        .content(objectMapper.writeValueAsString(idBasedContingencyList))
+                        .contentType(APPLICATION_JSON))
+                .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
+        UUID idBasedContingencyListId = objectMapper.readValue(res, IdBasedContingencyList.class).getId();
+
+        // id based and non-existent contingency lists do not reference any filter, duplicates are removed
+        String responseJson = mvc.perform(get("/" + VERSION + "/contingency-lists/filter-uuids")
+                        .queryParam("ids", filterBasedContingencyListId.toString(), idBasedContingencyListId.toString(), UUID.randomUUID().toString()))
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+                .andReturn().getResponse().getContentAsString();
+        List<UUID> referencedFilterUuids = objectMapper.readValue(responseJson, new TypeReference<>() { });
+        assertEquals(filters.size(), referencedFilterUuids.size());
+        assertEquals(new HashSet<>(filters), new HashSet<>(referencedFilterUuids));
+
+        mvc.perform(delete("/" + VERSION + "/contingency-lists/" + idBasedContingencyListId)).andExpect(status().isOk());
+        mvc.perform(delete("/" + VERSION + "/contingency-lists/" + filterBasedContingencyListId)).andExpect(status().isOk());
+    }
+
+    @Test
     void testGetPersistentContingencyLists() throws Exception {
         // Create an id based contingency list
         Instant modificationDate = Instant.now();
