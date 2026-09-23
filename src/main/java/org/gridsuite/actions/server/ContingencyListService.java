@@ -328,6 +328,16 @@ public class ContingencyListService {
     }
 
     @Transactional(readOnly = true)
+    public List<UUID> getReferencedFilterUuids(List<UUID> ids) {
+        return filterBasedContingencyListRepository.findAllById(ids).stream()
+            .flatMap(entity -> Stream.concat(
+                Optional.ofNullable(entity.getFiltersIds()).orElse(List.of()).stream(),
+                Optional.ofNullable(entity.getSelectedEquipmentTypesByFilter()).orElse(List.of()).stream().map(EquipmentTypesByFilterEntity::getFilterId)))
+            .distinct()
+            .toList();
+    }
+
+    @Transactional(readOnly = true)
     public List<AbstractContingencyList> getPersistentContingencyLists(List<UUID> ids) {
         Objects.requireNonNull(ids);
 
