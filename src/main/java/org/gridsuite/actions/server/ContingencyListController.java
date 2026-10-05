@@ -199,6 +199,13 @@ public class ContingencyListController {
         return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(service.getContingencyListsMetadata(ids));
     }
 
+    @GetMapping(value = "/contingency-lists/filter-uuids", produces = MediaType.APPLICATION_JSON_VALUE)
+    @Operation(summary = "Get filter uuids referenced by the given contingency lists")
+    @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "The filter uuids")})
+    public ResponseEntity<List<UUID>> getReferencedFilterUuids(@RequestParam("ids") List<UUID> ids) {
+        return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(service.getReferencedFilterUuids(ids));
+    }
+
     @PostMapping(value = "/contingency-lists", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Get persistent contingency lists by UUIDs")
     @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "The list of persistent contingency lists")})

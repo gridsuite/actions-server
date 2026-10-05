@@ -17,7 +17,10 @@ import com.powsybl.network.store.client.NetworkStoreService;
 import com.powsybl.network.store.client.PreloadingStrategy;
 import com.powsybl.network.store.iidm.impl.NetworkFactoryImpl;
 import org.gridsuite.actions.ContingencyListEvaluator;
-import org.gridsuite.actions.dto.*;
+import org.gridsuite.actions.dto.ContingencyListMetadata;
+import org.gridsuite.actions.dto.ContingencyListMetadataImpl;
+import org.gridsuite.actions.dto.EquipmentTypesByFilter;
+import org.gridsuite.actions.dto.FilterAttributes;
 import org.gridsuite.actions.dto.contingency.AbstractContingencyList;
 import org.gridsuite.actions.dto.contingency.FilterBasedContingencyList;
 import org.gridsuite.actions.dto.contingency.IdBasedContingencyList;
@@ -28,7 +31,10 @@ import org.gridsuite.actions.dto.evaluation.ContingencyListExportResult;
 import org.gridsuite.actions.server.dto.ContingencyCount;
 import org.gridsuite.actions.server.dto.ContingencyCountByContingencyList;
 import org.gridsuite.actions.server.dto.CountWithMissingUuids;
-import org.gridsuite.actions.server.entities.*;
+import org.gridsuite.actions.server.entities.AbstractContingencyEntity;
+import org.gridsuite.actions.server.entities.EquipmentTypesByFilterEntity;
+import org.gridsuite.actions.server.entities.FilterBasedContingencyListEntity;
+import org.gridsuite.actions.server.entities.IdBasedContingencyListEntity;
 import org.gridsuite.actions.server.repositories.FilterBasedContingencyListRepository;
 import org.gridsuite.actions.server.repositories.IdBasedContingencyListRepository;
 import org.gridsuite.actions.server.service.FilterService;
@@ -39,6 +45,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
+
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -325,6 +332,11 @@ public class ContingencyListService {
 
     public ResponseStatusException createNotFoundException(String resourceId, String resourceType) {
         return new ResponseStatusException(HttpStatus.NOT_FOUND, String.format("%s %s not found", resourceType, resourceId));
+    }
+
+    @Transactional(readOnly = true)
+    public List<UUID> getReferencedFilterUuids(List<UUID> ids) {
+        return filterBasedContingencyListRepository.findAllById(ids).stream().flatMap(entity -> entity.getFiltersIds().stream()).toList();
     }
 
     @Transactional(readOnly = true)
