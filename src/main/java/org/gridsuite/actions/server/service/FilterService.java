@@ -46,7 +46,7 @@ public class FilterService {
             return new ArrayList<>();
         }
         String endPointUrl = getBaseUri() + DELIMITER + FILTER_API_VERSION + FILTER_END_POINT_INFOS_IDS;
-        UriComponentsBuilder uriComponentsBuilder = UriComponentsBuilder.fromHttpUrl(endPointUrl);
+        UriComponentsBuilder uriComponentsBuilder = UriComponentsBuilder.fromUriString(endPointUrl);
         uriComponentsBuilder.queryParam("filterUuids", filtersUuid);
         var uriComponent = uriComponentsBuilder.buildAndExpand();
 
