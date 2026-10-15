@@ -7,6 +7,9 @@ powsybl:
       base-uri: http://localhost:8080/
 
 spring:
+  http:
+    converters:
+      preferred-json-mapper: jackson2
   rabbitmq:
     addresses: localhost
 
