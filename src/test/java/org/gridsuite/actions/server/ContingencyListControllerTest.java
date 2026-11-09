@@ -9,6 +9,7 @@ package org.gridsuite.actions.server;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
@@ -88,6 +89,8 @@ class ContingencyListControllerTest {
     private static final UUID NETWORK_UUID_3 = UUID.fromString("7928181c-7977-4592-ba19-88027e4254e6");
     private static final UUID NETWORK_UUID_4 = UUID.fromString("7928181c-7977-4592-ba19-88027e4254e7");
     private static final UUID NETWORK_UUID_5 = UUID.fromString("0313daa6-9419-4d4f-8ed1-af555998665f");
+    private static final UUID UNKNOWN_UUID = UUID.fromString("00000000-0000-0000-0000-000000000000");
+    private static final UUID UNKNOWN_UUID_2 = UUID.fromString("00000000-0000-0000-0000-000000000001");
     private static final String VARIANT_ID_1 = "variant_1";
     private static final String VARIANT_ID_2 = "variant_2";
     private static final String USER_ID_HEADER = "userId";
@@ -347,7 +350,7 @@ class ContingencyListControllerTest {
             .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
         assertNotNull(newUuid);
 
-        mvc.perform(post("/" + VERSION + "/filters-contingency-lists/" + UUID.randomUUID() + "/duplicate"))
+        mvc.perform(post("/" + VERSION + "/filters-contingency-lists/" + UNKNOWN_UUID + "/duplicate"))
             .andExpect(status().isNotFound());
 
         // delete lists
@@ -477,7 +480,7 @@ class ContingencyListControllerTest {
 
         assertNotNull(newUuid);
 
-        mvc.perform(post("/" + VERSION + "/identifier-contingency-lists/" + UUID.randomUUID() + "/duplicate"))
+        mvc.perform(post("/" + VERSION + "/identifier-contingency-lists/" + UNKNOWN_UUID + "/duplicate"))
                 .andExpect(status().isNotFound());
     }
 
@@ -506,7 +509,7 @@ class ContingencyListControllerTest {
 
     @Test
     void testExportUnknownContingencyList() throws Exception {
-        mvc.perform(get("/" + VERSION + "/contingency-lists/" + UUID.randomUUID() + "/export?networkUuid=" + NETWORK_UUID + "&variantId=" + VARIANT_ID_1)
+        mvc.perform(get("/" + VERSION + "/contingency-lists/" + UNKNOWN_UUID + "/export?networkUuid=" + NETWORK_UUID + "&variantId=" + VARIANT_ID_1)
                         .contentType(APPLICATION_JSON))
                 .andExpect(status().isNotFound())
                 .andReturn();
@@ -514,7 +517,7 @@ class ContingencyListControllerTest {
 
     @Test
     void testCountUnknownContingencyList() throws Exception {
-        String res = mvc.perform(get("/" + VERSION + "/contingency-lists/count?ids=" + UUID.randomUUID() + "&networkUuid=" + NETWORK_UUID + "&variantId=" + VARIANT_ID_1)
+        String res = mvc.perform(get("/" + VERSION + "/contingency-lists/count?ids=" + UNKNOWN_UUID + "&networkUuid=" + NETWORK_UUID + "&variantId=" + VARIANT_ID_1)
                         .contentType(APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andReturn().getResponse().getContentAsString();
@@ -555,7 +558,7 @@ class ContingencyListControllerTest {
 
         matchIdBasedContingencyList(objectMapper.readValue(res, IdBasedContingencyList.class), resultList);
 
-        mvc.perform(put("/" + VERSION + "/identifier-contingency-lists/" + UUID.randomUUID())
+        mvc.perform(put("/" + VERSION + "/identifier-contingency-lists/" + UNKNOWN_UUID)
                         .content(objectMapper.writeValueAsString(newList))
                         .contentType(APPLICATION_JSON)
                         .header(USER_ID_HEADER, USER_ID_HEADER))
@@ -577,7 +580,7 @@ class ContingencyListControllerTest {
 
         // count them (incl a wrong uuid)
         res = mvc.perform(get("/" + VERSION + "/contingency-lists/count?ids=" + filterBasedContingencyListId +
-                        "&ids=" + idBasedContingencyListId + "&ids=" + UUID.randomUUID() + "&networkUuid=" + NETWORK_UUID + "&variantId=" +
+                        "&ids=" + idBasedContingencyListId + "&ids=" + UNKNOWN_UUID + "&networkUuid=" + NETWORK_UUID + "&variantId=" +
                 VariantManagerConstants.INITIAL_VARIANT_ID)
                 .contentType(APPLICATION_JSON))
             .andExpect(status().isOk())
@@ -651,8 +654,8 @@ class ContingencyListControllerTest {
         UUID filterBasedContingencyListId = setupCountContingencyTest();
 
         // count them (incl a wrong uuid)
-        UUID missingUuid1 = UUID.randomUUID();
-        UUID missingUuid2 = UUID.randomUUID();
+        UUID missingUuid1 = UNKNOWN_UUID;
+        UUID missingUuid2 = UNKNOWN_UUID_2;
         ContingencyIdsByGroup contingencyIdsByGroup = ContingencyIdsByGroup.builder()
                 .ids(Map.of(
                         CONTINGENCY_1, List.of(filterBasedContingencyListId, missingUuid1),
@@ -692,7 +695,7 @@ class ContingencyListControllerTest {
 
         // id based and non-existent contingency lists do not reference any filter, duplicates are removed
         String responseJson = mvc.perform(get("/" + VERSION + "/contingency-lists/filter-uuids")
-                        .queryParam("ids", filterBasedContingencyListId.toString(), idBasedContingencyListId.toString(), UUID.randomUUID().toString()))
+                        .queryParam("ids", filterBasedContingencyListId.toString(), idBasedContingencyListId.toString(), UNKNOWN_UUID.toString()))
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
                 .andReturn().getResponse().getContentAsString();
@@ -724,7 +727,7 @@ class ContingencyListControllerTest {
         UUID filterBasedContingencyListId = filterBasedContingencyList.getId();
 
         // Get the contingency lists
-        List<UUID> requestIds = List.of(idBasedContingencyListId, filterBasedContingencyListId, UUID.randomUUID());
+        List<UUID> requestIds = List.of(idBasedContingencyListId, filterBasedContingencyListId, UNKNOWN_UUID);
 
         String responseJson = mvc.perform(post("/" + VERSION + "/contingency-lists")
                         .content(objectMapper.writeValueAsString(requestIds))
@@ -756,7 +759,7 @@ class ContingencyListControllerTest {
                 .andExpect(content().json("[]"));
 
         // Test with only non-existent UUIDs
-        List<UUID> nonExistentIds = List.of(UUID.randomUUID(), UUID.randomUUID());
+        List<UUID> nonExistentIds = List.of(UNKNOWN_UUID, UNKNOWN_UUID);
         mvc.perform(post("/" + VERSION + "/contingency-lists")
                         .content(objectMapper.writeValueAsString(nonExistentIds))
                         .contentType(APPLICATION_JSON))
@@ -767,5 +770,99 @@ class ContingencyListControllerTest {
         // Clean up
         mvc.perform(delete("/" + VERSION + "/contingency-lists/" + idBasedContingencyListId)).andExpect(status().isOk());
         mvc.perform(delete("/" + VERSION + "/contingency-lists/" + filterBasedContingencyListId)).andExpect(status().isOk());
+    }
+
+    private void assertProblemDetailBody(String responseBody, String expectedBusinessErrorCode) throws JsonProcessingException {
+        JsonNode body = objectMapper.readTree(responseBody);
+        assertEquals(expectedBusinessErrorCode, body.get("businessErrorCode").asText());
+        assertTrue(body.has("detail"));
+        assertFalse(body.get("detail").asText().isBlank());
+        assertTrue(body.has("server"));
+        assertFalse(body.get("server").asText().isBlank());
+        assertTrue(body.has("timestamp"));
+        assertFalse(body.get("timestamp").asText().isBlank());
+        assertTrue(body.has("traceId"));
+    }
+
+    @Test
+    void testModifyUnknownIdentifierContingencyList() throws Exception {
+        Instant modificationDate = Instant.now();
+        IdBasedContingencyList newList = createIdBasedContingencyList(UNKNOWN_UUID, modificationDate, "LINE1");
+
+        String res = mvc.perform(put("/" + VERSION + "/identifier-contingency-lists/" + newList.getId())
+                        .content(objectMapper.writeValueAsString(newList))
+                        .contentType(APPLICATION_JSON)
+                        .header(USER_ID_HEADER, USER_ID_HEADER))
+                .andExpect(status().isNotFound())
+                .andReturn().getResponse().getContentAsString();
+
+        assertProblemDetailBody(res, "actions.contingencyListNotFound");
+    }
+
+    @Test
+    void testModifyUnknownFilterBasedContingencyList() throws Exception {
+        List<UUID> filters = List.of(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID());
+        String newList = genFilterBasedContingencyList(filters);
+
+        String res = mvc.perform(put("/" + VERSION + "/filters-contingency-lists/" + UNKNOWN_UUID)
+                        .content(newList)
+                        .contentType(APPLICATION_JSON)
+                        .header(USER_ID_HEADER, USER_ID_HEADER))
+                .andExpect(status().isNotFound())
+                .andReturn().getResponse().getContentAsString();
+
+        assertProblemDetailBody(res, "actions.contingencyListNotFound");
+    }
+
+    @Test
+    void testDeleteUnknownContingencyList() throws Exception {
+        String res = mvc.perform(delete("/" + VERSION + "/contingency-lists/" + UNKNOWN_UUID))
+                .andExpect(status().isNotFound())
+                .andReturn().getResponse().getContentAsString();
+
+        assertProblemDetailBody(res, "actions.contingencyListNotFound");
+    }
+
+    @Test
+    void testDuplicateUnknownIdentifierContingencyList() throws Exception {
+        String res = mvc.perform(post("/" + VERSION + "/identifier-contingency-lists/" + UNKNOWN_UUID + "/duplicate"))
+                .andExpect(status().isNotFound())
+                .andReturn().getResponse().getContentAsString();
+
+        assertProblemDetailBody(res, "actions.contingencyListNotFound");
+    }
+
+    @Test
+    void testDuplicateUnknownFilterBasedContingencyList() throws Exception {
+        String res = mvc.perform(post("/" + VERSION + "/filters-contingency-lists/" + UNKNOWN_UUID + "/duplicate"))
+                .andExpect(status().isNotFound())
+                .andReturn().getResponse().getContentAsString();
+
+        assertProblemDetailBody(res, "actions.contingencyListNotFound");
+    }
+
+    @Test
+    void testExportContingencyInfosListNetworkNotFound() throws Exception {
+        String res = mvc.perform(get("/" + VERSION + "/contingency-lists/contingency-infos/export?networkUuid=" + UNKNOWN_UUID
+                        + "&variantId=" + VARIANT_ID_1 + "&ids=" + UNKNOWN_UUID)
+                        .contentType(APPLICATION_JSON))
+                .andExpect(status().isNotFound())
+                .andReturn().getResponse().getContentAsString();
+
+        assertProblemDetailBody(res, "actions.networkNotFound");
+    }
+
+    @Test
+    void testCreateIdentifierContingencyListInvalidPayloadBody() throws Exception {
+        Instant modificationDate = Instant.now();
+        IdBasedContingencyList idBasedContingencyList = createIdBasedContingencyList(null, modificationDate, new String[0]);
+
+        String res = mvc.perform(post("/" + VERSION + "/identifier-contingency-lists")
+                        .content(objectMapper.writeValueAsString(idBasedContingencyList))
+                        .contentType(APPLICATION_JSON))
+                .andExpect(status().isBadRequest())
+                .andReturn().getResponse().getContentAsString();
+
+        assertProblemDetailBody(res, "actions.invalidContingencyListPayload");
     }
 }

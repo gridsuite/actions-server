@@ -16,6 +16,7 @@ import com.powsybl.iidm.network.identifiers.NetworkElementIdentifierContingencyL
 import com.powsybl.network.store.client.NetworkStoreService;
 import com.powsybl.network.store.client.PreloadingStrategy;
 import com.powsybl.network.store.iidm.impl.NetworkFactoryImpl;
+import jakarta.persistence.EntityNotFoundException;
 import org.gridsuite.actions.ContingencyListEvaluator;
 import org.gridsuite.actions.dto.ContingencyListMetadata;
 import org.gridsuite.actions.dto.ContingencyListMetadataImpl;
@@ -35,16 +36,14 @@ import org.gridsuite.actions.server.entities.AbstractContingencyEntity;
 import org.gridsuite.actions.server.entities.EquipmentTypesByFilterEntity;
 import org.gridsuite.actions.server.entities.FilterBasedContingencyListEntity;
 import org.gridsuite.actions.server.entities.IdBasedContingencyListEntity;
+import org.gridsuite.actions.server.error.ActionsException;
 import org.gridsuite.actions.server.repositories.FilterBasedContingencyListRepository;
 import org.gridsuite.actions.server.repositories.IdBasedContingencyListRepository;
 import org.gridsuite.actions.server.service.FilterService;
 import org.gridsuite.actions.utils.ContingencyListType;
 import org.springframework.context.annotation.ComponentScan;
-import org.springframework.dao.EmptyResultDataAccessException;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.util.*;
 import java.util.function.Function;
@@ -221,7 +220,7 @@ public class ContingencyListService {
     private PersistentContingencyList findContingencyList(UUID id, Network network) {
         Objects.requireNonNull(id);
         return getAnyContingencyList(id, network)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Contingency list " + id + " not found"));
+                .orElseThrow(() -> ActionsException.createContingencyListNotFound(id));
     }
 
     private Optional<PersistentContingencyList> getAnyContingencyList(UUID id, Network network) {
@@ -237,7 +236,7 @@ public class ContingencyListService {
         } else {
             network = networkStoreService.getNetwork(networkUuid, PreloadingStrategy.COLLECTION);
             if (network == null) {
-                throw new PowsyblException("Network '" + networkUuid + "' not found");
+                throw ActionsException.createNetworkNotFound(networkUuid);
             }
             if (variantId != null) {
                 network.getVariantManager().setWorkingVariant(variantId);
@@ -251,7 +250,7 @@ public class ContingencyListService {
     public Optional<UUID> duplicateFilterBasedContingencyList(UUID sourceListId) {
         Optional<PersistentContingencyList> contingencyList = doGetFilterBasedContingencyList(sourceListId);
         if (contingencyList.isEmpty()) {
-            throw createNotFoundException(sourceListId.toString(), "Form contingency list");
+            throw ActionsException.createContingencyListNotFound("Form contingency list", sourceListId);
         } else {
             FilterBasedContingencyList filterContingencyList = createFilterBasedContingencyList(null, (FilterBasedContingencyList) contingencyList.get());
             return Optional.of(filterContingencyList.getId());
@@ -262,7 +261,7 @@ public class ContingencyListService {
     public Optional<UUID> duplicateIdentifierContingencyList(UUID sourceListId) {
         Optional<IdBasedContingencyList> idBasedContingencyList = doGetIdBasedContingencyList(sourceListId, null).map(s -> createIdBasedContingencyList(null, (IdBasedContingencyList) s));
         if (!idBasedContingencyList.isPresent()) {
-            throw createNotFoundException(sourceListId.toString(), "Identifier contingency list");
+            throw ActionsException.createContingencyListNotFound("Identifier contingency list", sourceListId);
         } else {
             return Optional.of(idBasedContingencyList.get().getId());
         }
@@ -270,25 +269,31 @@ public class ContingencyListService {
 
     @Transactional
     public void modifyIdBasedContingencyList(UUID id, IdBasedContingencyList idBasedContingencyList, String userId) {
-        // throw if not found
-        idBasedContingencyListRepository.save(idBasedContingencyListRepository.getReferenceById(id).update(idBasedContingencyList));
+        try {
+            idBasedContingencyListRepository.save(idBasedContingencyListRepository.getReferenceById(id).update(idBasedContingencyList));
+        } catch (EntityNotFoundException _) {
+            throw ActionsException.createContingencyListNotFound(id);
+        }
         notificationService.emitElementUpdated(id, userId);
     }
 
     @Transactional
     public void modifyFilterBasedContingencyList(UUID id, FilterBasedContingencyList contingencyList, String userId) {
-        // throw if not found
-        filterBasedContingencyListRepository.save(filterBasedContingencyListRepository.getReferenceById(id).update(contingencyList));
+        try {
+            filterBasedContingencyListRepository.save(filterBasedContingencyListRepository.getReferenceById(id).update(contingencyList));
+        } catch (EntityNotFoundException _) {
+            throw ActionsException.createContingencyListNotFound(id);
+        }
         notificationService.emitElementUpdated(id, userId);
     }
 
     @Transactional
-    public void deleteContingencyList(UUID id) throws EmptyResultDataAccessException {
+    public void deleteContingencyList(UUID id) {
         Objects.requireNonNull(id);
         // if there is no contingency list by this Id, deleted count == 0
         if (idBasedContingencyListRepository.deleteIdBasedContingencyListEntityById(id) == 0
             && filterBasedContingencyListRepository.deleteFilterBasedContingencyListEntityById(id) == 0) {
-            throw new EmptyResultDataAccessException("No element found", 1);
+            throw ActionsException.createContingencyListNotFound(id);
         }
     }
 
@@ -328,10 +333,6 @@ public class ContingencyListService {
         FilterBasedContingencyListEntity entity = new FilterBasedContingencyListEntity(contingencyList);
         entity.setId(id == null ? UUID.randomUUID() : id);
         return fromFilterBasedContingencyListEntity(filterBasedContingencyListRepository.save(entity));
-    }
-
-    public ResponseStatusException createNotFoundException(String resourceId, String resourceType) {
-        return new ResponseStatusException(HttpStatus.NOT_FOUND, String.format("%s %s not found", resourceType, resourceId));
     }
 
     @Transactional(readOnly = true)
