@@ -14,8 +14,7 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.gridsuite.actions.dto.contingency.IdBasedContingencyList;
-import org.springframework.http.HttpStatus;
-import org.springframework.web.server.ResponseStatusException;
+import org.gridsuite.actions.server.error.ActionsException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -41,7 +40,7 @@ public class IdBasedContingencyListEntity extends AbstractContingencyEntity {
 
     final void init(IdentifierContingencyList identifierContingencyList) {
         if (identifierContingencyList.getIdentifiants().isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Contingency list " + identifierContingencyList.getName() + " empty");
+            throw ActionsException.createInvalidPayload("Contingency list " + identifierContingencyList.getName() + " empty");
         }
 
         this.identifiersListEntities = new ArrayList<>();
@@ -49,7 +48,7 @@ public class IdBasedContingencyListEntity extends AbstractContingencyEntity {
             List<NetworkElementIdentifier> identifierList = ((NetworkElementIdentifierContingencyList) networkElementIdentifier).getNetworkElementIdentifiers();
             String contingencyName = networkElementIdentifier.getContingencyId().isPresent() ? networkElementIdentifier.getContingencyId().get() : "";
             if (contingencyName.isEmpty() || identifierList == null || identifierList.isEmpty()) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "At least one contingency is partially defined for the contingency list " + identifierContingencyList.getName());
+                throw ActionsException.createInvalidPayload("At least one contingency is partially defined for the contingency list " + identifierContingencyList.getName());
             }
             identifiersListEntities.add(new IdentifierListEntity(UUID.randomUUID(), contingencyName, identifierList.stream().map(identifier -> ((IdBasedNetworkElementIdentifier)
                     identifier).getIdentifier()).collect(Collectors.toSet())));
