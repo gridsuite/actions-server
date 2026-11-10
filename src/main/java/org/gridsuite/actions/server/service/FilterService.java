@@ -9,7 +9,7 @@ package org.gridsuite.actions.server.service;
 
 import lombok.Getter;
 import org.gridsuite.actions.dto.FilterAttributes;
-import org.gridsuite.filter.AbstractFilter;
+import org.gridsuite.filter.dto.AbstractFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
