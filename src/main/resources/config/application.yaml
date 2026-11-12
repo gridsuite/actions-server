@@ -10,6 +10,11 @@ spring:
   main:
     allow-circular-references: true
 
+powsybl:
+  services:
+    network-store-server:
+      identifiable-preloading-mode: COLLECTION
+
 powsybl-ws:
   database:
     name: actions
