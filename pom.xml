@@ -55,7 +55,7 @@
 
         <!-- FIXME remove this on next gridsuite-dependencies release -->
         <gridsuite-filter.version>1.36.0-SNAPSHOT</gridsuite-filter.version>
-        <gridsuite-actions.version>0.10.0</gridsuite-actions.version>
+        <gridsuite-actions.version>0.11.0</gridsuite-actions.version>
         <powsybl-network-store.version>1.53.0</powsybl-network-store.version>
     </properties>
 
