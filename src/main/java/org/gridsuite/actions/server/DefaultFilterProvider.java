@@ -8,7 +8,7 @@ package org.gridsuite.actions.server;
 
 import org.gridsuite.actions.FilterProvider;
 import org.gridsuite.actions.server.service.FilterService;
-import org.gridsuite.filter.AbstractFilter;
+import org.gridsuite.filter.dto.AbstractFilter;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
