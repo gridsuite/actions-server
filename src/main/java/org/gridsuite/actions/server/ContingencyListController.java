@@ -11,7 +11,6 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.persistence.EntityNotFoundException;
 import org.gridsuite.actions.dto.*;
 import org.gridsuite.actions.dto.contingency.AbstractContingencyList;
 import org.gridsuite.actions.dto.contingency.FilterBasedContingencyList;
@@ -23,7 +22,6 @@ import org.gridsuite.actions.dto.evaluation.ContingencyListExportResult;
 import org.gridsuite.actions.server.dto.ContingencyCount;
 import org.gridsuite.actions.server.dto.CountWithMissingUuids;
 import org.springframework.context.annotation.ComponentScan;
-import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -119,17 +117,14 @@ public class ContingencyListController {
 
     @PutMapping(value = "/identifier-contingency-lists/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Modify a identifier contingency list")
-    @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "The identifier contingency list have been modified successfully")})
+    @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "The identifier contingency list have been modified successfully"),
+        @ApiResponse(responseCode = "404", description = "The identifier contingency list does not exists")})
     public ResponseEntity<Void> modifyIdentifierContingencyList(
             @PathVariable UUID id,
             @RequestBody IdBasedContingencyList idBasedContingencyList,
             @RequestHeader("userId") String userId) {
-        try {
-            service.modifyIdBasedContingencyList(id, idBasedContingencyList, userId);
-            return ResponseEntity.ok().build();
-        } catch (EntityNotFoundException ignored) {
-            return ResponseEntity.notFound().build();
-        }
+        service.modifyIdBasedContingencyList(id, idBasedContingencyList, userId);
+        return ResponseEntity.ok().build();
     }
 
     @PostMapping(value = "/filters-contingency-lists", consumes = MediaType.APPLICATION_JSON_VALUE)
@@ -144,17 +139,14 @@ public class ContingencyListController {
 
     @PutMapping(value = "/filters-contingency-lists/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Modify a filter based contingency list")
-    @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "The filter based contingency list have been modified successfully")})
+    @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "The filter based contingency list have been modified successfully"),
+        @ApiResponse(responseCode = "404", description = "The filter based contingency list does not exists")})
     public ResponseEntity<Void> modifyFilterBasedContingencyList(
         @PathVariable UUID id,
         @RequestBody FilterBasedContingencyList contingencyList,
         @RequestHeader("userId") String userId) {
-        try {
-            service.modifyFilterBasedContingencyList(id, contingencyList, userId);
-            return ResponseEntity.ok().build();
-        } catch (EntityNotFoundException ignored) {
-            return ResponseEntity.notFound().build();
-        }
+        service.modifyFilterBasedContingencyList(id, contingencyList, userId);
+        return ResponseEntity.ok().build();
     }
 
     @PostMapping(value = "/filters-contingency-lists/{id}/duplicate")
@@ -181,14 +173,11 @@ public class ContingencyListController {
 
     @DeleteMapping(value = "/contingency-lists/{id}")
     @Operation(summary = "delete the contingency list")
-    @ApiResponse(responseCode = "200", description = "The contingency list has been deleted")
+    @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "The contingency list has been deleted"),
+        @ApiResponse(responseCode = "404", description = "The contingency list does not exists")})
     public ResponseEntity<Void> deleteContingencyList(@PathVariable("id") UUID id) {
-        try {
-            service.deleteContingencyList(id);
-            return ResponseEntity.ok().build();
-        } catch (EmptyResultDataAccessException ignored) {
-            return ResponseEntity.notFound().build();
-        }
+        service.deleteContingencyList(id);
+        return ResponseEntity.ok().build();
     }
 
     @GetMapping(value = "/contingency-lists/metadata", produces = MediaType.APPLICATION_JSON_VALUE)
